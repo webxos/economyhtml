@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Vintage Vibe Vault - Shop premium vintage clothing including shirts, jeans, shorts, hats, jewelry, and shoes. Discover unique retro styles.">
+    <meta name="keywords" content="vintage clothing, retro fashion, resale clothing, sustainable fashion, vintage shirts, vintage jeans, vintage accessories">
+    <meta name="author" content="Vintage Vibe Vault">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Vintage Vibe Vault - Premium Vintage Clothing">
+    <meta property="og:description" content="Explore unique vintage shirts, jeans, shorts, hats, jewelry, and shoes at Vintage Vibe Vault. Shop retro fashion now!">
+    <meta property="og:image" content="https://example.com/og-image.jpg">
+    <meta property="og:url" content="https://example.com">
+    <title>Vintage Vibe Vault - Retro Clothing Shop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background: #2a2a2a;
+            color: #d9d9d9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(180deg, rgba(40, 40, 40, 0.9), transparent);
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            color: #f4d9a6;
+            letter-spacing: 1px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 12px 0;
+        }
+
+        .nav-button {
+            padding: 10px 20px;
+            background: #3c3c3c;
+            color: #f4d9a6;
+            border: 1px solid #f4d9a6;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background: #f4d9a6;
+            color: #2a2a2a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 217, 166, 0.5);
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section {
+            display: none;
+            background: rgba(40, 40, 40, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: #333;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(244, 217, 166, 0.3);
+        }
+
+        .product-3d {
+            width: 100%;
+            height: 150px;
+            perspective: 1000px;
+            margin-bottom: 10px;
+        }
+
+        .product-3d img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+            transform: rotateY(0deg);
+            transition: transform 0.5s ease;
+            filter: sepia(20%);
+        }
+
+        .product-card:hover .product-3d img {
+            transform: rotateY(360deg);
+        }
+
+        .product-card h3 {
+            font-family: 'Playfair Display', serif;
+            margin: 10px 0;
+            color: #f4d9a6;
+            font-size: 1.3rem;
+        }
+
+        .product-card p {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .product-card button {
+            padding: 8px 16px;
+            background: #f4d9a6;
+            color: #2a2a2a;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .product-card button:hover {
+            background: #e8c78a;
+        }
+
+        .cart {
+            background: #333;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #555;
+            color: #d9d9d9;
+        }
+
+        .checkout-form, .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .checkout-form input, .contact-form input, .contact-form textarea {
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #3c3c3c;
+            color: #d9d9d9;
+            font-size: 0.9rem;
+        }
+
+        .checkout-form button, .contact-form button {
+            padding: 10px;
+            background: #f4d9a6;
+            color: #2a2a2a;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .checkout-form button:hover, .contact-form button:hover {
+            background: #e8c78a;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background: rgba(40, 40, 40, 0.9);
+            color: #b0b0b0;
+            font-size: 0.85rem;
+        }
+
+        /* Retro Background Effect */
+        .retro-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(45deg, #2a2a2a, #3c3c3c);
+            opacity: 0.5;
+        }
+
+        .retro-bg::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(244, 217, 166, 0.1),
+                rgba(244, 217, 166, 0.1) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            animation: slide 10s linear infinite;
+        }
+
+        @keyframes slide {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(20px); }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .nav-button {
+                width: 100%;
+                padding: 12px;
+            }
+
+            .shop-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .product-3d {
+                height: 120px;
+            }
+
+            .section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="retro-bg"></div>
+    <header>
+        <h1>Vintage Vibe Vault</h1>
+        <nav>
+            <button class="nav-button" data-section="about">About</button>
+            <button class="nav-button" data-section="shop">Shop</button>
+            <button class="nav-button" data-section="checkout">Checkout</button>
+            <button class="nav-button" data-section="contact">Contact</button>
+        </nav>
+    </header>
+    <main>
+        <section id="about" class="section">
+            <h2>About Us</h2>
+            <p>Welcome to Vintage Vibe Vault, your go-to destination for curated vintage clothing. We specialize in unique, sustainable retro styles, from shirts to shoes, perfect for fashion enthusiasts.</p>
+        </section>
+        <section id="shop" class="section">
+            <h2>Vintage Collection</h2>
+            <div class="shop-grid">
+                <div class="product-card">
+                    <div class="product-3d">
+                        <img src="https://via.placeholder.com/200?text=Vintage+Shirt" alt="Vintage Flannel Shirt">
+                    </div>
+                    <h3>Vintage Flannel Shirt</h3>
+                    <p>$35.00</p>
+                    <button onclick="addToCart('Vintage Flannel Shirt', 35.00)">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-3d">
+                        <img src="https://via.placeholder.com/200?text=Vintage+Jeans" alt="Vintage High-Waist Jeans">
+                    </div>
+                    <h3>Vintage High-Waist Jeans</h3>
+                    <p>$45.00</p>
+                    <button onclick="addToCart('Vintage High-Waist Jeans', 45.00)">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-3d">
+                        <img src="https://via.placeholder.com/200?text=Vintage+Shorts" alt="Vintage Denim Shorts">
+                    </div>
+                    <h3>Vintage Denim Shorts</h3>
+                    <p>$25.00</p>
+                    <button onclick="addToCart('Vintage Denim Shorts', 25.00)">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-3d">
+                        <img src="https://via.placeholder.com/200?text=Vintage+Hat" alt="Vintage Baseball Cap">
+                    </div>
+                    <h3>Vintage Baseball Cap</h3>
+                    <p>$20.00</p>
+                    <button onclick="addToCart('Vintage Baseball Cap', 20.00)">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-3d">
+                        <img src="https://via.placeholder.com/200?text=Vintage+Jewelry" alt="Vintage Necklace">
+                    </div>
+                    <h3>Vintage Necklace</h3>
+                    <p>$15.00</p>
+                    <button onclick="addToCart('Vintage Necklace', 15.00)">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-3d">
+                        <img src="https://via.placeholder.com/200?text=Vintage+Shoes" alt="Vintage Sneakers">
+                    </div>
+                    <h3>Vintage Sneakers</h3>
+                    <p>$55.00</p>
+                    <button onclick="addToCart('Vintage Sneakers', 55.00)">Add to Cart</button>
+                </div>
+            </div>
+        </section>
+        <section id="checkout" class="section">
+            <h2>Checkout</h2>
+            <div class="cart" id="cart">
+                <h3>Your Cart</h3>
+                <div id="cart-items"></div>
+                <p>Total: $<span id="cart-total">0.00</span></p>
+            </div>
+            <form class="checkout-form">
+                <input type="text" placeholder="Full Name" required>
+                <input type="email" placeholder="Email" required>
+                <input type="text" placeholder="Shipping Address" required>
+                <input type="text" placeholder="Card Number" required>
+                <button type="submit">Place Order</button>
+            </form>
+        </section>
+        <section id="contact" class="section">
+            <h2>Contact Us</h2>
+            <form class="contact-form">
+                <input type="text" placeholder="Name" required>
+                <input type="email" placeholder="Email" required>
+                <textarea placeholder="Message" rows="5" required></textarea>
+                <button type="submit">Send</button>
+            </form>
+        </section>
+    </main>
+    <footer>
+        <p>© 2025 Vintage Vibe Vault. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Navigation
+        const buttons = document.querySelectorAll('.nav-button');
+        const sections = document.querySelectorAll('.section');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const sectionId = button.getAttribute('data-section');
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === sectionId) {
+                        section.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Show the first section by default
+        document.getElementById('about').classList.add('active');
+
+        // Cart Functionality
+        let cart = [];
+        const cartItems = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            updateCart();
+            alert(`${name} added to cart!`);
+        }
+
+        function updateCart() {
+            cartItems.innerHTML = '';
+            let total = 0;
+            cart.forEach((item, index) => {
+                total += item.price;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `${item.name} - $${item.price.toFixed(2)} <button onclick="removeFromCart(${index})">Remove</button>`;
+                cartItems.appendChild(div);
+            });
+            cartTotal.textContent = total.toFixed(2);
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        // Contact Form Submission
+        const contactForm = document.querySelector('.contact-form');
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Message sent! (Demo)');
+            contactForm.reset();
+        });
+
+        // Checkout Form Submission
+        const checkoutForm = document.querySelector('.checkout-form');
+        checkoutForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (cart.length === 0) {
+                alert('Cart is empty!');
+                return;
+            }
+            alert('Order placed! (Demo)');
+            cart = [];
+            updateCart();
+            checkoutForm.reset();
+        });
+    </script>
+</body>
+</html>
