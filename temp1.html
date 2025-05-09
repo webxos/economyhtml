@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TechTrend Innovations - Premium AI and tech-themed HTML templates for startups and developers. Shop now for cutting-edge designs.">
+    <meta name="keywords" content="HTML templates, AI design, tech startup, e-commerce, web development, grayscale design">
+    <meta name="author" content="TechTrend Innovations">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="TechTrend Innovations - AI & Tech HTML Templates">
+    <meta property="og:description" content="Discover premium HTML templates for AI and tech startups at TechTrend Innovations. Shop now!">
+    <meta property="og:image" content="https://example.com/og-image.jpg">
+    <meta property="og:url" content="https://example.com">
+    <title>TechTrend Innovations - AI & Tech Shop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        header {
+            background: linear-gradient(180deg, rgba(30, 30, 30, 0.9), transparent);
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: #00ccff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px 0;
+        }
+
+        .nav-button {
+            padding: 12px 24px;
+            background: #333;
+            color: #e0e0e0;
+            border: 1px solid #00ccff;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background: #00ccff;
+            color: #1a1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 204, 255, 0.5);
+        }
+
+        .nav-button:active {
+            transform: translateY(0);
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section {
+            display: none;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 204, 255, 0.3);
+        }
+
+        .product-card img {
+            max-width: 100%;
+            border-radius: 5px;
+            filter: grayscale(50%);
+        }
+
+        .product-card h3 {
+            margin: 10px 0;
+            color: #00ccff;
+        }
+
+        .product-card p {
+            color: #b0b0b0;
+        }
+
+        .product-card button {
+            padding: 10px 20px;
+            background: #00ccff;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .product-card button:hover {
+            background: #00aaff;
+        }
+
+        .checkout-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .checkout-form input {
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        .checkout-form button {
+            padding: 12px;
+            background: #00ccff;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .checkout-form button:hover {
+            background: #00aaff;
+        }
+
+        .cart {
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #555;
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .contact-form input, .contact-form textarea {
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        .contact-form button {
+            padding: 12px;
+            background: #00ccff;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .contact-form button:hover {
+            background: #00aaff;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background: rgba(30, 30, 30, 0.9);
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .nav-button {
+                width: 100%;
+                padding: 12px;
+            }
+
+            .shop-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <header>
+        <h1>TechTrend Innovations</h1>
+        <nav>
+            <button class="nav-button" data-section="about">About</button>
+            <button class="nav-button" data-section="shop">Shop</button>
+            <button class="nav-button" data-section="checkout">Checkout</button>
+            <button class="nav-button" data-section="contact">Contact</button>
+        </nav>
+    </header>
+    <main>
+        <section id="about" class="section">
+            <h2>About TechTrend</h2>
+            <p>We specialize in premium AI and tech-themed HTML templates for startups and developers. Our mission is to empower innovation with sleek, affordable designs.</p>
+        </section>
+        <section id="shop" class="section">
+            <h2>Our Shop</h2>
+            <div class="shop-grid">
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/200" alt="AI Template 1">
+                    <h3>AI Template 1</h3>
+                    <p>$29.99</p>
+                    <button onclick="addToCart('AI Template 1', 29.99)">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/200" alt="Tech Template 2">
+                    <h3>Tech Template 2</h3>
+                    <p>$39.99</p>
+                    <button onclick="addToCart('Tech Template 2', 39.99)">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/200" alt="Startup Template 3">
+                    <h3>Startup Template 3</h3>
+                    <p>$49.99</p>
+                    <button onclick="addToCart('Startup Template 3', 49.99)">Add to Cart</button>
+                </div>
+            </div>
+        </section>
+        <section id="checkout" class="section">
+            <h2>Checkout</h2>
+            <div class="cart" id="cart">
+                <h3>Cart</h3>
+                <div id="cart-items"></div>
+                <p>Total: $<span id="cart-total">0.00</span></p>
+            </div>
+            <form class="checkout-form">
+                <input type="text" placeholder="Full Name" required>
+                <input type="email" placeholder="Email" required>
+                <input type="text" placeholder="Address" required>
+                <input type="text" placeholder="Card Number" required>
+                <button type="submit">Place Order</button>
+            </form>
+        </section>
+        <section id="contact" class="section">
+            <h2>Contact Us</h2>
+            <form class="contact-form">
+                <input type="text" placeholder="Name" required>
+                <input type="email" placeholder="Email" required>
+                <textarea placeholder="Message" rows="5" required></textarea>
+                <button type="submit">Send</button>
+            </form>
+        </section>
+    </main>
+    <footer>
+        <p>© 2025 TechTrend Innovations. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script>
+        // Particle Wave Background
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particleCount = 5000;
+        const posArray = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 100;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const material = new THREE.PointsMaterial({
+            size: 0.1,
+            color: 0x00ccff,
+            transparent: true,
+            opacity: 0.6
+        });
+
+        const particlesMesh = new THREE.Points(particlesGeometry, material);
+        scene.add(particlesMesh);
+        camera.position.z = 30;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particlesMesh.rotation.y += 0.002;
+            const positions = particlesGeometry.attributes.position.array;
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i + 2] += Math.sin(positions[i] + Date.now() * 0.001) * 0.01;
+            }
+            particlesGeometry.attributes.position.needsUpdate = true;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // Navigation
+        const buttons = document.querySelectorAll('.nav-button');
+        const sections = document.querySelectorAll('.section');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const sectionId = button.getAttribute('data-section');
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === sectionId) {
+                        section.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Show the first section by default
+        document.getElementById('about').classList.add('active');
+
+        // Cart Functionality
+        let cart = [];
+        const cartItems = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            updateCart();
+            alert(`${name} added to cart!`);
+        }
+
+        function updateCart() {
+            cartItems.innerHTML = '';
+            let total = 0;
+            cart.forEach((item, index) => {
+                total += item.price;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `${item.name} - $${item.price.toFixed(2)} <button onclick="removeFromCart(${index})">Remove</button>`;
+                cartItems.appendChild(div);
+            });
+            cartTotal.textContent = total.toFixed(2);
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        // Contact Form Submission
+        const contactForm = document.querySelector('.contact-form');
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Message sent! (Demo)');
+            contactForm.reset();
+        });
+
+        // Checkout Form Submission
+        const checkoutForm = document.querySelector('.checkout-form');
+        checkoutForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (cart.length === 0) {
+                alert('Cart is empty!');
+                return;
+            }
+            alert('Order placed! (Demo)');
+            cart = [];
+            updateCart();
+            checkoutForm.reset();
+        });
+    </script>
+</body>
+</html>
