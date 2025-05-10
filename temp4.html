@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Shop premium golf equipment at Putting Green Golf Co. Find golf clubs, balls, bags, and accessories for avid golfers. Perfect for eBay resellers and golf enthusiasts.">
+    <meta name="keywords" content="golf equipment, golf clubs, golf balls, golf bags, golf accessories, vintage golf gear, golf shop, eBay golf reseller, golf store online">
+    <meta name="author" content="Putting Green Golf Co.">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Putting Green Golf Co. - Premium Golf Equipment">
+    <meta property="og:description" content="Discover top-quality golf clubs, balls, bags, and accessories at Putting Green Golf Co. Ideal for golfers and eBay resellers.">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630">
+    <meta property="og:url" content="https://www.puttinggreengolfco.com">
+    <meta property="og:type" content="website">
+    <title>⛳ Putting Green Golf Co.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #1a3c34;
+            color: #ffffff;
+            overflow-x: hidden;
+            overflow-y: auto;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        #app {
+            width: 100vw;
+            max-width: 100%;
+            padding: 2vh;
+            background: rgba(26, 60, 52, 0.9);
+            box-shadow: 0 0 8px #ffd700;
+            text-shadow: 1px 1px 2px #ffd700;
+        }
+        h1 {
+            font-size: 5vw;
+            color: #ffd700;
+            text-shadow: 2px 2px 0 #ffffff, 0 0 8px #00ff00;
+            margin: 2vh 0;
+            text-align: center;
+            animation: glow 1.5s infinite alternate;
+        }
+        h2 {
+            font-size: 3.5vw;
+            color: #ffd700;
+            text-shadow: 1px 1px 2px #ffffff;
+            margin: 1.5vh 0;
+        }
+        p {
+            font-size: 2.5vw;
+            color: #e0e0e0;
+            text-shadow: 0.5px 0.5px 1px #ffd700;
+            line-height: 1.5;
+        }
+        button {
+            background: #ffd700;
+            color: #1a3c34;
+            padding: 1vh 2vw;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 2.5vw;
+            margin: 0.5vh;
+            cursor: pointer;
+            box-shadow: 0 0 4px #ffffff;
+            border: none;
+            transition: all 0.2s;
+        }
+        button:hover, button:active {
+            background: #ffffff;
+            color: #ffd700;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2vh;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .product {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 2vh;
+            margin: 1.5vh 0;
+            box-shadow: 0 0 4px #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .product img {
+            width: 30vw;
+            height: auto;
+            margin-bottom: 1vh;
+        }
+        .product p {
+            font-size: 2vw;
+            text-align: center;
+        }
+        .cart-item {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 1.5vh;
+            margin: 1vh 0;
+            box-shadow: 0 0 4px #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cart-item p {
+            font-size: 2vw;
+        }
+        #cart-total {
+            font-size: 2.5vw;
+            color: #ffd700;
+            text-align: right;
+            margin-top: 1vh;
+        }
+        #canvas-container {
+            width: 100%;
+            height: 30vh;
+            margin-bottom: 2vh;
+            box-shadow: 0 0 8px #ffd700;
+            position: relative;
+        }
+        @keyframes glow {
+            from { text-shadow: 2px 2px 0 #ffffff, 0 0 8px #00ff00; }
+            to { text-shadow: 3px 3px 0 #ffffff, 0 0 12px #00ff00; }
+        }
+        @media screen and (min-width: 769px) {
+            h1 { font-size: 2.5vw; }
+            h2 { font-size: 2vw; }
+            p { font-size: 1.5vw; }
+            button { font-size: 1.5vw; }
+            .product p { font-size: 1.2vw; }
+            .cart-item p { font-size: 1.2vw; }
+            #cart-total { font-size: 1.5vw; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>⛳ Putting Green Golf Co.</h1>
+        <div class="nav">
+            <button onclick="showPage('shop')">Shop 🏌️‍♂️</button>
+            <button onclick="showPage('about')">About ℹ️</button>
+            <button onclick="showPage('cart')">Cart 🛒</button>
+        </div>
+        <div id="shop" class="page active">
+            <div id="canvas-container"></div>
+            <div class="product" data-id="1">
+                <img src="https://via.placeholder.com/150" alt="Golf Driver">
+                <p>Pro Driver 3000 ⛳<br>$199.99</p>
+                <button onclick="addToCart(1, 'Pro Driver 3000', 199.99)">Add to Cart ➕</button>
+            </div>
+            <div class="product" data-id="2">
+                <img src="https://via.placeholder.com/150" alt="Golf Balls">
+                <p>Elite Golf Balls (12-Pack) 🏐<br>$29.99</p>
+                <button onclick="addToCart(2, 'Elite Golf Balls (12-Pack)', 29.99)">Add to Cart ➕</button>
+            </div>
+            <div class="product" data-id="3">
+                <img src="https://via.placeholder.com/150" alt="Golf Bag">
+                <p>Deluxe Golf Bag 🎒<br>$149.99</p>
+                <button onclick="addToCart(3, 'Deluxe Golf Bag', 149.99)">Add to Cart ➕</button>
+            </div>
+        </div>
+        <div id="about" class="page">
+            <h2>About Us ℹ️</h2>
+            <p>Putting Green Golf Co. is your one-stop shop for premium golf equipment. ⛳ From clubs to accessories, we cater to avid golfers and eBay resellers. Contact us at support@puttinggreengolfco.com.</p>
+        </div>
+        <div id="cart" class="page">
+            <h2>Your Cart 🛒</h2>
+            <div id="cart-items"></div>
+            <p id="cart-total">Total: $0.00</p>
+            <button onclick="clearCart()">Clear Cart 🗑️</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script>
+        // Three.js Setup for Putting Green Animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 300, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, 300);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Green (Plane)
+        const greenGeometry = new THREE.PlaneGeometry(10, 5);
+        const greenMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const green = new THREE.Mesh(greenGeometry, greenMaterial);
+        green.rotation.x = -Math.PI / 2;
+        scene.add(green);
+
+        // Hole (Cylinder)
+        const holeGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.1, 32);
+        const holeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const hole = new THREE.Mesh(holeGeometry, holeMaterial);
+        hole.position.set(4, 0.05, 0);
+        scene.add(hole);
+
+        // Flag (Pole and Cloth)
+        const poleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2, 32);
+        const poleMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+        const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+        pole.position.set(4, 1, 0);
+        scene.add(pole);
+
+        const flagGeometry = new THREE.PlaneGeometry(0.5, 0.3);
+        const flagMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
+        const flag = new THREE.Mesh(flagGeometry, flagMaterial);
+        flag.position.set(4.3, 1.8, 0);
+        flag.rotation.y = Math.PI / 2;
+        scene.add(flag);
+
+        // Golf Ball
+        const ballGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+        const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+        ball.position.set(-4, 0.1, 0);
+        scene.add(ball);
+
+        camera.position.set(0, 2, 5);
+        camera.lookAt(0, 0, 0);
+
+        // Animation
+        let ballSpeed = 0.05;
+        function animate() {
+            requestAnimationFrame(animate);
+            ball.position.x += ballSpeed;
+            if (ball.position.x > 4 || ball.position.x < -4) {
+                ballSpeed = -ballSpeed;
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, 300);
+            camera.aspect = window.innerWidth / 300;
+            camera.updateProjectionMatrix();
+        });
+
+        // Cart Management
+        let cart = [];
+
+        function addToCart(id, name, price) {
+            const item = cart.find(i => i.id ===  === id);
+            if (item) {
+                item.quantity++;
+            } else {
+                cart.push({ id, name, price, quantity: 1 });
+            }
+            updateCart();
+        }
+
+        function removeFromCart(id) {
+            const item = cart.find(i => i.id === id);
+            if (item.quantity > 1) {
+                item.quantity--;
+            } else {
+                cart = cart.filter(i => i.id !== id);
+            }
+            updateCart();
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                total += item.price * item.quantity;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <p>${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}</p>
+                    <button onclick="removeFromCart(${item.id})">Remove ➖</button>
+                `;
+                cartItems.appendChild(div);
+            });
+            document.getElementById('cart-total').textContent = `Total: $${total.toFixed(2)}`;
+        }
+
+        // Page Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Initialize
+        showPage('shop');
+        updateCart();
+    </script>
+</body>
+</html>
