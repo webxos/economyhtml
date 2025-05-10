@@ -106,12 +106,6 @@
             text-align: right;
             margin-top: 1vh;
         }
-        #canvas-container {
-            width: 100%;
-            height: 25vh;
-            margin-bottom: 2vh;
-            box-shadow: 0 0 6px #cc33ff;
-        }
         @keyframes glow {
             from { text-shadow: 2px 2px 0 #ff3333; }
             to { text-shadow: 3px 3px 0 #ff3333, 0 0 8px #ffffff; }
@@ -132,7 +126,6 @@
             <button onclick="showPage('cart')">Cart 🛒</button>
         </div>
         <div id="shop" class="page active">
-            <div id="canvas-container"></div>
             <div class="product" data-id="1">
                 <img src="https://via.placeholder.com/150" alt="Arcade Burger">
                 <p>Pixel Burger Combo 🍔<br>$12.99</p>
@@ -161,49 +154,7 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script>
-        // Three.js Setup for Arcade Machine Animation
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 300, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, 300);
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-        // Arcade Machine (Box)
-        const machineGeometry = new THREE.BoxGeometry(2, 3, 1);
-        const machineMaterial = new THREE.MeshBasicMaterial({ color: 0xcc33ff });
-        const machine = new THREE.Mesh(machineGeometry, machineMaterial);
-        scene.add(machine);
-
-        // Screen (Smaller Box)
-        const screenGeometry = new THREE.BoxGeometry(1.5, 1, 0.1);
-        const screenMaterial = new THREE.MeshBasicMaterial({ color: 0xff3333 });
-        const screen = new THREE.Mesh(screenGeometry, screenMaterial);
-        screen.position.set(0, 0.5, 0.51);
-        scene.add(screen);
-
-        camera.position.set(0, 1, 4);
-        camera.lookAt(0, 0, 0);
-
-        // Animation
-        let blink = 0;
-        function animate() {
-            requestAnimationFrame(animate);
-            machine.rotation.y += 0.01;
-            blink += 0.05;
-            screenMaterial.color.setHSL(0, 1, 0.5 + Math.sin(blink) * 0.2);
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // Resize canvas
-        window.addEventListener('resize', () => {
-            renderer.setSize(window.innerWidth, 300);
-            camera.aspect = window.innerWidth / 300;
-            camera.updateProjectionMatrix();
-        });
-
         // Cart Management
         let cart = [];
         function addToCart(id, name, price) {
