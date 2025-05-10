@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Shop premium board games at Board Game Haven. Find strategy, family, and classic games for enthusiasts and eBay resellers.">
+    <meta name="keywords" content="board games, strategy games, family games, classic board games, tabletop games, eBay board game reseller, board game shop">
+    <meta name="author" content="Board Game Haven">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Board Game Haven - Premium Board Games">
+    <meta property="og:description" content="Discover strategy, family, and classic board games at Board Game Haven. Perfect for enthusiasts and eBay resellers.">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630">
+    <meta property="og:url" content="https://www.boardgamehaven.com">
+    <meta property="og:type" content="website">
+    <title>🎲 Board Game Haven</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #1a1a1a;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+        #app {
+            width: 100%;
+            padding: 2vh;
+            background: rgba(26, 26, 26, 0.9);
+            box-shadow: 0 0 6px #66ccff;
+        }
+        h1 {
+            font-size: 5vw;
+            color: #66ccff;
+            text-shadow: 2px 2px 0 #99ff99;
+            text-align: center;
+            margin: 2vh 0;
+            animation: glow 1.5s infinite alternate;
+        }
+        h2 {
+            font-size: 3vw;
+            color: #66ccff;
+            margin: 1.5vh 0;
+        }
+        p {
+            font-size: 2vw;
+            color: #e0e0e0;
+            line-height: 1.4;
+        }
+        button {
+            background: #66ccff;
+            color: #1a1a1a;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 2vw;
+            padding: 1vh 2vw;
+            margin: 0.5vh;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 4px #99ff99;
+        }
+        button:hover {
+            background: #99ff99;
+            color: #66ccff;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2vh;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .product {
+            background: rgba(102, 204, 255, 0.1);
+            padding: 1.5vh;
+            margin: 1vh 0;
+            box-shadow: 0 0 4px #99ff99;
+            text-align: center;
+        }
+        .product img {
+            width: 25vw;
+            height: auto;
+            margin-bottom: 1vh;
+        }
+        .cart-item {
+            background: rgba(102, 204, 255, 0.1);
+            padding: 1vh;
+            margin: 1vh 0;
+            box-shadow: 0 0 4px #99ff99;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #cart-total {
+            font-size: 2vw;
+            color: #66ccff;
+            text-align: right;
+            margin-top: 1vh;
+        }
+        #canvas-container {
+            width: 100%;
+            height: 25vh;
+            margin-bottom: 2vh;
+            box-shadow: 0 0 6px #66ccff;
+        }
+        @keyframes glow {
+            from { text-shadow: 2px 2px 0 #99ff99; }
+            to { text-shadow: 3px 3px 0 #99ff99, 0 0 8px #ffffff; }
+        }
+        @media screen and (min-width: 769px) {
+            h1 { font-size: 2.5vw; }
+            h2 { font-size: 1.8vw; }
+            p, #cart-total, button, .product p, .cart-item p { font-size: 1.2vw; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>🎲 Board Game Haven</h1>
+        <div class="nav">
+            <button onclick="showPage('shop')">Shop 🃏</button>
+            <button onclick="showPage('about')">About ℹ️</button>
+            <button onclick="showPage('cart')">Cart 🛒</button>
+        </div>
+        <div id="shop" class="page active">
+            <div id="canvas-container"></div>
+            <div class="product" data-id="1">
+                <img src="https://via.placeholder.com/150" alt="Strategy Game">
+                <p>Master Strategist 🎲<br>$49.99</p>
+                <button onclick="addToCart(1, 'Master Strategist', 49.99)">Add to Cart ➕</button>
+            </div>
+            <div class="product" data-id="2">
+                <img src="https://via.placeholder.com/150" alt="Family Game">
+                <p>Family Quest 🃏<br>$29.99</p>
+                <button onclick="addToCart(2, 'Family Quest', 29.99)">Add to Cart ➕</button>
+            </div>
+            <div class="product" data-id="3">
+                <img src="https://via.placeholder.com/150" alt="Classic Game">
+                <p>Classic Chess Set ♟️<br>$39.99</p>
+                <button onclick="addToCart(3, 'Classic Chess Set', 39.99)">Add to Cart ➕</button>
+            </div>
+        </div>
+        <div id="about" class="page">
+            <h2>About Us ℹ️</h2>
+            <p>Board Game Haven offers premium board games for enthusiasts and eBay resellers. 🎲 From strategy to family fun, find your next game night favorite. Contact us at support@boardgamehaven.com.</p>
+        </div>
+        <div id="cart" class="page">
+            <h2>Your Cart 🛒</h2>
+            <div id="cart-items"></div>
+            <p id="cart-total">Total: $0.00</p>
+            <button onclick="clearCart()">Clear Cart 🗑️</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script>
+        // Three.js Setup for Chessboard Animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 300, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, 300);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Chessboard (Plane with checkered pattern)
+        const boardGeometry = new THREE.PlaneGeometry(4, 4);
+        const boardMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const board = new THREE.Mesh(boardGeometry, boardMaterial);
+        board.rotation.x = -Math.PI / 2;
+        scene.add(board);
+
+        // Checkered pattern (simplified with boxes)
+        for (let x = -2; x < 2; x += 0.5) {
+            for (let z = -2; z < 2; z += 0.5) {
+                if ((x + z) % 1 === 0) {
+                    const squareGeometry = new THREE.BoxGeometry(0.5, 0.01, 0.5);
+                    const squareMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const square = new THREE.Mesh(squareGeometry, squareMaterial);
+                    square.position.set(x + 0.25, 0.01, z + 0.25);
+                    scene.add(square);
+                }
+            }
+        }
+
+        // Pawn
+        const pawnGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.5, 32);
+        const pawnMaterial = new THREE.MeshBasicMaterial({ color: 0x66ccff });
+        const pawn = new THREE.Mesh(pawnGeometry, pawnMaterial);
+        pawn.position.set(-1.5, 0.25, 0);
+        scene.add(pawn);
+
+        camera.position.set(0, 2, 3);
+        camera.lookAt(0, 0, 0);
+
+        // Animation
+        let pawnSpeed = 0.03;
+        function animate() {
+            requestAnimationFrame(animate);
+            board.rotation.y += 0.01;
+            pawn.position.x += pawnSpeed;
+            if (pawn.position.x > 1.5 || pawn.position.x < -1.5) {
+                pawnSpeed = -pawnSpeed;
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize canvas
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, 300);
+            camera.aspect = window.innerWidth / 300;
+            camera.updateProjectionMatrix();
+        });
+
+        // Cart Management
+        let cart = [];
+        function addToCart(id, name, price) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.quantity++;
+            } else {
+                cart.push({ id, name, price, quantity: 1 });
+            }
+            updateCart();
+        }
+        function removeFromCart(id) {
+            const item = cart.find(i => i.id === id);
+            if (item.quantity > 1) {
+                item.quantity--;
+            } else {
+                cart = cart.filter(i => i.id !== id);
+            }
+            updateCart();
+        }
+        function clearCart() {
+            cart = [];
+            updateCart();
+        }
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                total += item.price * item.quantity;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <p>${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}</p>
+                    <button onclick="removeFromCart(${item.id})">Remove ➖</button>
+                `;
+                cartItems.appendChild(div);
+            });
+            document.getElementById('cart-total').textContent = `Total: $${total.toFixed(2)}`;
+        }
+
+        // Page Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Initialize
+        showPage('shop');
+        updateCart();
+    </script>
+</body>
+</html>
