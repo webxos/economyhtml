@@ -106,12 +106,6 @@
             text-align: right;
             margin-top: 1vh;
         }
-        #canvas-container {
-            width: 100%;
-            height: 25vh;
-            margin-bottom: 2vh;
-            box-shadow: 0 0 6px #66ccff;
-        }
         @keyframes glow {
             from { text-shadow: 2px 2px 0 #99ff99; }
             to { text-shadow: 3px 3px 0 #99ff99, 0 0 8px #ffffff; }
@@ -132,7 +126,6 @@
             <button onclick="showPage('cart')">Cart 🛒</button>
         </div>
         <div id="shop" class="page active">
-            <div id="canvas-container"></div>
             <div class="product" data-id="1">
                 <img src="https://via.placeholder.com/150" alt="Strategy Game">
                 <p>Master Strategist 🎲<br>$49.99</p>
@@ -161,65 +154,7 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script>
-        // Three.js Setup for Chessboard Animation
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 300, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, 300);
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-        // Chessboard (Plane with checkered pattern)
-        const boardGeometry = new THREE.PlaneGeometry(4, 4);
-        const boardMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        const board = new THREE.Mesh(boardGeometry, boardMaterial);
-        board.rotation.x = -Math.PI / 2;
-        scene.add(board);
-
-        // Checkered pattern (simplified with boxes)
-        for (let x = -2; x < 2; x += 0.5) {
-            for (let z = -2; z < 2; z += 0.5) {
-                if ((x + z) % 1 === 0) {
-                    const squareGeometry = new THREE.BoxGeometry(0.5, 0.01, 0.5);
-                    const squareMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                    const square = new THREE.Mesh(squareGeometry, squareMaterial);
-                    square.position.set(x + 0.25, 0.01, z + 0.25);
-                    scene.add(square);
-                }
-            }
-        }
-
-        // Pawn
-        const pawnGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.5, 32);
-        const pawnMaterial = new THREE.MeshBasicMaterial({ color: 0x66ccff });
-        const pawn = new THREE.Mesh(pawnGeometry, pawnMaterial);
-        pawn.position.set(-1.5, 0.25, 0);
-        scene.add(pawn);
-
-        camera.position.set(0, 2, 3);
-        camera.lookAt(0, 0, 0);
-
-        // Animation
-        let pawnSpeed = 0.03;
-        function animate() {
-            requestAnimationFrame(animate);
-            board.rotation.y += 0.01;
-            pawn.position.x += pawnSpeed;
-            if (pawn.position.x > 1.5 || pawn.position.x < -1.5) {
-                pawnSpeed = -pawnSpeed;
-            }
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // Resize canvas
-        window.addEventListener('resize', () => {
-            renderer.setSize(window.innerWidth, 300);
-            camera.aspect = window.innerWidth / 300;
-            camera.updateProjectionMatrix();
-        });
-
         // Cart Management
         let cart = [];
         function addToCart(id, name, price) {
