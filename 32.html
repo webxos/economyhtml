@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Retro Game Emporium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #1a1a1a;
+            color: #00cc99;
+            overflow-x: hidden;
+            overflow-y: auto;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        #app {
+            width: 100vw;
+            max-width: 100%;
+            padding: 2vh;
+            background: rgba(26, 26, 26, 0.9);
+            box-shadow: 0 0 8px #ff9933;
+            text-shadow: 1px 1px 2px #ff9933;
+        }
+        h1 {
+            font-size: 5vw;
+            color: #ff9933;
+            text-shadow: 2px 2px 0 #00cc99, 0 0 8px #ffffff;
+            margin: 2vh 0;
+            text-align: center;
+            animation: glow 1.5s infinite alternate;
+        }
+        h2 {
+            font-size: 3.5vw;
+            color: #ff9933;
+            text-shadow: 1px 1px 2px #00cc99;
+            margin: 1.5vh 0;
+        }
+        p {
+            font-size: 2.5vw;
+            color: #cccccc;
+            text-shadow: 0.5px 0.5px 1px #ff9933;
+            line-height: 1.5;
+        }
+        button {
+            background: #ff9933;
+            color: #00cc99;
+            padding: 1vh 2vw;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 2.5vw;
+            margin: 0.5vh;
+            cursor: pointer;
+            box-shadow: 0 0 4px #00cc99;
+            border: none;
+            transition: all 0.2s;
+        }
+        button:hover, button:active {
+            background: #00cc99;
+            color: #ff9933;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2vh;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .product {
+            background: rgba(255, 153, 51, 0.1);
+            padding: 2vh;
+            margin: 1.5vh 0;
+            box-shadow: 0 0 4px #00cc99;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .product img {
+            width: 30vw;
+            height: auto;
+            margin-bottom: 1vh;
+        }
+        .product p {
+            font-size: 2vw;
+            text-align: center;
+        }
+        .cart-item {
+            background: rgba(255, 153, 51, 0.1);
+            padding: 1.5vh;
+            margin: 1vh 0;
+            box-shadow: 0 0 4px #00cc99;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+`"cart-item p {
+            font-size: 2vw;
+        }
+        #cart-total {
+            font-size: 2.5vw;
+            color: #ff9933;
+            text-align: right;
+            margin-top: 1vh;
+        }
+        #canvas-container {
+            width: 100%;
+            height: 30vh;
+            margin-bottom: 2vh;
+            box-shadow: 0 0 8px #ff9933;
+        }
+        @keyframes glow {
+            from { text-shadow: 2px 2px 0 #00cc99, 0 0 8px #ffffff; }
+            to { text-shadow: 3px 3px 0 #00cc99, 0 0 12px #ffffff; }
+        }
+        @media screen and (min-width: 769px) {
+            h1 { font-size: 2.5vw; }
+            h2 { font-size: 2vw; }
+            p { font-size: 1.5vw; }
+            button { font-size: 1.5vw; }
+            .product p { font-size: 1.2vw; }
+            .cart-item p { font-size: 1.2vw; }
+            #cart-total { font-size: 1.5vw; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>🕹️ Retro Game Emporium</h1>
+        <div class="nav">
+            <button onclick="showPage('shop')">Shop 🛒</button>
+            <button onclick="showPage('about')">About ℹ️</button>
+            <button onclick="showPage('cart')">Cart 🛍️</button>
+        </div>
+        <div id="shop" class="page active">
+            <div id="canvas-container"></div>
+            <div class="product" data-id="1">
+                <img src="https://via.placeholder.com/150" alt="NES Cartridge">
+                <p>NES Super Adventure 🎮<br>$29.99</p>
+                <button onclick="addToCart(1, 'NES Super Adventure', 29.99)">Add to Cart ➕</button>
+            </div>
+            <div class="product" data-id="2">
+                <img src="https://via.placeholder.com/150" alt="Game Boy Cartridge">
+                <p>Game Boy Quest 🌟<br>$19.99</p>
+                <button onclick="addToCart(2, 'Game Boy Quest', 19.99)">Add to Cart ➕</button>
+            </div>
+            <div class="product" data-id="3">
+                <img src="https://via.placeholder.com/150" alt="SNES Cartridge">
+                <p>SNES Epic Saga 🏰<br>$39.99</p>
+                <button onclick="addToCart(3, 'SNES Epic Saga', 39.99)">Add to Cart ➕</button>
+            </div>
+        </div>
+        <div id="about" class="page">
+            <h2>About Us ℹ️</h2>
+            <p>Welcome to Retro Game Emporium! 🕹️ We specialize in vintage video-games from the 80s and 90s. Our mission is to bring back the nostalgia of classic gaming with authentic cartridges and consoles. 📼 Contact us at support@retrogameemporium.com.</p>
+        </div>
+        <div id="cart" class="page">
+            <h2>Your Cart 🛍️</h2>
+            <div id="cart-items"></div>
+            <p id="cart-total">Total: $0.00</p>
+            <button onclick="clearCart()">Clear Cart 🗑️</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script>
+        // Three.js Setup for 3D Cartridge Animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 300, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, 300);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const geometry = new THREE.BoxGeometry(2, 3, 0.5);
+        const material = new THREE.MeshBasicMaterial({ color: 0xff9933 });
+        const cartridge = new THREE.Mesh(geometry, material);
+        scene.add(cartridge);
+
+        camera.position.z = 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            cartridge.rotation.y += 0.02;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, 300);
+            camera.aspect = window.innerWidth / 300;
+            camera.updateProjectionMatrix();
+        });
+
+        // Cart Management
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function addToCart(id, name, price) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.quantity++;
+            } else {
+                cart.push({ id, name, price, quantity: 1 });
+            }
+            saveCart();
+            updateCart();
+            alert(`${name} added to cart!`);
+        }
+
+        function removeFromCart(id) {
+            const itemIndex = cart.findIndex(i => i.id === id);
+            if (itemIndex !== -1) {
+                const item = cart[itemIndex];
+                if (item.quantity > 1) {
+                    item.quantity--;
+                } else {
+                    cart.splice(itemIndex, 1);
+                }
+                saveCart();
+                updateCart();
+                alert(`${item.name} removed from cart!`);
+            }
+        }
+
+        function clearCart() {
+            cart = [];
+            saveCart();
+            updateCart();
+            alert('Cart cleared!');
+        }
+
+        function saveCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                total += item.price * item.quantity;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <p>${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}</p>
+                    <button onclick="removeFromCart(${item.id})">Remove ➖</button>
+                `;
+                cartItems.appendChild(div);
+            });
+            document.getElementById('cart-total').textContent = `Total: $${total.toFixed(2)}`;
+        }
+
+        // Page Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Initialize
+        showPage('shop');
+        updateCart();
+    </script>
+</body>
+</html>
