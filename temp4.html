@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Shop premium golf equipment at Putting Green Golf Co. Find golf clubs, balls, bags, and accessories for avid golfers. Perfect for eBay resellers and golf enthusiasts.">
+    <meta name="description" content="Shop premium golf equipment at Putting Green Golf Co. Find golf clubs, balls, bags, and accessories for avid golfers. Perfect for eBay resellers.">
     <meta name="keywords" content="golf equipment, golf clubs, golf balls, golf bags, golf accessories, vintage golf gear, golf shop, eBay golf reseller, golf store online">
     <meta name="author" content="Putting Green Golf Co.">
     <meta name="robots" content="index, follow">
@@ -24,54 +24,47 @@
             font-family: 'Press Start 2P', cursive;
             background: #1a3c34;
             color: #ffffff;
-            overflow-x: hidden;
-            overflow-y: auto;
             height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            overflow-x: hidden;
         }
         #app {
-            width: 100vw;
-            max-width: 100%;
+            width: 100%;
             padding: 2vh;
             background: rgba(26, 60, 52, 0.9);
-            box-shadow: 0 0 8px #ffd700;
-            text-shadow: 1px 1px 2px #ffd700;
+            box-shadow: 0 0 6px #ffd700;
         }
         h1 {
             font-size: 5vw;
             color: #ffd700;
-            text-shadow: 2px 2px 0 #ffffff, 0 0 8px #00ff00;
-            margin: 2vh 0;
+            text-shadow: 2px 2px 0 #ffffff;
             text-align: center;
+            margin: 2vh 0;
             animation: glow 1.5s infinite alternate;
         }
         h2 {
-            font-size: 3.5vw;
+            font-size: 3vw;
             color: #ffd700;
-            text-shadow: 1px 1px 2px #ffffff;
             margin: 1.5vh 0;
         }
         p {
-            font-size: 2.5vw;
+            font-size: 2vw;
             color: #e0e0e0;
-            text-shadow: 0.5px 0.5px 1px #ffd700;
-            line-height: 1.5;
+            line-height: 1.4;
         }
         button {
             background: #ffd700;
             color: #1a3c34;
-            padding: 1vh 2vw;
             font-family: 'Press Start 2P', cursive;
-            font-size: 2.5vw;
+            font-size: 2vw;
+            padding: 1vh 2vw;
             margin: 0.5vh;
+            border: none;
             cursor: pointer;
             box-shadow: 0 0 4px #ffffff;
-            border: none;
-            transition: all 0.2s;
         }
-        button:hover, button:active {
+        button:hover {
             background: #ffffff;
             color: #ffd700;
         }
@@ -88,59 +81,45 @@
         }
         .product {
             background: rgba(255, 215, 0, 0.1);
-            padding: 2vh;
-            margin: 1.5vh 0;
+            padding: 1.5vh;
+            margin: 1vh 0;
             box-shadow: 0 0 4px #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-align: center;
         }
         .product img {
-            width: 30vw;
+            width: 25vw;
             height: auto;
             margin-bottom: 1vh;
         }
-        .product p {
-            font-size: 2vw;
-            text-align: center;
-        }
         .cart-item {
             background: rgba(255, 215, 0, 0.1);
-            padding: 1.5vh;
+            padding: 1vh;
             margin: 1vh 0;
             box-shadow: 0 0 4px #ffffff;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .cart-item p {
-            font-size: 2vw;
-        }
         #cart-total {
-            font-size: 2.5vw;
+            font-size: 2vw;
             color: #ffd700;
             text-align: right;
             margin-top: 1vh;
         }
         #canvas-container {
             width: 100%;
-            height: 30vh;
+            height: 25vh;
             margin-bottom: 2vh;
-            box-shadow: 0 0 8px #ffd700;
-            position: relative;
+            box-shadow: 0 0 6px #ffd700;
         }
         @keyframes glow {
-            from { text-shadow: 2px 2px 0 #ffffff, 0 0 8px #00ff00; }
-            to { text-shadow: 3px 3px 0 #ffffff, 0 0 12px #00ff00; }
+            from { text-shadow: 2px 2px 0 #ffffff; }
+            to { text-shadow: 3px 3px 0 #ffffff, 0 0 8px #00ff00; }
         }
         @media screen and (min-width: 769px) {
             h1 { font-size: 2.5vw; }
-            h2 { font-size: 2vw; }
-            p { font-size: 1.5vw; }
-            button { font-size: 1.5vw; }
-            .product p { font-size: 1.2vw; }
-            .cart-item p { font-size: 1.2vw; }
-            #cart-total { font-size: 1.5vw; }
+            h2 { font-size: 1.8vw; }
+            p, #cart-total, button, .product p, .cart-item p { font-size: 1.2vw; }
         }
     </style>
 </head>
@@ -172,7 +151,7 @@
         </div>
         <div id="about" class="page">
             <h2>About Us ℹ️</h2>
-            <p>Putting Green Golf Co. is your one-stop shop for premium golf equipment. ⛳ From clubs to accessories, we cater to avid golfers and eBay resellers. Contact us at support@puttinggreengolfco.com.</p>
+            <p>Putting Green Golf Co. offers premium golf equipment for avid golfers and eBay resellers. ⛳ Shop clubs, balls, and accessories to elevate your game. Contact us at support@puttinggreengolfco.com.</p>
         </div>
         <div id="cart" class="page">
             <h2>Your Cart 🛒</h2>
@@ -252,7 +231,7 @@
         let cart = [];
 
         function addToCart(id, name, price) {
-            const item = cart.find(i => i.id ===  === id);
+            const item = cart.find(i => i.id === id);
             if (item) {
                 item.quantity++;
             } else {
