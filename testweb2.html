@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Green webXOS 2025 Desk - 3D Office Scene</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000000;
+            color: #00ff00;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -200px;
+            width: 200px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            transition: left 0.3s ease;
+            z-index: 10;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar h1 {
+            font-size: 1.8rem;
+            color: #00ff00;
+            margin-bottom: 15px;
+            margin-top: 50px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin: 10px 0;
+        }
+
+        .sidebar a {
+            color: #00ff00;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .sidebar a:hover {
+            color: #00cc00;
+        }
+
+        .menu-toggle {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 8px;
+            background: #00ff00;
+            color: #000000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 11;
+            touch-action: none;
+        }
+
+        .text-overlay {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            color: #00ff00;
+            font-size: 1rem;
+            z-index: 10;
+            max-width: 80%;
+        }
+
+        .center-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            color: #00ff00;
+            font-size: 1.5rem;
+            text-align: center;
+            z-index: 10;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .center-overlay button {
+            margin: 5px;
+            padding: 5px 10px;
+            background: #00ff00;
+            color: #000000;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .center-overlay button.remove {
+            background: #ff5555;
+            color: #ffffff;
+        }
+
+        .center-overlay ul {
+            list-style: none;
+            margin: 10px 0;
+            padding: 0;
+        }
+
+        .center-overlay li {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shop-item {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            width: 300px;
+            text-align: left;
+        }
+
+        .shop-item h3 {
+            color: #00ff00;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .shop-item p {
+            color: #00ff00;
+            font-size: 0.9rem;
+            margin: 5px 0;
+        }
+
+        .shop-item button {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 150px;
+                left: -150px;
+            }
+
+            .sidebar h1 {
+                font-size: 1.3rem;
+                margin-top: 40px;
+            }
+
+            .sidebar a {
+                font-size: 0.9rem;
+                padding: 8px;
+            }
+
+            .menu-toggle {
+                padding: 6px;
+                font-size: 0.8rem;
+            }
+
+            .text-overlay {
+                font-size: 0.9rem;
+                padding: 8px;
+                bottom: 10px;
+                left: 10px;
+            }
+
+            .center-overlay {
+                font-size: 1.2rem;
+                padding: 10px;
+            }
+
+            .center-overlay button {
+                font-size: 0.8rem;
+                padding: 4px 8px;
+            }
+
+            .shop-item {
+                width: 200px;
+            }
+
+            .shop-item h3 {
+                font-size: 1rem;
+            }
+
+            .shop-item p {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    <div class="sidebar" id="sidebar">
+        <h1>webXOS 2025</h1>
+        <ul>
+            <li><a onclick="navigateTo('about')">About</a></li>
+            <li><a onclick="navigateTo('tools')">Tools</a></li>
+            <li><a onclick="navigateTo('ai_agents')">AI Agents</a></li>
+            <li><a onclick="navigateTo('games')">Games</a></li>
+            <li><a onclick="navigateTo('more_info')">More Info</a></li>
+            <li><a onclick="navigateTo('copyright')">Copyright</a></li>
+        </ul>
+    </div>
+    <div class="text-overlay" id="textOverlay"></div>
+    <div class="center-overlay" id="centerOverlay"></div>
+
+    <!-- Three.js dependency -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+    <script>
+        // Scene setup
+        let scene, camera, renderer;
+        try {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true, powerPreference: 'low-power' });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+            renderer.setClearColor(0x000000, 1);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        } catch (e) {
+            console.error("Renderer setup failed:", e);
+            document.body.innerHTML = "<p>Error initializing WebGL. Please check your browser or device.</p>";
+            return;
+        }
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x001100, 0.3);
+        scene.add(ambientLight);
+
+        const neonLight1 = new THREE.PointLight(0x00ff00, 1, 5);
+        neonLight1.position.set(0, 3, -1);
+        neonLight1.castShadow = true;
+        neonLight1.shadow.mapSize.set(512, 512);
+        scene.add(neonLight1);
+
+        const neonLight2 = new THREE.PointLight(0x00ff00, 0.8, 5);
+        neonLight2.position.set(-2, 2, 0);
+        neonLight2.castShadow = true;
+        neonLight2.shadow.mapSize.set(512, 512);
+        scene.add(neonLight2);
+
+        const neonLight3 = new THREE.PointLight(0x00ff00, 0.6, 5);
+        neonLight3.position.set(2, 2, -4);
+        neonLight3.castShadow = true;
+        neonLight3.shadow.mapSize.set(512, 512);
+        scene.add(neonLight3);
+
+        // Room geometry
+        const roomMaterial = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, shininess: 50 });
+        const floorMaterial = new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 30 });
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        const backWall = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), roomMaterial);
+        backWall.position.set(0, 2.5, -5);
+        backWall.receiveShadow = true;
+        scene.add(backWall);
+
+        const sideWall = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), roomMaterial);
+        sideWall.position.set(-5, 2.5, 0);
+        sideWall.rotation.y = Math.PI / 2;
+        sideWall.receiveShadow = true;
+        scene.add(sideWall);
+
+        const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), roomMaterial);
+        ceiling.position.set(0, 5, 0);
+        ceiling.rotation.x = Math.PI / 2;
+        scene.add(ceiling);
+
+        // Neon green webXOS 2025 logo (placeholder plane)
+        const logoMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 1.5 });
+        const logoPlane = new THREE.Mesh(new THREE.PlaneGeometry(4, 1), logoMaterial);
+        logoPlane.position.set(0, 2.5, -4.95);
+        scene.add(logoPlane);
+
+        // Matrix falling text effect on side wall
+        const matrixMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.8 });
+        const matrixGeometry = new THREE.PlaneGeometry(10, 5);
+        const matrixPlane = new THREE.Mesh(matrixGeometry, matrixMaterial);
+        matrixPlane.position.set(-4.95, 2.5, 0);
+        matrixPlane.rotation.y = Math.PI / 2;
+        scene.add(matrixPlane);
+
+        let matrixTime = 0;
+        function updateMatrixEffect() {
+            matrixTime += 0.05;
+            matrixMaterial.opacity = 0.8 + Math.sin(matrixTime) * 0.2;
+        }
+
+        // Neural dot cluster network on ceiling
+        const neuralMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const neuralGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+        const neuralMesh = new THREE.InstancedMesh(neuralGeometry, neuralMaterial, 50);
+        const dummy = new THREE.Object3D();
+        for (let i = 0; i < 50; i++) {
+            dummy.position.set(
+                (Math.random() - 0.5) * 8,
+                4.95,
+                (Math.random() - 0.5) * 8
+            );
+            dummy.updateMatrix();
+            neuralMesh.setMatrixAt(i, dummy.matrix);
+        }
+        scene.add(neuralMesh);
+
+        // Border lighting on floor
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 });
+        const points = [
+            new THREE.Vector3(-5, 0.02, -5),
+            new THREE.Vector3(5, 0.02, -5),
+            new THREE.Vector3(5, 0.02, 5),
+            new THREE.Vector3(-5, 0.02, 5),
+            new THREE.Vector3(-5, 0.02, -5)
+        ];
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        const borderLine = new THREE.Line(lineGeometry, lineMaterial);
+        scene.add(borderLine);
+
+        // Rug on floor
+        const rugMaterial = new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 20 });
+        const rug = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), rugMaterial);
+        rug.rotation.x = -Math.PI / 2;
+        rug.position.set(0, 0.01, 0);
+        rug.receiveShadow = true;
+        scene.add(rug);
+
+        // Enhanced Desk
+        const deskMaterial = new THREE.MeshPhongMaterial({ color: 0x2a2a2a, shininess: 100 });
+        const deskTop = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 1.2, 1, 1, 1), deskMaterial);
+        deskTop.position.set(0, 0.75, -1);
+        deskTop.castShadow = true;
+        deskTop.receiveShadow = true;
+        scene.add(deskTop);
+
+        // Desk legs
+        const deskLegMaterial = new THREE.MeshPhongMaterial({ color: 0x252525, shininess: 50 });
+        const deskLegGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.7, 8);
+        const deskLeg1 = new THREE.Mesh(deskLegGeometry, deskLegMaterial);
+        deskLeg1.position.set(-1.1, 0.35, -0.5);
+        deskLeg1.castShadow = true;
+        scene.add(deskLeg1);
+
+        const deskLeg2 = new THREE.Mesh(deskLegGeometry, deskLegMaterial);
+        deskLeg2.position.set(1.1, 0.35, -0.5);
+        deskLeg2.castShadow = true;
+        scene.add(deskLeg2);
+
+        const deskLeg3 = new THREE.Mesh(deskLegGeometry, deskLegMaterial);
+        deskLeg3.position.set(-1.1, 0.35, -1.5);
+        deskLeg3.castShadow = true;
+        scene.add(deskLeg3);
+
+        const deskLeg4 = new THREE.Mesh(deskLegGeometry, deskLegMaterial);
+        deskLeg4.position.set(1.1, 0.35, -1.5);
+        deskLeg4.castShadow = true;
+        scene.add(deskLeg4);
+
+        // Neon glow strip under desk
+        const deskGlowMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 0.8 });
+        const deskGlow = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.02, 1.1), deskGlowMaterial);
+        deskGlow.position.set(0, 0.65, -1);
+        scene.add(deskGlow);
+
+        // Desk drawer
+        const drawerMaterial = new THREE.MeshPhongMaterial({ color: 0x252525, shininess: 50 });
+        const drawer = new THREE.Mesh(new THREE.BoxGeometry(1, 0.6, 1), drawerMaterial);
+        drawer.position.set(0.75, 0.3, -1);
+        drawer.castShadow = true;
+        scene.add(drawer);
+
+        // Realistic Monitor
+        const monitorMaterial = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, shininess: 100, emissive: 0x00ff00, emissiveIntensity: 0.5 });
+        const monitorScreen = new THREE.Mesh(new THREE.BoxGeometry(1, 0.6, 0.05), monitorMaterial);
+        monitorScreen.position.set(0, 1.2, -1.4);
+        monitorScreen.rotation.y = Math.PI / 16;
+        monitorScreen.castShadow = true;
+        scene.add(monitorScreen);
+
+        const monitorStandMaterial = new THREE.MeshPhongMaterial({ color: 0x252525, shininess: 50 });
+        const monitorStand = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.1), monitorStandMaterial);
+        monitorStand.position.set(0, 0.95, -1.4);
+        monitorStand.castShadow = true;
+        scene.add(monitorStand);
+
+        // Realistic Keyboard
+        const keyboardBaseMaterial = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, shininess: 80, emissive: 0x00ff00, emissiveIntensity: 0.3 });
+        const keyboardBase = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.3), keyboardBaseMaterial);
+        keyboardBase.position.set(0, 0.85, -0.8);
+        keyboardBase.castShadow = true;
+        scene.add(keyboardBase);
+
+        const keyMaterial = new THREE.MeshPhongMaterial({ color: 0x333333, shininess: 60 });
+        const keyGeometry = new THREE.BoxGeometry(0.04, 0.02, 0.04);
+        const keys = new THREE.InstancedMesh(keyGeometry, keyMaterial, 30);
+        const keyDummy = new THREE.Object3D();
+        let keyIndex = 0;
+        for (let x = -0.35; x <= 0.35; x += 0.05) {
+            for (let z = -0.1; z <= 0.1; z += 0.05) {
+                if (keyIndex >= 30) break;
+                keyDummy.position.set(x, 0.88, z - 0.8);
+                keyDummy.updateMatrix();
+                keys.setMatrixAt(keyIndex++, keyDummy.matrix);
+            }
+        }
+        keys.castShadow = true;
+        scene.add(keys);
+
+        // Small plant on desk
+        const plantPotMaterial = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, shininess: 60, emissive: 0x00ff00, emissiveIntensity: 0.4 });
+        const plantPot = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.2, 16), plantPotMaterial);
+        plantPot.position.set(-0.8, 0.85, -1.2);
+        plantPot.castShadow = true;
+        scene.add(plantPot);
+
+        const plantLeavesMaterial = new THREE.MeshPhongMaterial({ color: 0x2a3a2a, shininess: 30 });
+        const plantLeaves = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), plantLeavesMaterial);
+        plantLeaves.position.set(-0.8, 1, -1.2);
+        plantLeaves.castShadow = true;
+        scene.add(plantLeaves);
+
+        // Chair
+        const chairSeatMaterial = new THREE.MeshPhongMaterial({ color: 0x1a2a1a, shininess: 80 });
+        const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.5), chairSeatMaterial);
+        chairSeat.position.set(-0.5, 0.5, 0);
+        chairSeat.castShadow = true;
+        scene.add(chairSeat);
+
+        const chairBackMaterial = new THREE.MeshPhongMaterial({ color: 0x1a2a1a, shininess: 80 });
+        const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.1), chairBackMaterial);
+        chairBack.position.set(-0.5, 0.8, 0.2);
+        chairBack.rotation.x = -Math.PI / 8;
+        chairBack.castShadow = true;
+        scene.add(chairBack);
+
+        const chairLegMaterial = new THREE.MeshPhongMaterial({ color: 0x252525, shininess: 50 });
+        const chairLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.4, 8), chairLegMaterial);
+        chairLeg.position.set(-0.5, 0.25, 0);
+        chairLeg.castShadow = true;
+        scene.add(chairLeg);
+
+        // webXOS 2025 Bed
+        const bedFrameMaterial = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, shininess: 80, emissive: 0x00ff00, emissiveIntensity: 0.3 });
+        const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(2, 0.3, 4), bedFrameMaterial);
+        bedFrame.position.set(3, 0.15, 2);
+        bedFrame.castShadow = true;
+        scene.add(bedFrame);
+
+        const mattressMaterial = new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 20 });
+        const mattress = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.2, 3.9), mattressMaterial);
+        mattress.position.set(3, 0.35, 2);
+        mattress.castShadow = true;
+        scene.add(mattress);
+
+        const bedGlowMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 0.8 });
+        const bedGlow = new THREE.Mesh(new THREE.BoxGeometry(2, 0.02, 4), bedGlowMaterial);
+        bedGlow.position.set(3, 0.25, 2);
+        scene.add(bedGlow);
+
+        // Realistic Laptop on desk
+        const laptopMaterial = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, shininess: 90, emissive: 0x00ff00, emissiveIntensity: 0.4 });
+        const laptopBase = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.3), laptopMaterial);
+        laptopBase.position.set(0.8, 0.85, -1.2);
+        laptopBase.castShadow = true;
+        scene.add(laptopBase);
+
+        const laptopScreen = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.02), laptopMaterial);
+        laptopScreen.position.set(0.8, 1, -1.2);
+        laptopScreen.rotation.x = -Math.PI / 4;
+        laptopScreen.castShadow = true;
+        scene.add(laptopScreen);
+
+        const laptopHinge = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.5, 8), laptopMaterial);
+        laptopHinge.position.set(0.8, 0.85, -1.35);
+        laptopHinge.rotation.z = Math.PI / 2;
+        laptopHinge.castShadow = true;
+        scene.add(laptopHinge);
+
+        // Shop items and cart logic
+        const shopItems = [
+            { name: "Keyboard", title: "Neon Green Keyboard", price: 50, mesh: keyboardBase, description: "A futuristic keyboard with neon green glow, perfect for late-night coding sessions." },
+            { name: "Plant", title: "Glowing Plant", price: 20, mesh: plantPot, description: "A small plant with a neon green pot, adding a touch of nature to your desk." },
+            { name: "Laptop", title: "Neon Green Laptop", price: 200, mesh: laptopBase, description: "A sleek laptop with neon green glow, ideal for mobile hacking." }
+        ];
+
+        let cart = [];
+
+        function addToCart(itemName) {
+            const item = shopItems.find(i => i.name === itemName);
+            if (item) {
+                cart.push({ name: item.name, price: item.price });
+                if (currentPage === 'cart') {
+                    updateCartPage();
+                }
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartPage();
+        }
+
+        function updateCartPage() {
+            const centerOverlay = document.getElementById('centerOverlay');
+            const textOverlay = document.getElementById('textOverlay');
+            if (cart.length === 0) {
+                centerOverlay.innerHTML = "Your Cart<br>Cart is empty";
+                textOverlay.innerText = "Cart: No items";
+            } else {
+                let total = cart.reduce((sum, item) => sum + item.price, 0);
+                let cartHtml = "Your Cart<ul>";
+                cart.forEach((item, index) => {
+                    cartHtml += `<li>${item.name} - $${item.price} <button class="remove" onclick="removeFromCart(${index})">Remove</button></li>`;
+                });
+                cartHtml += `</ul>Total: $${total}`;
+                centerOverlay.innerHTML = cartHtml;
+                textOverlay.innerText = `Cart: ${cart.length} item(s), Total: $${total}`;
+            }
+        }
+
+        // Page navigation and camera positions
+        const pages = {
+            home: {
+                cameraPos: new THREE.Vector3(3, 4, 3),
+                lookAt: new THREE.Vector3(0, 0.75, -1),
+                text: "Welcome to webXOS 2025",
+                centerText: "Welcome to webXOS 2025"
+            },
+            shop: {
+                cameraPos: new THREE.Vector3(1, 3, 2),
+                lookAt: new THREE.Vector3(0, 0.85, -0.8),
+                text: "Shop Items:\nNeon Green Keyboard - $50\nGlowing Plant - $20\nNeon Green Laptop - $200",
+                centerText: `Shop Now<br>
+                    <div class="shop-item">
+                        <h3>Neon Green Keyboard</h3>
+                        <p>A futuristic keyboard with neon green glow, perfect for late-night coding sessions.</p>
+                        <p>Price: $50</p>
+                        <button onclick="addToCart('Keyboard')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Glowing Plant</h3>
+                        <p>A small plant with a neon green pot, adding a touch of nature to your desk.</p>
+                        <p>Price: $20</p>
+                        <button onclick="addToCart('Plant')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Neon Green Laptop</h3>
+                        <p>A sleek laptop with neon green glow, ideal for mobile hacking.</p>
+                        <p>Price: $200</p>
+                        <button onclick="addToCart('Laptop')">Add to Cart</button>
+                    </div>`
+            },
+            cart: {
+                cameraPos: new THREE.Vector3(-2, 3, 3),
+                lookAt: new THREE.Vector3(-0.5, 0.5, 0),
+                text: "Cart: No items",
+                centerText: "Your Cart<br>Cart is empty"
+            },
+            about: {
+                cameraPos: new THREE.Vector3(-3, 4, -1),
+                lookAt: new THREE.Vector3(0, 2, -4.8),
+                text: "About: A neon green hacker workspace\nThis is a custom webXOS 2025 template designed for a futuristic, neon-lit experience.",
+                centerText: "About webXOS 2025"
+            },
+            tools: {
+                cameraPos: new THREE.Vector3(1, 3, 2),
+                lookAt: new THREE.Vector3(0, 0.85, -0.8),
+                text: "Tools for webXOS 2025",
+                centerText: "Tools"
+            },
+            ai_agents: {
+                cameraPos: new THREE.Vector3(-2, 3, 3),
+                lookAt: new THREE.Vector3(-0.5, 0.5, 0),
+                text: "AI Agents for webXOS 2025",
+                centerText: "AI Agents"
+            },
+            games: {
+                cameraPos: new THREE.Vector3(-3, 4, -1),
+                lookAt: new THREE.Vector3(0, 2, -4.8),
+                text: "Games in webXOS 2025",
+                centerText: "Games"
+            },
+            more_info: {
+                cameraPos: new THREE.Vector3(0, 3, 4),
+                lookAt: new THREE.Vector3(0, 0.75, -1),
+                text: "More Info about webXOS 2025",
+                centerText: "More Info"
+            },
+            copyright: {
+                cameraPos: new THREE.Vector3(2, 3, 2),
+                lookAt: new THREE.Vector3(0, 0.75, -1),
+                text: "Copyright webXOS 2025",
+                centerText: "Copyright"
+            }
+        };
+
+        let currentPage = 'home';
+
+        function navigateTo(page) {
+            if (!pages[page]) {
+                console.error(`Page ${page} not found`);
+                return;
+            }
+            currentPage = page;
+            const pageData = pages[page];
+
+            // Highlight shop items on shop page
+            shopItems.forEach(item => {
+                item.mesh.material.emissiveIntensity = page === 'shop' ? 1.0 : 0.3;
+            });
+
+            try {
+                camera.position.copy(pageData.cameraPos);
+                camera.lookAt(pageData.lookAt);
+                document.getElementById('textOverlay').innerText = pageData.text;
+                document.getElementById('centerOverlay').innerHTML = page === 'cart' ? pages.cart.centerText : pageData.centerText;
+
+                if (page === 'cart') {
+                    updateCartPage();
+                }
+            } catch (e) {
+                console.error("Navigation error:", e);
+            }
+            toggleMenu();
+        }
+
+        // Initial page load
+        try {
+            navigateTo('home');
+        } catch (e) {
+            console.error("Initial navigation failed:", e);
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            updateMatrixEffect();
+            renderer.render(scene, camera);
+        }
+        try {
+            animate();
+        } catch (e) {
+            console.error("Animation loop failed:", e);
+        }
+
+        // Responsive handling
+        window.addEventListener('resize', () => {
+            try {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            } catch (e) {
+                console.error("Resize handler failed:", e);
+            }
+        });
+
+        // Menu toggle
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
