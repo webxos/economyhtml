@@ -27,12 +27,11 @@
         .sidebar {
             position: fixed;
             top: 0;
-            left: -250px;
-            width: 250px;
+            left: -200px; /* Simplified width for performance */
+            width: 200px;
             height: 100vh;
             background: rgba(0, 0, 0, 0.85);
-            padding: 20px;
-            transition: left 0.3s ease;
+            padding: 15px; /* Reduced padding */
             z-index: 10;
         }
 
@@ -41,10 +40,9 @@
         }
 
         .sidebar h1 {
-            font-size: 2rem;
+            font-size: 1.8rem; /* Reduced size */
             color: #00ffcc;
-            text-shadow: 0 0 10px #00ffcc;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .sidebar ul {
@@ -52,92 +50,67 @@
         }
 
         .sidebar li {
-            margin: 15px 0;
+            margin: 10px 0; /* Reduced margin */
         }
 
         .sidebar a {
             color: #aaa6c3;
             text-decoration: none;
-            font-size: 1.2rem;
-            transition: color 0.3s ease;
-            display: block; /* Ensure full tap area for mobile */
+            font-size: 1.1rem; /* Reduced size */
+            display: block;
             padding: 5px;
-        }
-
-        .sidebar a:hover {
-            color: #00ffcc;
-            text-shadow: 0 0 5px #00ffcc;
         }
 
         .menu-toggle {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px;
+            top: 15px; /* Adjusted for smaller screens */
+            left: 15px;
+            padding: 8px; /* Reduced padding */
             background: #00ffcc;
             color: #050816;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             z-index: 11;
-            touch-action: none; /* Prevent scrolling on touch */
-        }
-
-        .glow-button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #00ffcc;
-            color: #050816;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px #00ffcc;
-        }
-
-        .glow-button:hover {
-            background: #00cc99;
-            box-shadow: 0 0 20px #00ffcc;
-            transform: scale(1.05);
+            touch-action: none;
         }
 
         .text-overlay {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
-            padding: 15px;
+            bottom: 15px; /* Adjusted for smaller screens */
+            left: 15px;
+            padding: 10px; /* Reduced padding */
             background: rgba(0, 0, 0, 0.7);
-            border-radius: 10px;
+            border-radius: 5px; /* Simplified */
             color: #f3f3f3;
-            font-size: 1.2rem;
+            font-size: 1rem; /* Reduced size */
             z-index: 10;
             max-width: 80%;
         }
 
         @media (max-width: 768px) {
             .sidebar {
-                width: 200px;
-                left: -200px;
+                width: 150px;
+                left: -150px;
             }
 
             .sidebar h1 {
-                font-size: 1.5rem;
+                font-size: 1.3rem;
             }
 
             .sidebar a {
-                font-size: 1rem;
-                padding: 10px; /* Larger tap area for mobile */
+                font-size: 0.9rem;
+                padding: 8px;
             }
 
             .menu-toggle {
-                padding: 8px;
-                font-size: 0.9rem;
+                padding: 6px;
+                font-size: 0.8rem;
             }
 
             .text-overlay {
-                font-size: 1rem;
-                padding: 10px;
+                font-size: 0.9rem;
+                padding: 8px;
                 bottom: 10px;
                 left: 10px;
             }
@@ -155,56 +128,40 @@
             <li><a href="#" onclick="navigateTo('cart')">Cart</a></li>
             <li><a href="#" onclick="navigateTo('about')">About</a></li>
         </ul>
-        <button class="glow-button" onclick="toggleLighting()">Toggle Lighting</button>
     </div>
     <div class="text-overlay" id="textOverlay"></div>
 
-    <!-- Three.js and dependencies -->
+    <!-- Three.js dependency (removed GSAP for low-memory optimization) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
 
     <script>
         // Scene setup
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true, powerPreference: 'low-power' });
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: false, powerPreference: 'low-power' });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap for mobile performance
-        renderer.setClearColor(0x000000, 1); // Black background for night-time
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1)); // Cap at 1 for low-memory systems
+        renderer.setClearColor(0x000000, 1); // Black background
+        renderer.shadowMap.enabled = false; // Disable shadows for performance
 
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0x202020, 0.3); // Dim ambient light
+        // Simplified lighting (single ambient light)
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5); // Dim light
         scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0x00ffcc, 0.8, 10); // Cyan desk lamp
-        pointLight.position.set(2, 3, 2);
-        pointLight.castShadow = true;
-        pointLight.shadow.mapSize.set(512, 512); // Optimized for performance
-        scene.add(pointLight);
-
-        const monitorLight = new THREE.PointLight(0x800080, 0.5, 5); // Purple monitor glow
-        monitorLight.position.set(0, 1.5, -0.3);
-        scene.add(monitorLight);
-
         // Room geometry (no windows or doors)
-        const roomMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.8 }); // Dark gray walls
-        const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 }); // Dark floor
+        const roomMaterial = new THREE.MeshBasicMaterial({ color: 0x1a1a1a }); // Simplified material
+        const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x222222 });
         const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), floorMaterial);
         floor.rotation.x = -Math.PI / 2;
-        floor.receiveShadow = true;
         scene.add(floor);
 
         const backWall = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), roomMaterial);
         backWall.position.set(0, 2.5, -5);
-        backWall.receiveShadow = true;
         scene.add(backWall);
 
         const sideWall = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), roomMaterial);
         sideWall.position.set(-5, 2.5, 0);
         sideWall.rotation.y = Math.PI / 2;
-        sideWall.receiveShadow = true;
         scene.add(sideWall);
 
         const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), roomMaterial);
@@ -213,88 +170,72 @@
         scene.add(ceiling);
 
         // Rug on floor
-        const rugMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.7 });
+        const rugMaterial = new THREE.MeshBasicMaterial({ color: 0x333333 });
         const rug = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), rugMaterial);
         rug.rotation.x = -Math.PI / 2;
-        rug.position.set(0, 0.01, 0); // Slightly above floor to avoid z-fighting
+        rug.position.set(0, 0.01, 0);
         scene.add(rug);
 
         // Desk
-        const deskMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.5 }); // Dark wood
+        const deskMaterial = new THREE.MeshBasicMaterial({ color: 0x2a2a2a });
         const desk = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 1.2), deskMaterial);
         desk.position.set(0, 0.75, -1);
-        desk.castShadow = true;
-        desk.receiveShadow = true;
         scene.add(desk);
 
-        // Desk drawer (cabinet under desk)
-        const drawerMaterial = new THREE.MeshStandardMaterial({ color: 0x252525, roughness: 0.6 });
+        // Desk drawer
+        const drawerMaterial = new THREE.MeshBasicMaterial({ color: 0x252525 });
         const drawer = new THREE.Mesh(new THREE.BoxGeometry(1, 0.6, 1), drawerMaterial);
         drawer.position.set(0.75, 0.3, -1);
-        drawer.castShadow = true;
-        drawer.receiveShadow = true;
         scene.add(drawer);
 
         // Monitor
-        const monitorMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.2, emissive: 0x800080, emissiveIntensity: 0.2 });
+        const monitorMaterial = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
         const monitor = new THREE.Mesh(new THREE.BoxGeometry(1, 0.6, 0.05), monitorMaterial);
         monitor.position.set(0, 1.2, -1.4);
-        monitor.castShadow = true;
-        monitor.receiveShadow = true;
         scene.add(monitor);
 
-        // Keyboard (shop item)
-        const keyboardMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.3 });
+        // Keyboard
+        const keyboardMaterial = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
         const keyboard = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.3), keyboardMaterial);
         keyboard.position.set(0, 0.85, -0.8);
-        keyboard.castShadow = true;
-        keyboard.receiveShadow = true;
         scene.add(keyboard);
 
-        // Small plant on desk (shop item)
-        const plantPotMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, emissive: 0x800080, emissiveIntensity: 0.3 });
-        const plantPot = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32), plantPotMaterial);
+        // Small plant on desk
+        const plantPotMaterial = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+        const plantPot = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.2, 16), plantPotMaterial);
         plantPot.position.set(-0.8, 0.85, -1.2);
-        plantPot.castShadow = true;
         scene.add(plantPot);
 
-        const plantLeavesMaterial = new THREE.MeshStandardMaterial({ color: 0x2a3a2a, roughness: 0.7 });
-        const plantLeaves = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), plantLeavesMaterial);
+        const plantLeavesMaterial = new THREE.MeshBasicMaterial({ color: 0x2a3a2a });
+        const plantLeaves = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), plantLeavesMaterial); // Reduced segments
         plantLeaves.position.set(-0.8, 1, -1.2);
-        plantLeaves.castShadow = true;
         scene.add(plantLeaves);
 
         // Chair
-        const chairSeatMaterial = new THREE.MeshStandardMaterial({ color: 0x3a1f3a, roughness: 0.5 });
+        const chairSeatMaterial = new THREE.MeshBasicMaterial({ color: 0x3a1f3a });
         const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.5), chairSeatMaterial);
         chairSeat.position.set(-0.5, 0.5, 0);
-        chairSeat.castShadow = true;
-        chairSeat.receiveShadow = true;
         scene.add(chairSeat);
 
-        const chairBackMaterial = new THREE.MeshStandardMaterial({ color: 0x3a1f3a, roughness: 0.5 });
+        const chairBackMaterial = new THREE.MeshBasicMaterial({ color: 0x3a1f3a });
         const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.1), chairBackMaterial);
         chairBack.position.set(-0.5, 0.8, 0.2);
         chairBack.rotation.x = -Math.PI / 8;
-        chairBack.castShadow = true;
         scene.add(chairBack);
 
-        const chairLegMaterial = new THREE.MeshStandardMaterial({ color: 0x252525, roughness: 0.6 });
-        const chairLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.4, 16), chairLegMaterial);
+        const chairLegMaterial = new THREE.MeshBasicMaterial({ color: 0x252525 });
+        const chairLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.4, 8), chairLegMaterial); // Reduced segments
         chairLeg.position.set(-0.5, 0.25, 0);
-        chairLeg.castShadow = true;
         scene.add(chairLeg);
 
         // Shelf on back wall
-        const shelfMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.5 });
+        const shelfMaterial = new THREE.MeshBasicMaterial({ color: 0x2a2a2a });
         const shelf = new THREE.Mesh(new THREE.BoxGeometry(2, 0.1, 0.3), shelfMaterial);
         shelf.position.set(-2, 2, -4.8);
-        shelf.castShadow = true;
-        shelf.receiveShadow = true;
         scene.add(shelf);
 
         // Books on shelf (using InstancedMesh)
-        const bookMaterial = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.7 });
+        const bookMaterial = new THREE.MeshBasicMaterial({ color: 0x3a3a3a });
         const bookGeometry = new THREE.BoxGeometry(0.1, 0.3, 0.2);
         const bookMesh = new THREE.InstancedMesh(bookGeometry, bookMaterial, 3);
         const dummy = new THREE.Object3D();
@@ -303,57 +244,46 @@
             dummy.updateMatrix();
             bookMesh.setMatrixAt(i, dummy.matrix);
         }
-        bookMesh.castShadow = true;
-        bookMesh.receiveShadow = true;
         scene.add(bookMesh);
 
         // Decorative cube on shelf
-        const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.5 });
+        const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x4a4a4a });
         const cube = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.15), cubeMaterial);
         cube.position.set(-1.5, 2.15, -4.8);
-        cube.castShadow = true;
         scene.add(cube);
 
         // Clock on wall
-        const clockMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.5 });
-        const clock = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 32), clockMaterial);
+        const clockMaterial = new THREE.MeshBasicMaterial({ color: 0x2a2a2a });
+        const clock = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 16), clockMaterial); // Reduced segments
         clock.position.set(-3, 3, -4.9);
         clock.rotation.y = Math.PI / 2;
         scene.add(clock);
 
-        // Code sign on wall
-        const canvas = document.createElement('canvas');
-        canvas.width = 256;
-        canvas.height = 128;
-        const context = canvas.getContext('2d');
-        context.fillStyle = '#00ffcc';
-        context.font = 'bold 60px Arial';
-        context.fillText('Code', 30, 80);
-        const signTexture = new THREE.CanvasTexture(canvas);
-        const signMaterial = new THREE.MeshStandardMaterial({ map: signTexture, emissive: 0x00ffcc, emissiveIntensity: 0.5 });
+        // Code sign on wall (simplified, no texture)
+        const signMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
         const sign = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.5), signMaterial);
         sign.position.set(2, 2.5, -4.9);
         scene.add(sign);
 
-        // Page navigation and camera positions
+        // Page navigation and camera positions (higher up, looking down)
         const pages = {
             home: {
-                cameraPos: new THREE.Vector3(3, 2, 3), // Zoomed-in view of desk
-                lookAt: new THREE.Vector3(0, 1, -1),
+                cameraPos: new THREE.Vector3(3, 4, 3), // Higher up, looking down at desk
+                lookAt: new THREE.Vector3(0, 0.75, -1),
                 text: "Welcome to the Hacker's Den"
             },
             shop: {
-                cameraPos: new THREE.Vector3(1, 1.5, 1), // Focus on keyboard
+                cameraPos: new THREE.Vector3(1, 3, 2), // Higher up, looking down at keyboard
                 lookAt: new THREE.Vector3(0, 0.85, -0.8),
                 text: "Shop Items: Keyboard, Plant"
             },
             cart: {
-                cameraPos: new THREE.Vector3(-2, 1.5, 2), // Focus on chair
+                cameraPos: new THREE.Vector3(-2, 3, 3), // Higher up, looking down at chair
                 lookAt: new THREE.Vector3(-0.5, 0.5, 0),
                 text: "Cart: Add items like Keyboard or Plant"
             },
             about: {
-                cameraPos: new THREE.Vector3(-3, 2.5, -2), // Focus on shelf
+                cameraPos: new THREE.Vector3(-3, 4, -1), // Higher up, looking down at shelf
                 lookAt: new THREE.Vector3(-2, 2, -4.8),
                 text: "About: A minimal hacker workspace"
             }
@@ -364,22 +294,16 @@
         function navigateTo(page) {
             currentPage = page;
             const pageData = pages[page];
-            gsap.to(camera.position, { 
-                x: pageData.cameraPos.x, 
-                y: pageData.cameraPos.y, 
-                z: pageData.cameraPos.z, 
-                duration: 1, 
-                ease: 'power2.out' 
-            });
+            camera.position.copy(pageData.cameraPos);
             camera.lookAt(pageData.lookAt);
             document.getElementById('textOverlay').innerText = pageData.text;
-            toggleMenu(); // Close the sidebar after selection
+            toggleMenu(); // Close the sidebar
         }
 
         // Initial page load
         navigateTo('home');
 
-        // Animation loop
+        // Animation loop (simplified)
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
@@ -393,23 +317,11 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Toggle lighting
-        let lightingOn = true;
-        window.toggleLighting = function () {
-            lightingOn = !lightingOn;
-            pointLight.intensity = lightingOn ? 0.8 : 0;
-            monitorLight.intensity = lightingOn ? 0.5 : 0;
-        };
-
         // Menu toggle
         function toggleMenu() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('open');
         }
-
-        // GSAP animations
-        gsap.from('.sidebar', { opacity: 0, x: -50, duration: 1, ease: 'power2.out', delay: 0.5 });
-        gsap.from('.menu-toggle', { scale: 0.8, duration: 1.5, ease: 'elastic.out(1, 0.3)', delay: 0.5 });
     </script>
 </body>
 </html>
