@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Hacker Desk - 3D Office Scene</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #050816;
+            color: #f3f3f3;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            z-index: 10;
+        }
+
+        .overlay h1 {
+            font-size: 2.5rem;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+            margin-bottom: 10px;
+        }
+
+        .overlay p {
+            font-size: 1rem;
+            color: #aaa6c3;
+            line-height: 1.5;
+        }
+
+        .glow-button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #00ffcc;
+            color: #050816;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px #00ffcc;
+        }
+
+        .glow-button:hover {
+            background: #00cc99;
+            box-shadow: 0 0 20px #00ffcc;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .overlay {
+                top: 10px;
+                left: 10px;
+                padding: 15px;
+            }
+
+            .overlay h1 {
+                font-size: 1.8rem;
+            }
+
+            .overlay p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="overlay">
+        <h1>Hacker's Den</h1>
+        <p>Explore a modern hacker desk setup in a sleek, dark-themed office. Interact with the 3D scene using your mouse or touch.</p>
+        <button class="glow-button" onclick="toggleLighting()">Toggle Lighting</button>
+    </div>
+
+    <!-- Three.js and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setClearColor(0x050816, 1);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // Camera position
+        camera.position.set(5, 3, 5);
+        camera.lookAt(0, 1, 0);
+
+        // OrbitControls for interaction
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 2;
+        controls.maxDistance = 10;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5); // Soft ambient light
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0x00ffcc, 1, 10);
+        pointLight.position.set(2, 3, 2);
+        pointLight.castShadow = true;
+        pointLight.shadow.mapSize.width = 1024;
+        pointLight.shadow.mapSize.height = 1024;
+        scene.add(pointLight);
+
+        // Desk lamp (point light for effect)
+        const deskLampLight = new THREE.PointLight(0xffaa00, 0.8, 5);
+        deskLampLight.position.set(1, 1.5, 0);
+        scene.add(deskLampLight);
+
+        // Room geometry (two walls, floor, ceiling)
+        const roomMaterial = new THREE.MeshStandardMaterial({ color: 0x1c2526, roughness: 0.8 });
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), roomMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        const backWall = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), roomMaterial);
+        backWall.position.set(0, 2.5, -5);
+        backWall.receiveShadow = true;
+        scene.add(backWall);
+
+        const sideWall = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), roomMaterial);
+        sideWall.position.set(-5, 2.5, 0);
+        sideWall.rotation.y = Math.PI / 2;
+        sideWall.receiveShadow = true;
+        scene.add(sideWall);
+
+        const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), roomMaterial);
+        ceiling.position.set(0, 5, 0);
+        ceiling.rotation.x = Math.PI / 2;
+        scene.add(ceiling);
+
+        // Desk (simple grey desk)
+        const deskMaterial = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.5 });
+        const desk = new THREE.Mesh(new THREE.BoxGeometry(2, 0.1, 1), deskMaterial);
+        desk.position.set(0, 0.75, 0);
+        desk.castShadow = true;
+        desk.receiveShadow = true;
+        scene.add(desk);
+
+        // Tower PC (on floor)
+        const pcMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.3 });
+        const pc = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), pcMaterial);
+        pc.position.set(0.8, 0.4, 0.4);
+        pc.castShadow = true;
+        pc.receiveShadow = true;
+        scene.add(pc);
+
+        // Monitors (three screens)
+        const monitorMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.2 });
+        for (let i = 0; i < 3; i++) {
+            const monitor = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.4, 0.05), monitorMaterial);
+            monitor.position.set(-0.4 + i * 0.4, 1, -0.3);
+            monitor.castShadow = true;
+            monitor.receiveShadow = true;
+            scene.add(monitor);
+        }
+
+        // HTML sign on wall
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 128;
+        const context = canvas.getContext('2d');
+        context.fillStyle = '#00ffcc';
+        context.font = 'bold 60px Arial';
+        context.fillText('HTML', 30, 80);
+        const signTexture = new THREE.CanvasTexture(canvas);
+        const signMaterial = new THREE.MeshStandardMaterial({ map: signTexture, emissive: 0x00ffcc, emissiveIntensity: 0.5 });
+        const sign = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.5), signMaterial);
+        sign.position.set(0, 2.5, -4.9);
+        scene.add(sign);
+
+        // GLTF Loader for detailed models (chair, keyboard, etc.)
+        const loader = new THREE.GLTFLoader();
+
+        // Load chair (replace with your GLTF model path)
+        loader.load(
+            '/models/chair.glb', // Placeholder path
+            (gltf) => {
+                const chair = gltf.scene;
+                chair.scale.set(0.5, 0.5, 0.5);
+                chair.position.set(-0.8, 0, 0.2);
+                chair.castShadow = true;
+                chair.receiveShadow = true;
+                scene.add(chair);
+                gsap.to(chair.rotation, { y: Math.PI / 4, duration: 5, repeat: -1, yoyo: true, ease: 'power1.inOut' });
+            },
+            undefined,
+            (error) => console.error('Error loading chair:', error)
+        );
+
+        // Load keyboard (replace with your GLTF model path)
+        loader.load(
+            '/models/keyboard.glb', // Placeholder path
+            (gltf) => {
+                const keyboard = gltf.scene;
+                keyboard.scale.set(0.3, 0.3, 0.3);
+                keyboard.position.set(0, 0.85, -0.1);
+                keyboard.castShadow = true;
+                keyboard.receiveShadow = true;
+                scene.add(keyboard);
+            },
+            undefined,
+            (error) => console.error('Error loading keyboard:', error)
+        );
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Toggle lighting function
+        let lightingOn = true;
+        window.toggleLighting = function () {
+            lightingOn = !lightingOn;
+            pointLight.intensity = lightingOn ? 1 : 0;
+            deskLampLight.intensity = lightingOn ? 0.8 : 0;
+        };
+
+        // GSAP animations for overlay
+        gsap.from('.overlay', { opacity: 0, y: -50, duration: 1, ease: 'power2.out' });
+        gsap.from('.glow-button', { scale: 0.8, duration: 1.5, ease: 'elastic.out(1, 0.3)', delay: 0.5 });
+    </script>
+</body>
+</html>
