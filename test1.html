@@ -3,507 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futuristic Drone Store</title>
+    <title>3D Hero Office Template</title>
     <style>
-        *, *::after, *::before {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            min-height: 100vh;
-            font-size: 11px;
-            font-family: 'Montserrat', sans-serif;
-            background-image: linear-gradient(-120deg, #4B5A45, #1E4954);
-            color: #232323;
-            user-select: none;
-        }
-
-        ul { list-style: none; }
-        svg { fill: #ffd055; }
-
-        /* Navigation Bar */
-        nav {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 1rem 2rem;
-            position: fixed;
+        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+        canvas { display: block; width: 100%; height: 100vh; }
+        #overlay {
+            position: absolute;
             top: 0;
-            z-index: 1000;
-        }
-
-        nav ul {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-        }
-
-        nav ul li a {
-            color: #fff;
-            font-size: 1.2rem;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        nav ul li a:hover {
-            color: #ffd055;
-        }
-
-        /* Hero Section */
-        .hero {
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-
-        .scene {
+            left: 0;
             width: 100%;
             height: 100%;
-        }
-
-        .hero-text {
-            position: absolute;
+            pointer-events: none;
             color: #fff;
             text-align: center;
-            font-size: 2rem;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.2);
         }
-
-        /* Card Styles */
-        .card {
-            display: flex;
-            position: relative;
-            width: 650px;
-            height: 400px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            margin: 2rem;
-            overflow: hidden;
-            transition: transform 0.3s;
+        #hero-text {
+            margin-top: 20vh;
+            pointer-events: auto;
         }
-
-        .card__img {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: #f5f5f5;
+        #hero-text h1 {
+            font-size: 3rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
-
-        .card__description {
-            flex: 1;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .card__info {
-            margin-bottom: 1rem;
-        }
-
-        .card__title {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .card__subtitle {
+        #hero-text p {
             font-size: 1.2rem;
-            color: #666;
+            margin: 10px 0;
         }
-
-        .card__price {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .card__rating svg {
-            margin-right: 0.2rem;
-        }
-
-        .colors {
-            margin: 1rem 0;
-        }
-
-        .color__title {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .color__container {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .color__item {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #000;
-        }
-
-        .color__item:nth-child(1) { background: #ff0000; }
-        .color__item:nth-child(2) { background: #00ff00; }
-        .color__item:nth-child(3) { background: #0000ff; }
-        .color__item:nth-child(4) { background: #ffff00; }
-        .color__item:nth-child(5) { background: #ff00ff; }
-
-        .card__button {
+        #hero-text a {
             display: inline-block;
-            padding: 0.8rem 1.5rem;
-            background: #ffd055;
-            color: #232323;
+            padding: 10px 20px;
+            background: #007bff;
+            color: #fff;
             text-decoration: none;
             border-radius: 5px;
-            font-size: 1.2rem;
-            text-align: center;
+            pointer-events: auto;
             transition: background 0.3s;
         }
-
-        .card__button:hover {
-            background: #e6b800;
+        #hero-text a:hover { background: #0056b3; }
+        #view-buttons {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            pointer-events: auto;
         }
-
-        /* Page Sections */
-        section {
-            width: 100%;
-            padding: 4rem 2rem;
-            display: none;
-        }
-
-        section.active {
+        #view-buttons button {
             display: block;
-        }
-
-        .shop-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(650px, 1fr));
-            gap: 2rem;
-            justify-items: center;
-        }
-
-        .cart-items, .info-content, .links-content {
-            max-width: 800px;
-            margin: 0 auto;
-            font-size: 1.2rem;
+            margin: 5px;
+            padding: 10px;
+            background: #333;
             color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: background 0.3s;
         }
-
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 1rem;
-            background: rgba(255,255,255,0.1);
-            margin-bottom: 1rem;
-            border-radius: 5px;
-        }
-
-        .cart-total {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-top: 1rem;
-            color: #ffd055;
-        }
-
-        /* Footer */
-        footer {
-            width: 100%;
-            padding: 2rem;
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            text-align: center;
-            font-size: 1rem;
-        }
-
+        #view-buttons button:hover { background: #555; }
         @media (max-width: 768px) {
-            .card {
-                width: 100%;
-                max-width: 400px;
-                height: auto;
-                flex-direction: column;
-            }
-
-            .card__img {
-                height: 200px;
-            }
-
-            .shop-grid {
-                grid-template-columns: 1fr;
-            }
-
-            nav ul {
-                flex-direction: column;
-                gap: 1rem;
-            }
+            #hero-text h1 { font-size: 2rem; }
+            #hero-text p { font-size: 1rem; }
+            #hero-text a { padding: 8px 16px; }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav>
-        <ul>
-            <li><a href="#" data-page="home">Home</a></li>
-            <li><a href="#" data-page="shop">Shop</a></li>
-            <li><a href="#" data-page="cart">Cart</a></li>
-            <li><a href="#" data-page="info">Info</a></li>
-            <li><a href="#" data-page="links">Links</a></li>
-        </ul>
-    </nav>
-
-    <!-- Hero Section with Three.js -->
-    <section id="home" class="active">
-        <div class="hero">
-            <div class="scene"></div>
-            <div class="hero-text">
-                <h1>Welcome to Futuristic Drone Store</h1>
-                <p>Explore the latest in drone technology</p>
-            </div>
+    <!-- Overlay for branding and CTA -->
+    <div id="overlay">
+        <div id="hero-text">
+            <h1>Your Company Name</h1>
+            <p>Explore our innovative solutions in a stunning 3D environment.</p>
+            <a href="#shop-now">Shop Now</a>
         </div>
-    </section>
-
-    <!-- Shop Section -->
-    <section id="shop">
-        <div class="shop-grid">
-            <div class="card">
-                <div class="card__img">
-                    <div class="scene"></div>
-                    <h2 class="subtitle">DRONE</h2>
-                </div>
-                <div class="card__description">
-                    <div class="card__container">
-                        <div class="card__info">
-                            <div class="card__header">
-                                <div class="card__rating">
-                                    <svg height="25" width="23" class="star rating" data-rating="1">
-                                        <polygon points="9.9, 1.1, 3.3, 21.78, 19.8, 8.58, 0, 8.58, 16.5, 21.78"/>
-                                    </svg>
-                                    <svg height="25" width="23" class="star rating" data-rating="1">
-                                        <polygon points="9.9, 1.1, 3.3, 21.78, 19.8, 8.58, 0, 8.58, 16.5, 21.78"/>
-                                    </svg>
-                                    <svg height="25" width="23" class="star rating" data-rating="1">
-                                        <polygon points="9.9, 1.1, 3.3, 21.78, 19.8, 8.58, 0, 8.58, 16.5, 21.78"/>
-                                    </svg>
-                                    <svg height="25" width="23" class="star rating" data-rating="1">
-                                        <polygon points="9.9, 1.1, 3.3, 21.78, 19.8, 8.58, 0, 8.58, 16.5, 21.78"/>
-                                    </svg>
-                                    <svg height="25" width="23" class="star rating" data-rating="1">
-                                        <polygon points="9.9, 1.1, 3.3, 21.78, 19.8, 8.58, 0, 8.58, 16.5, 21.78"/>
-                                    </svg>
-                                </div>
-                                <p class="card__price">$220</p>
-                            </div>
-                            <h1 class="card__title">Futuristic Drone</h1>
-                            <h2 class="card__subtitle">FHC - 250x</h2>
-                        </div>
-                        <div class="colors">
-                            <span class="color__title">COLOR</span>
-                            <div class="color__container">
-                                <div class="color__item"></div>
-                                <div class="color__item"></div>
-                                <div class="color__item"></div>
-                                <div class="color__item"></div>
-                                <div class="color__item"></div>
-                            </div>
-                        </div>
-                        <a class="card__button" href="#" onclick="addToCart('Futuristic Drone', 220)">ADD TO CART</a>
-                    </div>
-                </div>
-            </div>
-            <!-- Add more cards as needed -->
+        <div id="view-buttons">
+            <button onclick="changeView('desk')">Desk View</button>
+            <button onclick="changeView('chair')">Chair View</button>
+            <button onclick="changeView('overview')">Room Overview</button>
         </div>
-    </section>
+    </div>
 
-    <!-- Cart Section -->
-    <section id="cart">
-        <div class="cart-items">
-            <h2>Your Cart</h2>
-            <div id="cart-list"></div>
-            <div class="cart-total" id="cart-total">Total: $0</div>
-        </div>
-    </section>
+    <!-- Three.js and Loaders -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
 
-    <!-- Info Section -->
-    <section id="info">
-        <div class="info-content">
-            <h2>About Us</h2>
-            <p>We are a leading provider of cutting-edge drone technology, offering high-quality products for enthusiasts and professionals alike. Our mission is to push the boundaries of aerial innovation.</p>
-        </div>
-    </section>
-
-    <!-- Links Section -->
-    <section id="links">
-        <div class="links-content">
-            <h2>Useful Links</h2>
-            <ul>
-                <li><a href="#">Support</a></li>
-                <li><a href="#">FAQs</a></li>
-                <li><a href="#">Contact Us</a></li>
-                <li><a href="#">Privacy Policy</a></li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2025 Futuristic Drone Store. All rights reserved.</p>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script>
-        // Three.js GLTFLoader (simplified for inclusion)
-        (function() {
-            function GLTFLoader(manager) {
-                THREE.Loader.call(this, manager);
-                this.dracoLoader = null;
-                this.ddsLoader = null;
-            }
-            GLTFLoader.prototype = Object.assign(Object.create(THREE.Loader.prototype), {
-                constructor: GLTFLoader,
-                load: function(url, onLoad, onProgress, onError) {
-                    var scope = this;
-                    var resourcePath = this.resourcePath || this.path || THREE.LoaderUtils.extractUrlBase(url);
-                    scope.manager.itemStart(url);
-                    var _onError = function(e) {
-                        if (onError) onError(e);
-                        else console.error(e);
-                        scope.manager.itemError(url);
-                        scope.manager.itemEnd(url);
-                    };
-                    var loader = new THREE.FileLoader(scope.manager);
-                    loader.setPath(this.path);
-                    loader.setResponseType('arraybuffer');
-                    if (scope.crossOrigin === 'use-credentials') loader.setWithCredentials(true);
-                    loader.load(url, function(data) {
-                        try {
-                            scope.parse(data, resourcePath, function(gltf) {
-                                onLoad(gltf);
-                                scope.manager.itemEnd(url);
-                            }, _onError);
-                        } catch (e) {
-                            _onError(e);
-                        }
-                    }, onProgress, _onError);
-                },
-                parse: function(data, path, onLoad, onError) {
-                    var content = typeof data === 'string' ? data : THREE.LoaderUtils.decodeText(new Uint8Array(data));
-                    var json = JSON.parse(content);
-                    if (json.asset === undefined || json.asset.version[0] < 2) {
-                        if (onError) onError(new Error('THREE.GLTFLoader: Unsupported asset. glTF versions >=2.0 are supported.'));
-                        return;
-                    }
-                    var parser = {
-                        json: json,
-                        options: { path: path, manager: this.manager, crossOrigin: this.crossOrigin },
-                        textureLoader: new THREE.TextureLoader(this.manager),
-                        fileLoader: new THREE.FileLoader(this.manager),
-                        cache: new Map(),
-                        getDependency: function(type, index) {
-                            if (type === 'scene') return this.loadScene(index);
-                            return Promise.resolve(null);
-                        },
-                        loadScene: function(index) {
-                            var sceneDef = this.json.scenes[index];
-                            var scene = new THREE.Scene();
-                            if (sceneDef.name) scene.name = sceneDef.name;
-                            return Promise.resolve(scene);
-                        }
-                    };
-                    parser.textureLoader.setCrossOrigin(this.crossOrigin);
-                    parser.fileLoader.setResponseType('arraybuffer');
-                    var scene = new THREE.Scene();
-                    onLoad({ scene: scene, scenes: [scene], animations: [], cameras: [], asset: json.asset, parser: parser });
+        // === 3D Hero Template for Web Designers ===
+        // Instructions for Customization:
+        // 1. Place 3D models (.obj/.mtl) in /models folder (e.g., desk.obj, chair.obj, monitor.obj).
+        // 2. Place textures (.jpg/.png) in /textures folder (e.g., wood.jpg, leather.jpg).
+        // 3. Update model and texture paths in loadModel() functions below.
+        // 4. Modify #hero-text content (h1, p, a) for branding and CTA links.
+        // 5. Adjust camera views in changeView() for your scene layout.
+        // 6. Source models from BlenderKit, TurboSquid, or CGTrader (free/paid .obj/.fbx).
+        // 7. Customize colors, lighting, and styles in CSS and material settings.
+
+        // Scene Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Orbit Controls for Exploration
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 2;
+        controls.maxDistance = 20;
+
+        // Hero Background (Gradient Sky)
+        const skyGeo = new THREE.SphereGeometry(500, 32, 32);
+        const skyMat = new THREE.ShaderMaterial({
+            uniforms: {
+                topColor: { value: new THREE.Color(0x0077ff) }, // Customize sky color
+                bottomColor: { value: new THREE.Color(0xffffff) },
+                offset: { value: 33 },
+                exponent: { value: 0.6 }
+            },
+            vertexShader: `
+                varying vec3 vWorldPosition;
+                void main() {
+                    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+                    vWorldPosition = worldPosition.xyz;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                 }
-            });
-            THREE.GLTFLoader = GLTFLoader;
-        })();
+            `,
+            fragmentShader: `
+                uniform vec3 topColor;
+                uniform vec3 bottomColor;
+                uniform float offset;
+                uniform float exponent;
+                varying vec3 vWorldPosition;
+                void main() {
+                    float h = normalize(vWorldPosition + offset).y;
+                    gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
+                }
+            `,
+            side: THREE.BackSide
+        });
+        const sky = new THREE.Mesh(skyGeo, skyMat);
+        scene.add(sky);
 
-        // Three.js Hero Section
-        let container, camera, renderer, scene, house;
-        function init() {
-            container = document.querySelector(".scene");
-            scene = new THREE.Scene();
-            const fov = 50;
-            const aspect = container.clientWidth / container.clientHeight;
-            const near = 1;
-            const far = 2000;
-            camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-            camera.position.set(0, 40, 350);
-            const ambient = new THREE.AmbientLight(0xfcfcfc, 1.1);
-            scene.add(ambient);
-            const light = new THREE.DirectionalLight(0x000000, 1);
-            light.position.set(50, 50, 10);
-            scene.add(light);
-            const plight = new THREE.PointLight(0x6ce0ff, 2, 100);
-            plight.position.set(50, 50, 50);
-            scene.add(plight);
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            container.appendChild(renderer.domElement);
-            let loader = new THREE.GLTFLoader();
-            loader.load("https://raw.githubusercontent.com/ricardoolivaalonso/Codepen/master/Card/models/drone/scene.gltf", function(gltf) {
-                scene.add(gltf.scene);
-                house = gltf.scene.children[0];
-                animate();
-            });
-        }
-        function animate() {
-            requestAnimationFrame(animate);
-            house.rotation.z += 0.007;
-            renderer.render(scene, camera);
-        }
-        function onWindowResize() {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        }
-        window.addEventListener("resize", onWindowResize);
-        init();
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+        scene.add(ambientLight);
+        const officeLight = new THREE.PointLight(0xffffff, 1, 100);
+        officeLight.position.set(0, 5, 0);
+        scene.add(officeLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
 
-        // Page Navigation
-        document.querySelectorAll('nav a').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const page = link.getAttribute('data-page');
-                document.querySelectorAll('section').forEach(section => {
-                    section.classList.remove('active');
+        // Load 3D Models
+        const mtlLoader = new THREE.MTLLoader();
+        const objLoader = new THREE.OBJLoader();
+
+        function loadModel(mtlPath, objPath, position, scale, rotation) {
+            mtlLoader.load(mtlPath, (materials) => {
+                materials.preload();
+                objLoader.setMaterials(materials).load(objPath, (object) => {
+                    object.position.copy(position);
+                    object.scale.set(scale, scale, scale);
+                    object.rotation.set(rotation.x, rotation.y, rotation.z);
+                    scene.add(object);
                 });
-                document.getElementById(page).classList.add('active');
             });
+        }
+
+        // Example Models (Replace paths with your assets)
+        loadModel(
+            'models/desk.mtl', 'models/desk.obj',
+            new THREE.Vector3(0, 0, 0), 1,
+            { x: 0, y: 0, z: 0 }
+        );
+        loadModel(
+            'models/chair.mtl', 'models/chair.obj',
+            new THREE.Vector3(2, 0, 0), 1,
+            { x: 0, y: Math.PI / 2, z: 0 }
+        );
+        loadModel(
+            'models/monitor.mtl', 'models/monitor.obj',
+            new THREE.Vector3(0, 1, -1), 1,
+            { x: 0, y: 0, z: 0 }
+        );
+        loadModel(
+            'models/monitor.mtl', 'models/monitor.obj',
+            new THREE.Vector3(1, 1, -1), 1,
+            { x: 0, y: 0, z: 0 }
+        );
+        loadModel(
+            'models/monitor.mtl', 'models/monitor.obj',
+            new THREE.Vector3(-1, 1, -1), 1,
+            { x: 0, y: 0, z: 0 }
+        );
+
+        // Camera Views
+        function changeView(view) {
+            let targetPos, targetLookAt;
+            switch (view) {
+                case 'desk':
+                    targetPos = new THREE.Vector3(0, 2, 3);
+                    targetLookAt = new THREE.Vector3(0, 1, 0);
+                    break;
+                case 'chair':
+                    targetPos = new THREE.Vector3(3, 1, 2);
+                    targetLookAt = new THREE.Vector3(2, 0, 0);
+                    break;
+                case 'overview':
+                    targetPos = new THREE.Vector3(5, 5, 5);
+                    targetLookAt = new THREE.Vector3(0, 0, 0);
+                    break;
+            }
+            // Smooth transition
+            new TWEEN.Tween(camera.position)
+                .to(targetPos, 1000)
+                .easing(TWEEN.Easing.Quadratic.InOut)
+                .start();
+            new TWEEN.Tween(controls.target)
+                .to(targetLookAt, 1000)
+                .easing(TWEEN.Easing.Quadratic.InOut)
+                .start();
+        }
+
+        // Initial Camera Position
+        camera.position.set(5, 5, 5);
+        controls.target.set(0, 0, 0);
+
+        // Handle Window Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Cart System
-        let cart = [];
-        function addToCart(name, price) {
-            cart.push({ name, price });
-            updateCart();
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            TWEEN.update();
+            renderer.render(scene, camera);
         }
-        function updateCart() {
-            const cartList = document.getElementById('cart-list');
-            const cartTotal = document.getElementById('cart-total');
-            cartList.innerHTML = '';
-            let total = 0;
-            cart.forEach(item => {
-                total += item.price;
-                const div = document.createElement('div');
-                div.className = 'cart-item';
-                div.innerHTML = `<span>${item.name}</span><span>$${item.price}</span>`;
-                cartList.appendChild(div);
-            });
-            cartTotal.textContent = `Total: $${total}`;
-        }
+        animate();
     </script>
+    <!-- Tween.js for smooth camera transitions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.min.js"></script>
 </body>
 </html>
