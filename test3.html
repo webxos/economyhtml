@@ -60,6 +60,8 @@
             text-decoration: none;
             font-size: 1.2rem;
             transition: color 0.3s ease;
+            display: block; /* Ensure full tap area for mobile */
+            padding: 5px;
         }
 
         .sidebar a:hover {
@@ -100,6 +102,19 @@
             transform: scale(1.05);
         }
 
+        .text-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            color: #f3f3f3;
+            font-size: 1.2rem;
+            z-index: 10;
+            max-width: 80%;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 200px;
@@ -112,11 +127,19 @@
 
             .sidebar a {
                 font-size: 1rem;
+                padding: 10px; /* Larger tap area for mobile */
             }
 
             .menu-toggle {
                 padding: 8px;
                 font-size: 0.9rem;
+            }
+
+            .text-overlay {
+                font-size: 1rem;
+                padding: 10px;
+                bottom: 10px;
+                left: 10px;
             }
         }
     </style>
@@ -127,19 +150,17 @@
     <div class="sidebar" id="sidebar">
         <h1>Portfolio</h1>
         <ul>
-            <li><a href="#" onclick="focusOnDesk()">Home</a></li>
-            <li><a href="#" onclick="showProject(1)">Project 1</a></li>
-            <li><a href="#" onclick="showProject(2)">Project 2</a></li>
-            <li><a href="#" onclick="focusOnBookshelf()">Skills</a></li>
-            <li><a href="#" onclick="focusOnDesk()">Contact</a></li>
+            <li><a href="#" onclick="navigateTo('home')">Home</a></li>
+            <li><a href="#" onclick="navigateTo('shop')">Shop</a></li>
+            <li><a href="#" onclick="navigateTo('cart')">Cart</a></li>
+            <li><a href="#" onclick="navigateTo('about')">About</a></li>
         </ul>
         <button class="glow-button" onclick="toggleLighting()">Toggle Lighting</button>
     </div>
+    <div class="text-overlay" id="textOverlay"></div>
 
     <!-- Three.js and dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
 
     <script>
@@ -152,24 +173,6 @@
         renderer.setClearColor(0x000000, 1); // Black background for night-time
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-        // Camera position
-        camera.position.set(5, 3, 5);
-        camera.lookAt(0, 1, 0);
-
-        // OrbitControls
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.minDistance = 2;
-        controls.maxDistance = 10;
-        controls.enablePan = false; // Disable panning for better mobile experience
-        controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY }; // Enable touch controls
-
-        // Raycaster for interactivity
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        let INTERSECTED;
 
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x202020, 0.3); // Dim ambient light
@@ -240,7 +243,7 @@
         monitor.receiveShadow = true;
         scene.add(monitor);
 
-        // Keyboard
+        // Keyboard (shop item)
         const keyboardMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.3 });
         const keyboard = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.3), keyboardMaterial);
         keyboard.position.set(0, 0.85, -0.8);
@@ -248,7 +251,7 @@
         keyboard.receiveShadow = true;
         scene.add(keyboard);
 
-        // Small plant on desk
+        // Small plant on desk (shop item)
         const plantPotMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, emissive: 0x800080, emissiveIntensity: 0.3 });
         const plantPot = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32), plantPotMaterial);
         plantPot.position.set(-0.8, 0.85, -1.2);
@@ -261,7 +264,7 @@
         plantLeaves.castShadow = true;
         scene.add(plantLeaves);
 
-        // Chair (dark purple)
+        // Chair
         const chairSeatMaterial = new THREE.MeshStandardMaterial({ color: 0x3a1f3a, roughness: 0.5 });
         const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.5), chairSeatMaterial);
         chairSeat.position.set(-0.5, 0.5, 0);
@@ -318,7 +321,7 @@
         clock.rotation.y = Math.PI / 2;
         scene.add(clock);
 
-        // HTML sign on wall (replaced with a minimal "Code" sign)
+        // Code sign on wall
         const canvas = document.createElement('canvas');
         canvas.width = 256;
         canvas.height = 128;
@@ -332,24 +335,53 @@
         sign.position.set(2, 2.5, -4.9);
         scene.add(sign);
 
-        // Interactivity (e.g., rotate the plant on click)
-        window.addEventListener('click', (event) => {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(scene.children);
-            if (intersects.length > 0) {
-                const object = intersects[0].object;
-                if (object === plantLeaves) {
-                    gsap.to(object.rotation, { y: '+=2', duration: 1, ease: 'power2.out' });
-                }
+        // Page navigation and camera positions
+        const pages = {
+            home: {
+                cameraPos: new THREE.Vector3(3, 2, 3), // Zoomed-in view of desk
+                lookAt: new THREE.Vector3(0, 1, -1),
+                text: "Welcome to the Hacker's Den"
+            },
+            shop: {
+                cameraPos: new THREE.Vector3(1, 1.5, 1), // Focus on keyboard
+                lookAt: new THREE.Vector3(0, 0.85, -0.8),
+                text: "Shop Items: Keyboard, Plant"
+            },
+            cart: {
+                cameraPos: new THREE.Vector3(-2, 1.5, 2), // Focus on chair
+                lookAt: new THREE.Vector3(-0.5, 0.5, 0),
+                text: "Cart: Add items like Keyboard or Plant"
+            },
+            about: {
+                cameraPos: new THREE.Vector3(-3, 2.5, -2), // Focus on shelf
+                lookAt: new THREE.Vector3(-2, 2, -4.8),
+                text: "About: A minimal hacker workspace"
             }
-        });
+        };
+
+        let currentPage = 'home';
+
+        function navigateTo(page) {
+            currentPage = page;
+            const pageData = pages[page];
+            gsap.to(camera.position, { 
+                x: pageData.cameraPos.x, 
+                y: pageData.cameraPos.y, 
+                z: pageData.cameraPos.z, 
+                duration: 1, 
+                ease: 'power2.out' 
+            });
+            camera.lookAt(pageData.lookAt);
+            document.getElementById('textOverlay').innerText = pageData.text;
+            toggleMenu(); // Close the sidebar after selection
+        }
+
+        // Initial page load
+        navigateTo('home');
 
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
-            controls.update();
             renderer.render(scene, camera);
         }
         animate();
@@ -374,21 +406,6 @@
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('open');
         }
-
-        // Menu interactions
-        window.focusOnDesk = function () {
-            gsap.to(camera.position, { x: 5, y: 3, z: 5, duration: 1, ease: 'power2.out' });
-            gsap.to(controls.target, { x: 0, y: 1, z: -1, duration: 1, ease: 'power2.out' });
-        };
-
-        window.focusOnBookshelf = function () {
-            gsap.to(camera.position, { x: -2, y: 2, z: -2, duration: 1, ease: 'power2.out' });
-            gsap.to(controls.target, { x: -2, y: 2, z: -4.8, duration: 1, ease: 'power2.out' });
-        };
-
-        window.showProject = function (projectId) {
-            console.log(`Showing project ${projectId}`);
-        };
 
         // GSAP animations
         gsap.from('.sidebar', { opacity: 0, x: -50, duration: 1, ease: 'power2.out', delay: 0.5 });
