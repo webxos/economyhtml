@@ -32,6 +32,7 @@
             height: 100vh;
             background: rgba(0, 0, 0, 0.85);
             padding: 15px;
+            transition: left 0.3s ease;
             z-index: 10;
         }
 
@@ -60,6 +61,11 @@
             font-size: 1.1rem;
             display: block;
             padding: 5px;
+            cursor: pointer;
+        }
+
+        .sidebar a:hover {
+            color: #00cc00;
         }
 
         .menu-toggle {
@@ -106,62 +112,6 @@
             overflow-y: auto;
         }
 
-        .center-overlay button {
-            margin: 5px;
-            padding: 5px 10px;
-            background: #00ff00;
-            color: #000000;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .center-overlay button.remove {
-            background: #ff5555;
-            color: #ffffff;
-        }
-
-        .center-overlay ul {
-            list-style: none;
-            margin: 10px 0;
-            padding: 0;
-        }
-
-        .center-overlay li {
-            margin: 5px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .shop-item {
-            background: rgba(20, 20, 20, 0.9);
-            border: 1px solid #00ff00;
-            border-radius: 5px;
-            padding: 10px;
-            margin: 10px 0;
-            width: 300px;
-            text-align: left;
-        }
-
-        .shop-item h3 {
-            color: #00ff00;
-            font-size: 1.2rem;
-            margin-bottom: 5px;
-        }
-
-        .shop-item p {
-            color: #00ff00;
-            font-size: 0.9rem;
-            margin: 5px 0;
-        }
-
-        .shop-item button {
-            width: 100%;
-            margin-top: 10px;
-        }
-
         @media (max-width: 768px) {
             .sidebar {
                 width: 150px;
@@ -194,23 +144,6 @@
                 font-size: 1.2rem;
                 padding: 10px;
             }
-
-            .center-overlay button {
-                font-size: 0.8rem;
-                padding: 4px 8px;
-            }
-
-            .shop-item {
-                width: 200px;
-            }
-
-            .shop-item h3 {
-                font-size: 1rem;
-            }
-
-            .shop-item p {
-                font-size: 0.8rem;
-            }
         }
     </style>
 </head>
@@ -220,12 +153,12 @@
     <div class="sidebar" id="sidebar">
         <h1>webXOS 2025</h1>
         <ul>
-            <li><a href="#" onclick="navigateTo('about')">About</a></li>
-            <li><a href="#" onclick="navigateTo('tools')">Tools</a></li>
-            <li><a href="#" onclick="navigateTo('ai_agents')">AI Agents</a></li>
-            <li><a href="#" onclick="navigateTo('games')">Games</a></li>
-            <li><a href="#" onclick="navigateTo('more_info')">More Info</a></li>
-            <li><a href="#" onclick="navigateTo('copyright')">Copyright</a></li>
+            <li><a onclick="navigateTo('about')">About</a></li>
+            <li><a onclick="navigateTo('tools')">Tools</a></li>
+            <li><a onclick="navigateTo('ai_agents')">AI Agents</a></li>
+            <li><a onclick="navigateTo('games')">Games</a></li>
+            <li><a onclick="navigateTo('more_info')">More Info</a></li>
+            <li><a onclick="navigateTo('copyright')">Copyright</a></li>
         </ul>
     </div>
     <div class="text-overlay" id="textOverlay"></div>
@@ -236,14 +169,20 @@
 
     <script>
         // Scene setup
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true, powerPreference: 'low-power' });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
-        renderer.setClearColor(0x000000, 1);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        let scene, camera, renderer;
+        try {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+            renderer.setClearColor(0x000000, 1);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        } catch (e) {
+            console.error("Renderer setup failed:", e);
+            document.body.innerHTML = "<p>Error initializing WebGL. Please check your browser or device.</p>";
+        }
 
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x001100, 0.3);
@@ -291,16 +230,11 @@
         ceiling.rotation.x = Math.PI / 2;
         scene.add(ceiling);
 
-        // Neon green webXOS 2025 logo on back wall
+        // Neon green webXOS 2025 logo placeholder (plane instead of TextGeometry)
         const logoMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 1.5 });
-        const logoGeometry = new THREE.TextGeometry('webXOS 2025', {
-            font: new THREE.Font({}), // Note: Requires a font loader for proper text geometry
-            size: 0.8,
-            height: 0.1
-        });
-        const logoText = new THREE.Mesh(logoGeometry, logoMaterial);
-        logoText.position.set(-2.5, 2.5, -4.95);
-        scene.add(logoText);
+        const logoPlane = new THREE.Mesh(new THREE.PlaneGeometry(4, 1), logoMaterial);
+        logoPlane.position.set(0, 2.5, -4.95);
+        scene.add(logoPlane);
 
         // Matrix falling text effect on side wall
         const matrixMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.8 });
@@ -310,7 +244,6 @@
         matrixPlane.rotation.y = Math.PI / 2;
         scene.add(matrixPlane);
 
-        // Simulate matrix effect with animation
         let matrixTime = 0;
         function updateMatrixEffect() {
             matrixTime += 0.05;
@@ -449,7 +382,7 @@
         scene.add(plantLeaves);
 
         // Chair
-        const chairSeatMaterial = new THREE.MeshPhongMaterial({ color: 0x1a2a1a, shininess: 80 });
+        const chairSeatMaterial = new THREE.MeshPhongMaterial({ color: 0x1a2a1a, shin wiggle: 80 });
         const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.5), chairSeatMaterial);
         chairSeat.position.set(-0.5, 0.5, 0);
         chairSeat.castShadow = true;
@@ -485,46 +418,6 @@
         const bedGlow = new THREE.Mesh(new THREE.BoxGeometry(2, 0.02, 4), bedGlowMaterial);
         bedGlow.position.set(3, 0.25, 2);
         scene.add(bedGlow);
-
-        // Shop items and cart logic
-        const shopItems = [
-            { name: "Keyboard", title: "Neon Green Keyboard", price: 50, mesh: keyboardBase, description: "A futuristic keyboard with neon green glow, perfect for late-night coding sessions." },
-            { name: "Plant", title: "Glowing Plant", price: 20, mesh: plantPot, description: "A small plant with a neon green pot, adding a touch of nature to your desk." }
-        ];
-
-        let cart = [];
-
-        function addToCart(itemName) {
-            const item = shopItems.find(i => i.name === itemName);
-            if (item) {
-                cart.push({ name: item.name, price: item.price });
-                if (currentPage === 'cart') {
-                    updateCartPage();
-                }
-            }
-       23
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCartPage();
-        }
-
-        function updateCartPage() {
-            const centerOverlay = document.getElementById('centerOverlay');
-            const textOverlay = document.getElementById('textOverlay');
-            if (cart.length === 0) {
-                centerOverlay.innerHTML = "Your Cart<br>Cart is empty";
-                textOverlay.innerText = "Cart: No items";
-            } else {
-                let total = cart.reduce((sum, item) => sum + item.price, 0);
-                let cartHtml = "Your Cart<ul>";
-                cart.forEach((item, index) => {
-                    cartHtml += `<li>${item.name} - $${item.price} <button class="remove" onclick="removeFromCart(${index})">Remove</button></li>`;
-                });
-                cartHtml += `</ul>Total: $${total}`;
-                centerOverlay.innerHTML = cartHtml;
-                textOverlay.innerText = `Cart: ${cart.length} item(s), Total: $${total}`;
-            }
-        }
 
         // Page navigation and camera positions
         const pages = {
@@ -569,9 +462,12 @@
         let currentPage = 'about';
 
         function navigateTo(page) {
+            if (!pages[page]) {
+                console.error(`Page ${page} not found`);
+                return;
+            }
             currentPage = page;
             const pageData = pages[page];
-
             camera.position.copy(pageData.cameraPos);
             camera.lookAt(pageData.lookAt);
             document.getElementById('textOverlay').innerText = pageData.text;
@@ -579,8 +475,18 @@
             toggleMenu();
         }
 
+        // Menu toggle
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
         // Initial page load
-        navigateTo('about');
+        try {
+            navigateTo('about');
+        } catch (e) {
+            console.error("Initial navigation failed:", e);
+        }
 
         // Animation loop
         function animate() {
@@ -588,7 +494,11 @@
             updateMatrixEffect();
             renderer.render(scene, camera);
         }
-        animate();
+        try {
+            animate();
+        } catch (e) {
+            console.error("Animation loop failed:", e);
+        }
 
         // Responsive handling
         window.addEventListener('resize', () => {
@@ -596,12 +506,6 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
-        // Menu toggle
-        function toggleMenu() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('open');
-        }
     </script>
 </body>
 </html>
