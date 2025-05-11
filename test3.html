@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Hacker Desk - 3D Office Portfolio</title>
+    <title>Dark Minimal Hacker Desk - 3D Office Scene</title>
     <style>
         * {
             margin: 0;
@@ -12,7 +12,7 @@
         }
 
         body {
-            background: #050816;
+            background: #000000; /* Black background for night-time */
             color: #f3f3f3;
             font-family: 'Arial', sans-serif;
             overflow: hidden;
@@ -78,6 +78,7 @@
             border-radius: 5px;
             cursor: pointer;
             z-index: 11;
+            touch-action: none; /* Prevent scrolling on touch */
         }
 
         .glow-button {
@@ -130,7 +131,7 @@
             <li><a href="#" onclick="showProject(1)">Project 1</a></li>
             <li><a href="#" onclick="showProject(2)">Project 2</a></li>
             <li><a href="#" onclick="focusOnBookshelf()">Skills</a></li>
-            <li><a href="#" onclick="focusOnWindow()">Contact</a></li>
+            <li><a href="#" onclick="focusOnDesk()">Contact</a></li>
         </ul>
         <button class="glow-button" onclick="toggleLighting()">Toggle Lighting</button>
     </div>
@@ -147,8 +148,8 @@
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true, powerPreference: 'low-power' });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setClearColor(0x050816, 1);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap for mobile performance
+        renderer.setClearColor(0x000000, 1); // Black background for night-time
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -162,6 +163,8 @@
         controls.dampingFactor = 0.05;
         controls.minDistance = 2;
         controls.maxDistance = 10;
+        controls.enablePan = false; // Disable panning for better mobile experience
+        controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY }; // Enable touch controls
 
         // Raycaster for interactivity
         const raycaster = new THREE.Raycaster();
@@ -169,22 +172,23 @@
         let INTERSECTED;
 
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+        const ambientLight = new THREE.AmbientLight(0x202020, 0.3); // Dim ambient light
         scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0x00ffcc, 1, 10);
+        const pointLight = new THREE.PointLight(0x00ffcc, 0.8, 10); // Cyan desk lamp
         pointLight.position.set(2, 3, 2);
         pointLight.castShadow = true;
-        pointLight.shadow.mapSize.set(512, 512);
+        pointLight.shadow.mapSize.set(512, 512); // Optimized for performance
         scene.add(pointLight);
 
-        const deskLampLight = new THREE.PointLight(0xffaa00, 0.8, 5);
-        deskLampLight.position.set(1, 1.5, 0);
-        scene.add(deskLampLight);
+        const monitorLight = new THREE.PointLight(0x800080, 0.5, 5); // Purple monitor glow
+        monitorLight.position.set(0, 1.5, -0.3);
+        scene.add(monitorLight);
 
-        // Room geometry
-        const roomMaterial = new THREE.MeshStandardMaterial({ color: 0x1c2526, roughness: 0.8 });
-        const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), roomMaterial);
+        // Room geometry (no windows or doors)
+        const roomMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.8 }); // Dark gray walls
+        const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 }); // Dark floor
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), floorMaterial);
         floor.rotation.x = -Math.PI / 2;
         floor.receiveShadow = true;
         scene.add(floor);
@@ -205,124 +209,130 @@
         ceiling.rotation.x = Math.PI / 2;
         scene.add(ceiling);
 
-        // Window with skybox texture
-        const windowTexture = new THREE.TextureLoader().load('/textures/skybox.jpg'); // Placeholder
-        const windowMaterial = new THREE.MeshBasicMaterial({ map: windowTexture });
-        const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), windowMaterial);
-        windowPane.position.set(0, 2.5, -4.9);
-        scene.add(windowPane);
+        // Rug on floor
+        const rugMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.7 });
+        const rug = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), rugMaterial);
+        rug.rotation.x = -Math.PI / 2;
+        rug.position.set(0, 0.01, 0); // Slightly above floor to avoid z-fighting
+        scene.add(rug);
 
         // Desk
-        const deskMaterial = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.5 });
-        const desk = new THREE.Mesh(new THREE.BoxGeometry(2, 0.1, 1), deskMaterial);
-        desk.position.set(0, 0.75, 0);
+        const deskMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.5 }); // Dark wood
+        const desk = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 1.2), deskMaterial);
+        desk.position.set(0, 0.75, -1);
         desk.castShadow = true;
         desk.receiveShadow = true;
         scene.add(desk);
 
-        // Tower PC
-        const pcMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.3 });
-        const pc = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), pcMaterial);
-        pc.position.set(0.8, 0.4, 0.4);
-        pc.castShadow = true;
-        pc.receiveShadow = true;
-        scene.add(pc);
+        // Desk drawer (cabinet under desk)
+        const drawerMaterial = new THREE.MeshStandardMaterial({ color: 0x252525, roughness: 0.6 });
+        const drawer = new THREE.Mesh(new THREE.BoxGeometry(1, 0.6, 1), drawerMaterial);
+        drawer.position.set(0.75, 0.3, -1);
+        drawer.castShadow = true;
+        drawer.receiveShadow = true;
+        scene.add(drawer);
 
-        // Monitors (using InstancedMesh)
-        const monitorMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.2 });
-        const monitorGeometry = new THREE.BoxGeometry(0.6, 0.4, 0.05);
-        const monitorMesh = new THREE.InstancedMesh(monitorGeometry, monitorMaterial, 3);
-        const dummy = new THREE.Object3D();
-        for (let i = 0; i < 3; i++) {
-            dummy.position.set(-0.4 + i * 0.4, 1, -0.3);
-            dummy.updateMatrix();
-            monitorMesh.setMatrixAt(i, dummy.matrix);
-        }
-        monitorMesh.castShadow = true;
-        monitorMesh.receiveShadow = true;
-        scene.add(monitorMesh);
+        // Monitor
+        const monitorMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.2, emissive: 0x800080, emissiveIntensity: 0.2 });
+        const monitor = new THREE.Mesh(new THREE.BoxGeometry(1, 0.6, 0.05), monitorMaterial);
+        monitor.position.set(0, 1.2, -1.4);
+        monitor.castShadow = true;
+        monitor.receiveShadow = true;
+        scene.add(monitor);
 
-        // Bookshelf
-        const shelfMaterial = new THREE.MeshStandardMaterial({ color: 0x3a2f2f, roughness: 0.6 });
-        const shelf = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 0.2), shelfMaterial);
-        shelf.position.set(-2, 1, -4.5);
+        // Keyboard
+        const keyboardMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.3 });
+        const keyboard = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.3), keyboardMaterial);
+        keyboard.position.set(0, 0.85, -0.8);
+        keyboard.castShadow = true;
+        keyboard.receiveShadow = true;
+        scene.add(keyboard);
+
+        // Small plant on desk
+        const plantPotMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, emissive: 0x800080, emissiveIntensity: 0.3 });
+        const plantPot = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32), plantPotMaterial);
+        plantPot.position.set(-0.8, 0.85, -1.2);
+        plantPot.castShadow = true;
+        scene.add(plantPot);
+
+        const plantLeavesMaterial = new THREE.MeshStandardMaterial({ color: 0x2a3a2a, roughness: 0.7 });
+        const plantLeaves = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), plantLeavesMaterial);
+        plantLeaves.position.set(-0.8, 1, -1.2);
+        plantLeaves.castShadow = true;
+        scene.add(plantLeaves);
+
+        // Chair (dark purple)
+        const chairSeatMaterial = new THREE.MeshStandardMaterial({ color: 0x3a1f3a, roughness: 0.5 });
+        const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.5), chairSeatMaterial);
+        chairSeat.position.set(-0.5, 0.5, 0);
+        chairSeat.castShadow = true;
+        chairSeat.receiveShadow = true;
+        scene.add(chairSeat);
+
+        const chairBackMaterial = new THREE.MeshStandardMaterial({ color: 0x3a1f3a, roughness: 0.5 });
+        const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.1), chairBackMaterial);
+        chairBack.position.set(-0.5, 0.8, 0.2);
+        chairBack.rotation.x = -Math.PI / 8;
+        chairBack.castShadow = true;
+        scene.add(chairBack);
+
+        const chairLegMaterial = new THREE.MeshStandardMaterial({ color: 0x252525, roughness: 0.6 });
+        const chairLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.4, 16), chairLegMaterial);
+        chairLeg.position.set(-0.5, 0.25, 0);
+        chairLeg.castShadow = true;
+        scene.add(chairLeg);
+
+        // Shelf on back wall
+        const shelfMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.5 });
+        const shelf = new THREE.Mesh(new THREE.BoxGeometry(2, 0.1, 0.3), shelfMaterial);
+        shelf.position.set(-2, 2, -4.8);
         shelf.castShadow = true;
         shelf.receiveShadow = true;
         scene.add(shelf);
 
-        // Coffee Mug (interactive)
-        const mugMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
-        const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32), mugMaterial);
-        mug.position.set(0.5, 0.85, -0.2);
-        mug.castShadow = true;
-        mug.receiveShadow = true;
-        mug.name = 'coffeeMug';
-        scene.add(mug);
+        // Books on shelf (using InstancedMesh)
+        const bookMaterial = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.7 });
+        const bookGeometry = new THREE.BoxGeometry(0.1, 0.3, 0.2);
+        const bookMesh = new THREE.InstancedMesh(bookGeometry, bookMaterial, 3);
+        const dummy = new THREE.Object3D();
+        for (let i = 0; i < 3; i++) {
+            dummy.position.set(-2.3 + i * 0.15, 2.15, -4.8);
+            dummy.updateMatrix();
+            bookMesh.setMatrixAt(i, dummy.matrix);
+        }
+        bookMesh.castShadow = true;
+        bookMesh.receiveShadow = true;
+        scene.add(bookMesh);
 
-        // HTML sign on wall
+        // Decorative cube on shelf
+        const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.5 });
+        const cube = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.15), cubeMaterial);
+        cube.position.set(-1.5, 2.15, -4.8);
+        cube.castShadow = true;
+        scene.add(cube);
+
+        // Clock on wall
+        const clockMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.5 });
+        const clock = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 32), clockMaterial);
+        clock.position.set(-3, 3, -4.9);
+        clock.rotation.y = Math.PI / 2;
+        scene.add(clock);
+
+        // HTML sign on wall (replaced with a minimal "Code" sign)
         const canvas = document.createElement('canvas');
         canvas.width = 256;
         canvas.height = 128;
         const context = canvas.getContext('2d');
         context.fillStyle = '#00ffcc';
         context.font = 'bold 60px Arial';
-        context.fillText('HTML', 30, 80);
+        context.fillText('Code', 30, 80);
         const signTexture = new THREE.CanvasTexture(canvas);
         const signMaterial = new THREE.MeshStandardMaterial({ map: signTexture, emissive: 0x00ffcc, emissiveIntensity: 0.5 });
         const sign = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.5), signMaterial);
         sign.position.set(2, 2.5, -4.9);
         scene.add(sign);
 
-        // GLTF Loader
-        const loader = new THREE.GLTFLoader();
-
-        // Load chair
-        loader.load(
-            '/models/chair.glb',
-            (gltf) => {
-                const chair = gltf.scene;
-                chair.scale.set(0.5, 0.5, 0.5);
-                chair.position.set(-0.8, 0, 0.2);
-                chair.castShadow = true;
-                chair.receiveShadow = true;
-                scene.add(chair);
-                gsap.to(chair.rotation, { y: Math.PI / 4, duration: 5, repeat: -1, yoyo: true, ease: 'power1.inOut' });
-            },
-            undefined,
-            (error) => console.error('Error loading chair:', error)
-        );
-
-        // Load keyboard
-        loader.load(
-            '/models/keyboard.glb',
-            (gltf) => {
-                const keyboard = gltf.scene;
-                keyboard.scale.set(0.3, 0.3, 0.3);
-                keyboard.position.set(0, 0.85, -0.1);
-                keyboard.castShadow = true;
-                keyboard.receiveShadow = true;
-                scene.add(keyboard);
-            },
-            undefined,
-            (error) => console.error('Error loading keyboard:', error)
-        );
-
-        // Load bookshelf model
-        loader.load(
-            '/models/bookshelf.glb',
-            (gltf) => {
-                const bookshelf = gltf.scene;
-                bookshelf.scale.set(0.5, 0.5, 0.5);
-                bookshelf.position.set(-2, 0, -4.5);
-                bookshelf.castShadow = true;
-                bookshelf.receiveShadow = true;
-                scene.add(bookshelf);
-            },
-            undefined,
-            (error) => console.error('Error loading bookshelf:', error)
-        );
-
-        // Interactivity
+        // Interactivity (e.g., rotate the plant on click)
         window.addEventListener('click', (event) => {
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -330,7 +340,7 @@
             const intersects = raycaster.intersectObjects(scene.children);
             if (intersects.length > 0) {
                 const object = intersects[0].object;
-                if (object.name === 'coffeeMug') {
+                if (object === plantLeaves) {
                     gsap.to(object.rotation, { y: '+=2', duration: 1, ease: 'power2.out' });
                 }
             }
@@ -355,8 +365,8 @@
         let lightingOn = true;
         window.toggleLighting = function () {
             lightingOn = !lightingOn;
-            pointLight.intensity = lightingOn ? 1 : 0;
-            deskLampLight.intensity = lightingOn ? 0.8 : 0;
+            pointLight.intensity = lightingOn ? 0.8 : 0;
+            monitorLight.intensity = lightingOn ? 0.5 : 0;
         };
 
         // Menu toggle
@@ -368,21 +378,15 @@
         // Menu interactions
         window.focusOnDesk = function () {
             gsap.to(camera.position, { x: 5, y: 3, z: 5, duration: 1, ease: 'power2.out' });
-            gsap.to(controls.target, { x: 0, y: 1, z: 0, duration: 1, ease: 'power2.out' });
+            gsap.to(controls.target, { x: 0, y: 1, z: -1, duration: 1, ease: 'power2.out' });
         };
 
         window.focusOnBookshelf = function () {
             gsap.to(camera.position, { x: -2, y: 2, z: -2, duration: 1, ease: 'power2.out' });
-            gsap.to(controls.target, { x: -2, y: 1, z: -4.5, duration: 1, ease: 'power2.out' });
-        };
-
-        window.focusOnWindow = function () {
-            gsap.to(camera.position, { x: 0, y: 2, z: 2, duration: 1, ease: 'power2.out' });
-            gsap.to(controls.target, { x: 0, y: 2.5, z: -4.9, duration: 1, ease: 'power2.out' });
+            gsap.to(controls.target, { x: -2, y: 2, z: -4.8, duration: 1, ease: 'power2.out' });
         };
 
         window.showProject = function (projectId) {
-            // Placeholder: Update monitor texture to show project screenshot
             console.log(`Showing project ${projectId}`);
         };
 
