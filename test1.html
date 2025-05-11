@@ -22,15 +22,8 @@
             margin-top: 20vh;
             pointer-events: auto;
         }
-        #hero-text h1 {
-            font-size: 3rem;
-            margin: 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        #hero-text p {
-            font-size: 1.2rem;
-            margin: 10px 0;
-        }
+        #hero-text h1 { font-size: 3rem; margin: 0; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); }
+        #hero-text p { font-size: 1.2rem; margin: 10px 0; }
         #hero-text a {
             display: inline-block;
             padding: 10px 20px;
@@ -69,7 +62,6 @@
     </style>
 </head>
 <body>
-    <!-- Overlay for branding and CTA -->
     <div id="overlay">
         <div id="hero-text">
             <h1>Your Company Name</h1>
@@ -83,22 +75,20 @@
         </div>
     </div>
 
-    <!-- Three.js and Loaders -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.min.js"></script>
 
     <script>
         // === 3D Hero Template for Web Designers ===
-        // Instructions for Customization:
-        // 1. Place 3D models (.obj/.mtl) in /models folder (e.g., desk.obj, chair.obj, monitor.obj).
-        // 2. Place textures (.jpg/.png) in /textures folder (e.g., wood.jpg, leather.jpg).
-        // 3. Update model and texture paths in loadModel() functions below.
-        // 4. Modify #hero-text content (h1, p, a) for branding and CTA links.
-        // 5. Adjust camera views in changeView() for your scene layout.
-        // 6. Source models from BlenderKit, TurboSquid, or CGTrader (free/paid .obj/.fbx).
-        // 7. Customize colors, lighting, and styles in CSS and material settings.
+        // Instructions:
+        // 1. Place models (.obj/.mtl) in /models and textures (.jpg/.png) in /textures.
+        // 2. Update loadModel() paths or comment out if missing assets.
+        // 3. Run via local server (e.g., `python -m http.server 8000`) to avoid CORS issues.
+        // 4. Customize #hero-text, colors, and camera views as needed.
+        // 5. Source models from BlenderKit, TurboSquid, or CGTrader.
 
         // Scene Setup
         const scene = new THREE.Scene();
@@ -107,55 +97,52 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Orbit Controls for Exploration
+        // Check WebGL Support
+        if (!renderer.capabilities.isWebGL2 && !renderer.capabilities.isWebGL) {
+            console.error("WebGL not supported in this browser.");
+            alert("Your browser does not support WebGL. Please use a modern browser.");
+        }
+
+        // Orbit Controls
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         controls.minDistance = 2;
         controls.maxDistance = 20;
 
-        // Hero Background (Gradient Sky)
-        const skyGeo = new THREE.SphereGeometry(500, 32, 32);
-        const skyMat = new THREE.ShaderMaterial({
-            uniforms: {
-                topColor: { value: new THREE.Color(0x0077ff) }, // Customize sky color
-                bottomColor: { value: new THREE.Color(0xffffff) },
-                offset: { value: 33 },
-                exponent: { value: 0.6 }
-            },
-            vertexShader: `
-                varying vec3 vWorldPosition;
-                void main() {
-                    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-                    vWorldPosition = worldPosition.xyz;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform vec3 topColor;
-                uniform vec3 bottomColor;
-                uniform float offset;
-                uniform float exponent;
-                varying vec3 vWorldPosition;
-                void main() {
-                    float h = normalize(vWorldPosition + offset).y;
-                    gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
-                }
-            `,
-            side: THREE.BackSide
-        });
-        const sky = new THREE.Mesh(skyGeo, skyMat);
-        scene.add(sky);
-
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
         const officeLight = new THREE.PointLight(0xffffff, 1, 100);
         officeLight.position.set(0, 5, 0);
         scene.add(officeLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(5, 5, 5);
         scene.add(directionalLight);
+
+        // Procedural Room (Fallback)
+        const floorGeo = new THREE.PlaneGeometry(20, 20);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
+
+        const wallGeo = new THREE.PlaneGeometry(20, 10);
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+        const backWall = new THREE.Mesh(wallGeo, wallMat);
+        backWall.position.set(0, 5, -10);
+        scene.add(backWall);
+        const sideWall = new THREE.Mesh(wallGeo, wallMat);
+        sideWall.position.set(-10, 5, 0);
+        sideWall.rotation.y = Math.PI / 2;
+        scene.add(sideWall);
+
+        // Fallback Cube (Debug)
+        const cubeGeo = new THREE.BoxGeometry(1, 1, 1);
+        const cubeMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        const cube = new THREE.Mesh(cubeGeo, cubeMat);
+        cube.position.set(0, 0.5, 0);
+        scene.add(cube);
 
         // Load 3D Models
         const mtlLoader = new THREE.MTLLoader();
@@ -164,41 +151,27 @@
         function loadModel(mtlPath, objPath, position, scale, rotation) {
             mtlLoader.load(mtlPath, (materials) => {
                 materials.preload();
-                objLoader.setMaterials(materials).load(objPath, (object) => {
-                    object.position.copy(position);
-                    object.scale.set(scale, scale, scale);
-                    object.rotation.set(rotation.x, rotation.y, rotation.z);
-                    scene.add(object);
-                });
-            });
+                objLoader.setMaterials(materials).load(
+                    objPath,
+                    (object) => {
+                        object.position.copy(position);
+                        object.scale.set(scale, scale, scale);
+                        object.rotation.set(rotation.x, rotation.y, rotation.z);
+                        scene.add(object);
+                        console.log(`Loaded: ${objPath}`);
+                    },
+                    (xhr) => console.log(`Loading ${objPath}: ${(xhr.loaded / xhr.total * 100)}%`),
+                    (error) => console.error(`Error loading ${objPath}:`, error)
+                );
+            }, undefined, (error) => console.error(`Error loading ${mtlPath}:`, error));
         }
 
-        // Example Models (Replace paths with your assets)
-        loadModel(
-            'models/desk.mtl', 'models/desk.obj',
-            new THREE.Vector3(0, 0, 0), 1,
-            { x: 0, y: 0, z: 0 }
-        );
-        loadModel(
-            'models/chair.mtl', 'models/chair.obj',
-            new THREE.Vector3(2, 0, 0), 1,
-            { x: 0, y: Math.PI / 2, z: 0 }
-        );
-        loadModel(
-            'models/monitor.mtl', 'models/monitor.obj',
-            new THREE.Vector3(0, 1, -1), 1,
-            { x: 0, y: 0, z: 0 }
-        );
-        loadModel(
-            'models/monitor.mtl', 'models/monitor.obj',
-            new THREE.Vector3(1, 1, -1), 1,
-            { x: 0, y: 0, z: 0 }
-        );
-        loadModel(
-            'models/monitor.mtl', 'models/monitor.obj',
-            new THREE.Vector3(-1, 1, -1), 1,
-            { x: 0, y: 0, z: 0 }
-        );
+        // Load Models (Comment out if assets are missing)
+        loadModel('models/desk.mtl', 'models/desk.obj', new THREE.Vector3(0, 0, 0), 1, { x: 0, y: 0, z: 0 });
+        loadModel('models/chair.mtl', 'models/chair.obj', new THREE.Vector3(2, 0, 0), 1, { x: 0, y: Math.PI / 2, z: 0 });
+        loadModel('models/monitor.mtl', 'models/monitor.obj', new THREE.Vector3(0, 1, -1), 1, { x: 0, y: 0, z: 0 });
+        loadModel('models/monitor.mtl', 'models/monitor.obj', new THREE.Vector3(1, 1, -1), 1, { x: 0, y: 0, z: 0 });
+        loadModel('models/monitor.mtl', 'models/monitor.obj', new THREE.Vector3(-1, 1, -1), 1, { x: 0, y: 0, z: 0 });
 
         // Camera Views
         function changeView(view) {
@@ -217,7 +190,6 @@
                     targetLookAt = new THREE.Vector3(0, 0, 0);
                     break;
             }
-            // Smooth transition
             new TWEEN.Tween(camera.position)
                 .to(targetPos, 1000)
                 .easing(TWEEN.Easing.Quadratic.InOut)
@@ -248,7 +220,5 @@
         }
         animate();
     </script>
-    <!-- Tween.js for smooth camera transitions -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.min.js"></script>
 </body>
 </html>
