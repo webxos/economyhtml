@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>webXOS Studio</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            display: block;
+            width: 100vw !important;
+            height: 100vh !important;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -200px;
+            width: 200px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            z-index: 10;
+        }
+        .sidebar.open {
+            left: 0;
+        }
+        .sidebar h1 {
+            font-size: 1.8rem;
+            color: #00ff00;
+            margin-bottom: 15px;
+            margin-top: 50px;
+        }
+        .sidebar ul {
+            list-style: none;
+        }
+        .sidebar li {
+            margin: 10px 0;
+        }
+        .sidebar a {
+            color: #aaa6c3;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            padding: 5px;
+        }
+        .menu-toggle {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 8px;
+            background: #00ff00;
+            color: #000000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 11;
+            touch-action: none;
+        }
+        .text-overlay {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            color: #ffffff;
+            font-size: 1rem;
+            z-index: 10;
+            max-width: 80%;
+        }
+        .center-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            color: #00ff00;
+            font-size: 1.5rem;
+            text-align: center;
+            z-index: 10;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .center-overlay button {
+            margin: 5px;
+            padding: 5px 10px;
+            background: #00ff00;
+            color: #000000;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .center-overlay button.remove {
+            background: #ff5555;
+            color: #ffffff;
+        }
+        .center-overlay ul {
+            list-style: none;
+            margin: 10px 0;
+            padding: 0;
+        }
+        .center-overlay li {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .shop-item {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            width: 300px;
+            text-align: left;
+        }
+        .shop-item h3 {
+            color: #00ff00;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        .shop-item p {
+            color: #aaa6c3;
+            font-size: 0.9rem;
+            margin: 5px 0;
+        }
+        .shop-item button {
+            width: 100%;
+            margin-top: 10px;
+        }
+        @media (max-width: 768px) {
+            canvas {
+                width: 100vw !important;
+                height: 100vh !important;
+            }
+            .sidebar {
+                width: 150px;
+                left: -150px;
+            }
+            .sidebar h1 {
+                font-size: 1.3rem;
+                margin-top: 40px;
+            }
+            .sidebar a {
+                font-size: 0.9rem;
+                padding: 8px;
+            }
+            .menu-toggle {
+                padding: 6px;
+                font-size: 0.8rem;
+            }
+            .text-overlay {
+                font-size: 0.9rem;
+                padding: 8px;
+                bottom: 10px;
+                left: 10px;
+            }
+            .center-overlay {
+                font-size: 1.2rem;
+                padding: 10px;
+            }
+            .center-overlay button {
+                font-size: 0.8rem;
+                padding: 4px 8px;
+            }
+            .shop-item {
+                width: 200px;
+            }
+            .shop-item h3 {
+                font-size: 1rem;
+            }
+            .shop-item p {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    <div class="sidebar" id="sidebar">
+        <h1>webXOS Studio</h1>
+        <ul>
+            <li><a href="#" onclick="navigateTo('about')">About</a></li>
+            <li><a href="#" onclick="navigateTo('tools')">Tools</a></li>
+            <li><a href="#" onclick="navigateTo('aiAgents')">AI Agents</a></li>
+            <li><a href="#" onclick="navigateTo('games')">Games</a></li>
+            <li><a href="#" onclick="navigateTo('copyright')">Copyright</a></li>
+        </ul>
+    </div>
+    <div class="text-overlay" id="textOverlay"></div>
+    <div class="center-overlay" id="centerOverlay"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x00ff00, 0.4);
+        scene.add(ambientLight);
+        const naturalAmbientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(naturalAmbientLight);
+        const spotlight1 = new THREE.SpotLight(0x00ff00, 2);
+        spotlight1.position.set(0, 5, 4);
+        spotlight1.angle = Math.PI / 6;
+        spotlight1.penumbra = 0.5;
+        spotlight1.castShadow = true;
+        spotlight1.target.position.set(0, 0, 4);
+        scene.add(spotlight1);
+        scene.add(spotlight1.target);
+
+        // Base wall neon lights
+        const baseLightPositions = [
+            [-4, 0.1, -4.5], [0, 0.1, -4.5], [4, 0.1, -4.5],
+            [-4, 0.1, 4.5], [0, 0.1, 4.5], [4, 0.1, 4.5],
+            [-4.5, 0.1, -2], [-4.5, 0.1, 2],
+            [4.5, 0.1, -2], [4.5, 0.1, 2]
+        ];
+        baseLightPositions.forEach(pos => {
+            const pointLight = new THREE.PointLight(0x00ff00, 1, 3);
+            pointLight.position.set(...pos);
+            scene.add(pointLight);
+            const lightGlow = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.8 })
+            );
+            lightGlow.position.set(...pos);
+            scene.add(lightGlow);
+        });
+
+        // Neural network ceiling effect
+        const neuralMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            emissive: 0x00ff00,
+            emissiveIntensity: 2,
+            transparent: true,
+            opacity: 0.9
+        });
+        const neuralNodeGeometry = new THREE.SphereGeometry(0.03, 16, 16);
+        const neuralLineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const nodes = [];
+        const numNodes = 50;
+        for (let i = 0; i < numNodes; i++) {
+            const node = new THREE.Mesh(neuralNodeGeometry, neuralMaterial);
+            node.position.set(Math.random() * 8 - 4, 4.8, Math.random() * 8 - 4);
+            scene.add(node);
+            nodes.push(node.position);
+        }
+        const neuralLinesGeometry = new THREE.BufferGeometry();
+        const lineVertices = [];
+        for (let i = 0; i < numNodes; i++) {
+            for (let j = i + 1; j < numNodes; j++) {
+                if (Math.random() < 0.1) {
+                    lineVertices.push(nodes[i].x, nodes[i].y, nodes[i].z);
+                    lineVertices.push(nodes[j].x, nodes[j].y, nodes[j].z);
+                }
+            }
+        }
+        neuralLinesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(lineVertices, 3));
+        const neuralLines = new THREE.LineSegments(neuralLinesGeometry, neuralLineMaterial);
+        scene.add(neuralLines);
+
+        const ceilingLight = new THREE.PointLight(0x00ff00, 1.5, 10);
+        ceilingLight.position.set(0, 4.8, 0);
+        scene.add(ceilingLight);
+
+        // Floor
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1c1c1c,
+            roughness: 0.7,
+            metalness: 0.5
+        });
+        const floorGeometry = new THREE.PlaneGeometry(10, 10);
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Rug
+        const rugMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            roughness: 0.9
+        });
+        const rugGeometry = new THREE.PlaneGeometry(3, 2);
+        const rug = new THREE.Mesh(rugGeometry, rugMaterial);
+        rug.rotation.x = -Math.PI / 2;
+        rug.position.set(0, 0.01, 2);
+        scene.add(rug);
+
+        // Walls
+        const wallMaterial = new THREE.MeshStandardMaterial({
+            color: 0x000000,
+            roughness: 0.8,
+            metalness: 0.2
+        });
+        const wall1 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMaterial);
+        wall1.position.set(0, 2.5, -5);
+        scene.add(wall1);
+        const wall2 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMaterial);
+        wall2.position.set(-5, 2.5, 0);
+        wall2.rotation.y = Math.PI / 2;
+        scene.add(wall2);
+        const wall3 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMaterial);
+        wall3.position.set(0, 2.5, 5);
+        scene.add(wall3);
+
+        // Desk
+        const deskGeometry = new THREE.BoxGeometry(4, 0.1, 1.8);
+        const deskMaterial = new THREE.MeshStandardMaterial({
+            color: 0xcccccc,
+            metalness: 0.9,
+            roughness: 0.2
+        });
+        const desk = new THREE.Mesh(deskGeometry, deskMaterial);
+        desk.position.set(0, 0.75, 4);
+        desk.castShadow = true;
+        scene.add(desk);
+
+        // Desk legs
+        const legGeometry = new THREE.BoxGeometry(0.1, 0.75, 0.1);
+        const leg1 = new THREE.Mesh(legGeometry, deskMaterial);
+        leg1.position.set(-1.9, 0.35, 4.8);
+        scene.add(leg1);
+        const leg2 = new THREE.Mesh(legGeometry, deskMaterial);
+        leg2.position.set(1.9, 0.35, 4.8);
+        scene.add(leg2);
+        const leg3 = new THREE.Mesh(legGeometry, deskMaterial);
+        leg3.position.set(-1.9, 0.35, 3.2);
+        scene.add(leg3);
+        const leg4 = new THREE.Mesh(legGeometry, deskMaterial);
+        leg4.position.set(1.9, 0.35, 3.2);
+        scene.add(leg4);
+
+        // Video texture for monitor
+        const videoCanvas = document.createElement('canvas');
+        videoCanvas.width = 512;
+        videoCanvas.height = 256;
+        const videoContext = videoCanvas.getContext('2d');
+        const videoTexture = new THREE.CanvasTexture(videoCanvas);
+        videoTexture.wrapS = THREE.RepeatWrapping;
+
+        function updateVideoTexture(time) {
+            videoContext.fillStyle = '#000000';
+            videoContext.fillRect(0, 0, videoCanvas.width, videoCanvas.height);
+            videoContext.font = '60px Arial';
+            videoContext.fillStyle = '#00ff00';
+            videoContext.textAlign = 'center';
+            videoContext.textBaseline = 'middle';
+            const text = 'Cyber Video';
+            const offset = Math.sin(time) * 20;
+            videoContext.fillText(text, videoCanvas.width / 2, videoCanvas.height / 2 + offset);
+            videoTexture.needsUpdate = true;
+        }
+
+        // Monitor
+        const monitorFrameGeometry = new THREE.BoxGeometry(1.2, 0.7, 0.1);
+        const monitorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x000000,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const monitorFrame = new THREE.Mesh(monitorFrameGeometry, monitorMaterial);
+        monitorFrame.position.set(0, 1.1, 4);
+        monitorFrame.castShadow = true;
+        scene.add(monitorFrame);
+
+        const monitorScreenGeometry = new THREE.PlaneGeometry(1, 0.55);
+        const monitorScreenMaterial = new THREE.MeshBasicMaterial({
+            map: videoTexture,
+            transparent: true,
+            emissive: 0x00ff00,
+            emissiveIntensity: 1
+        });
+        const monitorScreen = new THREE.Mesh(monitorScreenGeometry, monitorScreenMaterial);
+        monitorScreen.position.set(0, 1.1, 4.045);
+        scene.add(monitorScreen);
+
+        const monitorGlowLight = new THREE.PointLight(0x00ff00, 1.5, 3);
+        monitorGlowLight.position.set(0, 1.1, 4.1);
+        scene.add(monitorGlowLight);
+
+        const monitorStandBaseGeometry = new THREE.BoxGeometry(0.3, 0.05, 0.3);
+        const monitorStandArmGeometry = new THREE.BoxGeometry(0.1, 0.3, 0.1);
+        const monitorStandBase = new THREE.Mesh(monitorStandBaseGeometry, monitorMaterial);
+        monitorStandBase.position.set(0, 0.8, 4);
+        scene.add(monitorStandBase);
+        const monitorStandArm = new THREE.Mesh(monitorStandArmGeometry, monitorMaterial);
+        monitorStandArm.position.set(0, 0.95, 4);
+        scene.add(monitorStandArm);
+
+        // Keyboard
+        const keyboardGeometry = new THREE.BoxGeometry(0.9, 0.05, 0.35);
+        const keyboardMaterial = new THREE.MeshStandardMaterial({
+            color: 0x000000,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.5,
+            roughness: 0.4,
+            metalness: 0.6
+        });
+        const keyboard = new THREE.Mesh(keyboardGeometry, keyboardMaterial);
+        keyboard.position.set(-0.6, 0.85, 3.6);
+        keyboard.castShadow = true;
+        scene.add(keyboard);
+
+        // Keycaps
+        const keyGeometry = new THREE.BoxGeometry(0.04, 0.02, 0.04);
+        for (let x = -0.4; x <= 0.4; x += 0.06) {
+            for (let z = -0.15; z <= 0.15; z += 0.06) {
+                const key = new THREE.Mesh(keyGeometry, keyboardMaterial);
+                key.position.set(-0.6 + x, 0.88, 3.6 + z);
+                key.rotation.x = Math.random() * 0.1 - 0.05;
+                scene.add(key);
+            }
+        }
+
+        // Mouse
+        const mouseBodyGeometry = new THREE.BoxGeometry(0.14, 0.06, 0.22);
+        const mouseMaterial = new THREE.MeshStandardMaterial({
+            color: 0x000000,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.5,
+            roughness: 0.4,
+            metalness: 0.6
+        });
+        const mouseBody = new THREE.Mesh(mouseBodyGeometry, mouseMaterial);
+        mouseBody.position.set(0.6, 0.85, 3.6);
+        mouseBody.castShadow = true;
+        scene.add(mouseBody);
+
+        const scrollWheelGeometry = new THREE.CylinderGeometry(0.015, 0.015, 0.04, 16);
+        const scrollWheel = new THREE.Mesh(scrollWheelGeometry, mouseMaterial);
+        scrollWheel.position.set(0.6, 0.88, 3.6);
+        scrollWheel.rotation.x = Math.PI / 2;
+        scene.add(scrollWheel);
+
+        const sideButtonGeometry = new THREE.BoxGeometry(0.02, 0.03, 0.05);
+        const sideButton1 = new THREE.Mesh(sideButtonGeometry, mouseMaterial);
+        sideButton1.position.set(0.67, 0.86, 3.6);
+        scene.add(sideButton1);
+        const sideButton2 = new THREE.Mesh(sideButtonGeometry, mouseMaterial);
+        sideButton2.position.set(0.67, 0.86, 3.65);
+        scene.add(sideButton2);
+
+        // Tablet
+        const tabletGeometry = new THREE.BoxGeometry(0.28, 0.01, 0.18);
+        const tabletScreenGeometry = new THREE.PlaneGeometry(0.25, 0.15);
+        const tabletMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const tablet = new THREE.Mesh(tabletGeometry, tabletMaterial);
+        tablet.position.set(-1.2, 0.85, 3.6);
+        tablet.castShadow = true;
+        scene.add(tablet);
+
+        const tabletScreen = new THREE.Mesh(tabletScreenGeometry, monitorScreenMaterial);
+        tabletScreen.position.set(-1.2, 0.86, 3.6);
+        scene.add(tabletScreen);
+
+        const tabletGlowLight = new THREE.PointLight(0x00ff00, 0.8, 1.5);
+        tabletGlowLight.position.set(-1.2, 0.86, 3.65);
+        scene.add(tabletGlowLight);
+
+        // Laptop
+        const laptopBaseGeometry = new THREE.BoxGeometry(0.45, 0.03, 0.35);
+        const laptopScreenGeometry = new THREE.BoxGeometry(0.45, 0.35, 0.02);
+        const laptopMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const laptopBase = new THREE.Mesh(laptopBaseGeometry, laptopMaterial);
+        laptopBase.position.set(1.2, 0.85, 3.8);
+        laptopBase.castShadow = true;
+        scene.add(laptopBase);
+
+        const laptopScreen = new THREE.Mesh(laptopScreenGeometry, laptopMaterial);
+        laptopScreen.position.set(1.2, 0.95, 3.8);
+        laptopScreen.rotation.x = -Math.PI / 4;
+        scene.add(laptopScreen);
+
+        const laptopScreenSurfaceGeometry = new THREE.PlaneGeometry(0.4, 0.3);
+        const laptopScreenSurface = new THREE.Mesh(laptopScreenSurfaceGeometry, monitorScreenMaterial);
+        laptopScreenSurface.position.set(1.2, 0.95, 3.81);
+        laptopScreenSurface.rotation.x = -Math.PI / 4;
+        scene.add(laptopScreenSurface);
+
+        const laptopGlowLight = new THREE.PointLight(0x00ff00, 1, 2);
+        laptopGlowLight.position.set(1.2, 0.95, 3.85);
+        scene.add(laptopGlowLight);
+
+        // Sofa
+        const sofaMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            roughness: 0.6,
+            metalness: 0.1
+        });
+        const sofaBaseGeometry = new THREE.BoxGeometry(4.5, 0.5, 1);
+        const sofaBackGeometry = new THREE.BoxGeometry(4.5, 1, 0.3);
+        const sofaArmGeometry = new THREE.BoxGeometry(0.5, 0.5, 1);
+        const sofaCushionGeometry = new THREE.BoxGeometry(1.4, 0.2, 0.8);
+
+        const sofaBase = new THREE.Mesh(sofaBaseGeometry, sofaMaterial);
+        sofaBase.position.set(0, 0.25, -4.2);
+        sofaBase.castShadow = true;
+        scene.add(sofaBase);
+
+        const sofaBack = new THREE.Mesh(sofaBackGeometry, sofaMaterial);
+        sofaBack.position.set(0, 0.75, -4.45);
+        scene.add(sofaBack);
+
+        const sofaArmLeft = new THREE.Mesh(sofaArmGeometry, sofaMaterial);
+        sofaArmLeft.position.set(-2.25, 0.5, -4.2);
+        scene.add(sofaArmLeft);
+
+        const sofaArmRight = new THREE.Mesh(sofaArmGeometry, sofaMaterial);
+        sofaArmRight.position.set(2.25, 0.5, -4.2);
+        scene.add(sofaArmRight);
+
+        for (let x = -1.5; x <= 1.5; x += 1.5) {
+            const cushion = new THREE.Mesh(sofaCushionGeometry, sofaMaterial);
+            cushion.position.set(x, 0.45, -4.2);
+            scene.add(cushion);
+        }
+
+        // Gaming chairs
+        const chairMaterial = new THREE.MeshStandardMaterial({
+            color: 0x000000,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.3,
+            roughness: 0.4,
+            metalness: 0.6
+        });
+        const chairSeatGeometry = new THREE.BoxGeometry(0.6, 0.15, 0.6);
+        const chairBackGeometry = new THREE.BoxGeometry(0.6, 1, 0.15);
+        const lumbarSupportGeometry = new THREE.BoxGeometry(0.4, 0.3, 0.1);
+        const armrestGeometry = new THREE.BoxGeometry(0.15, 0.1, 0.5);
+        const chairBaseGeometry = new THREE.CylinderGeometry(0.35, 0.35, 0.05, 32);
+        const chairLegGeometry = new THREE.BoxGeometry(0.05, 0.4, 0.05);
+
+        // Chair 1
+        const chair1Seat = new THREE.Mesh(chairSeatGeometry, chairMaterial);
+        chair1Seat.position.set(0, 0.5, 2.5);
+        chair1Seat.castShadow = true;
+        scene.add(chair1Seat);
+
+        const chair1Back = new THREE.Mesh(chairBackGeometry, chairMaterial);
+        chair1Back.position.set(0, 1, 2.35);
+        chair1Back.rotation.x = -Math.PI / 12;
+        scene.add(chair1Back);
+
+        const chair1Lumbar = new THREE.Mesh(lumbarSupportGeometry, chairMaterial);
+        chair1Lumbar.position.set(0, 0.8, 2.4);
+        scene.add(chair1Lumbar);
+
+        const chair1ArmrestLeft = new THREE.Mesh(armrestGeometry, chairMaterial);
+        chair1ArmrestLeft.position.set(-0.35, 0.65, 2.5);
+        scene.add(chair1ArmrestLeft);
+
+        const chair1ArmrestRight = new THREE.Mesh(armrestGeometry, chairMaterial);
+        chair1ArmrestRight.position.set(0.35, 0.65, 2.5);
+        scene.add(chair1ArmrestRight);
+
+        const chair1Base = new THREE.Mesh(chairBaseGeometry, chairMaterial);
+        chair1Base.position.set(0, 0.025, 2.5);
+        scene.add(chair1Base);
+
+        for (let i = 0; i < 5; i++) {
+            const leg = new THREE.Mesh(chairLegGeometry, chairMaterial);
+            leg.position.set(
+                0.25 * Math.cos((i * 2 * Math.PI) / 5),
+                0.2,
+                2.5 + 0.25 * Math.sin((i * 2 * Math.PI) / 5)
+            );
+            leg.rotation.z = Math.PI / 4;
+            scene.add(leg);
+        }
+
+        // Chair 2
+        const chair2Seat = new THREE.Mesh(chairSeatGeometry, chairMaterial);
+        chair2Seat.position.set(-1.2, 0.5, 2.5);
+        chair2Seat.castShadow = true;
+        scene.add(chair2Seat);
+
+        const chair2Back = new THREE.Mesh(chairBackGeometry, chairMaterial);
+        chair2Back.position.set(-1.2, 1, 2.35);
+        chair2Back.rotation.x = -Math.PI / 12;
+        scene.add(chair2Back);
+
+        const chair2Lumbar = new THREE.Mesh(lumbarSupportGeometry, chairMaterial);
+        chair2Lumbar.position.set(-1.2, 0.8, 2.4);
+        scene.add(chair2Lumbar);
+
+        const chair2ArmrestLeft = new THREE.Mesh(armrestGeometry, chairMaterial);
+        chair2ArmrestLeft.position.set(-1.55, 0.65, 2.5);
+        scene.add(chair2ArmrestLeft);
+
+        const chair2ArmrestRight = new THREE.Mesh(armrestGeometry, chairMaterial);
+        chair2ArmrestRight.position.set(-0.85, 0.65, 2.5);
+        scene.add(chair2ArmrestRight);
+
+        const chair2Base = new THREE.Mesh(chairBaseGeometry, chairMaterial);
+        chair2Base.position.set(-1.2, 0.025, 2.5);
+        scene.add(chair2Base);
+
+        for (let i = 0; i < 5; i++) {
+            const leg = new THREE.Mesh(chairLegGeometry, chairMaterial);
+            leg.position.set(
+                -1.2 + 0.25 * Math.cos((i * 2 * Math.PI) / 5),
+                0.2,
+                2.5 + 0.25 * Math.sin((i * 2 * Math.PI) / 5)
+            );
+            leg.rotation.z = Math.PI / 4;
+            scene.add(leg);
+        }
+
+        // Neon sign
+        const signCanvas = document.createElement('canvas');
+        signCanvas.width = 1024;
+        signCanvas.height = 256;
+        const signContext = signCanvas.getContext('2d');
+        signContext.fillStyle = '#000000';
+        signContext.fillRect(0, 0, signCanvas.width, signCanvas.height);
+        signContext.font = '200px Arial';
+        signContext.fillStyle = '#00ff00';
+        signContext.textAlign = 'center';
+        signContext.textBaseline = 'middle';
+        signContext.fillText('webXOS', signCanvas.width / 2, signCanvas.height / 2);
+        const signTexture = new THREE.CanvasTexture(signCanvas);
+
+        const neonSignGeometry = new THREE.PlaneGeometry(3, 0.75);
+        const neonSignMaterial = new THREE.MeshBasicMaterial({
+            map: signTexture,
+            transparent: true,
+            emissive: 0x00ff00,
+            emissiveIntensity: 2
+        });
+        const neonSign = new THREE.Mesh(neonSignGeometry, neonSignMaterial);
+        neonSign.position.set(0, 3, -4.9);
+        scene.add(neonSign);
+
+        const signGlowLight = new THREE.PointLight(0x00ff00, 2, 5);
+        signGlowLight.position.set(0, 3, -4.8);
+        scene.add(signGlowLight);
+
+        // Page navigation and camera positions
+        const pages = {
+            about: {
+                cameraPos: new THREE.Vector3(4, 2, 0),
+                lookAt: new THREE.Vector3(0, 3, -4.9),
+                text: "About: Learn more about webXOS Studio\nOur mission and vision.",
+                centerText: "About webXOS Studio"
+            },
+            tools: {
+                cameraPos: new THREE.Vector3(3, 2, 2),
+                lookAt: new THREE.Vector3(-0.6, 0.85, 3.6),
+                text: "Tools: Explore our suite of development tools\nDesigned for efficiency.",
+                centerText: "Our Tools"
+            },
+            aiAgents: {
+                cameraPos: new THREE.Vector3(0, 3, 0),
+                lookAt: new THREE.Vector3(0, 4.8, 0),
+                text: "AI Agents: Discover our intelligent agents\nPowering the future.",
+                centerText: "AI Agents"
+            },
+            games: {
+                cameraPos: new THREE.Vector3(-3, 2, 0),
+                lookAt: new THREE.Vector3(0, 0.5, 2.5),
+                text: "Games: Dive into our gaming experiences\nFun and immersive.",
+                centerText: "Games by webXOS"
+            },
+            copyright: {
+                cameraPos: new THREE.Vector3(0, 1.5, 4.5),
+                lookAt: new THREE.Vector3(0, 1.1, 4),
+                text: "Copyright: View our licensing information\nProtecting our work.",
+                centerText: "Copyright Information"
+            }
+        };
+
+        let currentPage = 'about';
+
+        function navigateTo(page) {
+            currentPage = page;
+            const pageData = pages[page];
+
+            camera.position.copy(pageData.cameraPos);
+            camera.lookAt(pageData.lookAt);
+            document.getElementById('textOverlay').innerText = pageData.text;
+            document.getElementById('centerOverlay').innerHTML = pageData.centerText;
+
+            toggleMenu();
+        }
+
+        // Initial page load
+        navigateTo('about');
+
+        // Animation loop
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+            updateVideoTexture(time);
+            neuralLinesGeometry.attributes.position.array.forEach((_, i) => {
+                if (i % 3 === 1) {
+                    neuralLinesGeometry.attributes.position.array[i] = 4.8 + Math.sin(time + i) * 0.05;
+                }
+            });
+            neuralLinesGeometry.attributes.position.needsUpdate = true;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Menu toggle
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
