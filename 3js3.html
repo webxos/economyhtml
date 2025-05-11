@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hacker Desk 3D Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #0f0;
+            overflow-x: hidden;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        .hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 2;
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #a0f;
+            text-shadow: 0 0 5px #a0f;
+        }
+
+        .hero a, .portfolio-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: transparent;
+            border: 2px solid #0f0;
+            color: #0f0;
+            text-decoration: none;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .hero a:hover, .portfolio-btn:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 15px #0f0;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #0f0, 0 0 20px #0f0, 0 0 30px #0f0;
+            }
+            to {
+                text-shadow: 0 0 20px #0f0, 0 0 30px #0f0, 0 0 40px #0f0;
+            }
+        }
+
+        /* Portfolio Dashboard */
+        .portfolio-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.95);
+            z-index: 3;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .portfolio-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .portfolio-header h2 {
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px #0f0;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .portfolio-card {
+            background: #111;
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .portfolio-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 0 20px #0f0;
+        }
+
+        .portfolio-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .portfolio-card h3 {
+            font-size: 1.5rem;
+            padding: 15px;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        .portfolio-card p {
+            padding: 0 15px 15px;
+            color: #a0f;
+            font-size: 1rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 4;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #111;
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 90%;
+            padding: 20px;
+            position: relative;
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .modal-content h3 {
+            font-size: 2rem;
+            color: #0f0;
+            margin: 20px 0;
+        }
+
+        .modal-content p {
+            color: #a0f;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .modal-content a {
+            color: #0f0;
+            text-decoration: none;
+            border: 2px solid #0f0;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-content a:hover {
+            background: #0f0;
+            color: #000;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 2rem;
+            color: #0f0;
+            cursor: pointer;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            .hero p {
+                font-size: 1rem;
+            }
+            .hero a, .portfolio-btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            .portfolio-header h2 {
+                font-size: 2rem;
+            }
+            .portfolio-card h3 {
+                font-size: 1.2rem;
+            }
+            .modal-content img {
+                height: 200px;
+            }
+            .modal-content h3 {
+                font-size: 1.5rem;
+            }
+            .modal-content p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="hero">
+        <h1>CyberSmith's Portfolio</h1>
+        <p>Building the Future, One Line of Code at a Time</p>
+        <a href="#projects">Explore My Work</a>
+        <button class="portfolio-btn" onclick="openPortfolio()">Portfolio Dashboard</button>
+    </div>
+
+    <!-- Portfolio Dashboard -->
+    <div class="portfolio-container" id="portfolioContainer">
+        <div class="portfolio-header">
+            <h2>Web Design Portfolio</h2>
+            <button class="portfolio-btn" onclick="closePortfolio()">Back to Hero</button>
+        </div>
+        <div class="portfolio-grid" id="portfolioGrid"></div>
+    </div>
+
+    <!-- Modal for Project Details -->
+    <div class="modal" id="projectModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <img id="modalImage" src="" alt="Project Image">
+            <h3 id="modalTitle"></h3>
+            <p id="modalDescription"></p>
+            <a id="modalLink" href="#" target="_blank">View Project</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Three.js Scene Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        camera.position.set(0, 2, 5);
+
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+        scene.add(ambientLight);
+        const neonLight = new THREE.PointLight(0x00ff00, 1, 100);
+        neonLight.position.set(2, 3, 2);
+        scene.add(neonLight);
+        const purpleLight = new THREE.PointLight(0xaa00ff, 1, 100);
+        purpleLight.position.set(-2, 3, 2);
+        scene.add(purpleLight);
+
+        const deskGeometry = new THREE.BoxGeometry(4, 0.2, 2);
+        const deskMaterial = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
+        const desk = new THREE.Mesh(deskGeometry, deskMaterial);
+        desk.position.y = -0.5;
+        scene.add(desk);
+
+        const monitorGeometry = new THREE.BoxGeometry(1.5, 1, 0.1);
+        const monitorMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00ff00, emissiveIntensity: 0.2 });
+        const monitor = new THREE.Mesh(monitorGeometry, monitorMaterial);
+        monitor.position.set(0, 0.6, -0.5);
+        scene.add(monitor);
+
+        const keyboardGeometry = new THREE.BoxGeometry(1.2, 0.05, 0.4);
+        const keyboardMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xaa00ff, emissiveIntensity: 0.3 });
+        const keyboard = new THREE.Mesh(keyboardGeometry, keyboardMaterial);
+        keyboard.position.set(0, 0.1, 0);
+        scene.add(keyboard);
+
+        const particleCount = 100;
+        const particlesGeometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = new Float32Array(particleCount * 3);
+        for (let i = 0; i < particleCount; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 10;
+            positions[i * 3 + 1] = Math.random() * 10;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+            velocities[i * 3 + 1] = -Math.random() * 0.05;
+        }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particleMaterial = new THREE.PointsMaterial({ color: 0x00ff00, size: 0.05 });
+        const particles = new THREE.Points(particlesGeometry, particleMaterial);
+        scene.add(particles);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            monitor.rotation.y += 0.005;
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3 + 1] += velocities[i * 3 + 1];
+                if (positions[i * 3 + 1] < -5) {
+                    positions[i * 3 + 1] = 5;
+                }
+            }
+            particlesGeometry.attributes.position.needsUpdate = true;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            camera.position.x = mouseX * 2;
+            camera.position.y = 2 + mouseY * 1;
+            camera.lookAt(0, 0, 0);
+        });
+
+        // Portfolio Data
+        const portfolioItems = [
+            {
+                title: "Neon Landing Page",
+                description: "A cyberpunk-inspired landing page with interactive 3D elements and neon animations.",
+                image: "https://via.placeholder.com/300x200/0f0/000?text=Neon+Landing",
+                link: "https://example.com/neon-landing"
+            },
+            {
+                title: "Matrix Dashboard",
+                description: "A dynamic dashboard with real-time data visualization and a matrix-style UI.",
+                image: "https://via.placeholder.com/300x200/a0f/000?text=Matrix+Dashboard",
+                link: "https://example.com/matrix-dashboard"
+            },
+            {
+                title: "Cyber Portfolio",
+                description: "A portfolio site with a futuristic design and smooth scrolling effects.",
+                image: "https://via.placeholder.com/300x200/0f0/000?text=Cyber+Portfolio",
+                link: "https://example.com/cyber-portfolio"
+            }
+        ];
+
+        // Populate Portfolio Grid
+        const portfolioGrid = document.getElementById('portfolioGrid');
+        portfolioItems.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.classList.add('portfolio-card');
+            card.innerHTML = `
+                <img src="${item.image}" alt="${item.title}">
+                <h3>${item.title}</h3>
+                <p>${item.description}</p>
+            `;
+            card.addEventListener('click', () => openModal(index));
+            portfolioGrid.appendChild(card);
+        });
+
+        // Portfolio Dashboard Functions
+        function openPortfolio() {
+            document.getElementById('portfolioContainer').style.display = 'block';
+        }
+
+        function closePortfolio() {
+            document.getElementById('portfolioContainer').style.display = 'none';
+        }
+
+        // Modal Functions
+        function openModal(index) {
+            const item = portfolioItems[index];
+            document.getElementById('modalImage').src = item.image;
+            document.getElementById('modalTitle').textContent = item.title;
+            document.getElementById('modalDescription').textContent = item.description;
+            document.getElementById('modalLink').href = item.link;
+            document.getElementById('projectModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('projectModal').style.display = 'none';
+        }
+
+        // Close Modal on Outside Click
+        document.getElementById('projectModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('projectModal')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
