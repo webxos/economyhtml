@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimal Clothing Studio - 3D E-commerce Shop</title>
+    <title>Enhanced Clothing Studio - 3D E-commerce Shop</title>
     <style>
         * {
             margin: 0;
@@ -143,7 +143,7 @@
             background: #ff5555;
         }
 
-        .center-overlayategoria button.remove:hover {
+        .center-overlay button.remove:hover {
             background: #ff3333;
         }
 
@@ -255,8 +255,11 @@
     <div class="text-overlay" id="textOverlay"></div>
     <div class="center-overlay" id="centerOverlay"></div>
 
-    <!-- Three.js dependency -->
+    <!-- Three.js and dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DRACOLoader.js"></script>
 
     <script>
         // Scene setup
@@ -268,66 +271,83 @@
         renderer.setClearColor(0xf5f5f5, 1);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
 
-        // Enhanced Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        // OrbitControls for better interaction
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.maxPolarAngle = Math.PI / 2;
+
+        // Enhanced lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
         scene.add(ambientLight);
 
-        const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.0);
-        directionalLight1.position.set(12, 12, 12);
-        directionalLight1.castShadow = true;
-        directionalLight1.shadow.mapSize.set(2048, 2048);
-        scene.add(directionalLight1);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        directionalLight.position.set(12, 12, 12);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.set(1024, 1024);
+        directionalLight.shadow.bias = -0.0001;
+        scene.add(directionalLight);
 
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
-        directionalLight2.position.set(-12, 10, -10);
-        directionalLight2.castShadow = true;
-        directionalLight2.shadow.mapSize.set(1024, 1024);
-        scene.add(directionalLight2);
-
-        const spotLight = new THREE.SpotLight(0xffffff, 0.8, 10, Math.PI / 4, 0.3);
-        spotLight.position.set(0, 5, 2);
-        spotLight.castShadow = true;
-        spotLight.target.position.set(0, 0.75, 2);
-        scene.add(spotLight);
-        scene.add(spotLight.target);
-
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xaaaaaa, 0.4);
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xaaaaaa, 0.6);
         hemiLight.position.set(0, 20, 0);
         scene.add(hemiLight);
 
-        // Room geometry
-        const floorMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x8b5e3c, 
-            roughness: 0.7, 
-            metalness: 0.1 
+        const pointLight = new THREE.PointLight(0xffffff, 0.8, 10);
+        pointLight.position.set(-6, 3, 0);
+        pointLight.castShadow = true;
+        scene.add(pointLight);
+
+        // Environment map for reflections
+        const cubeTextureLoader = new THREE.CubeTextureLoader();
+        const envMap = cubeTextureLoader.load([
+            '/textures/env/px.jpgmits', '/textures/env/nx.jpg',
+            '/textures/env/py.jpg', '/textures/env/ny.jpg',
+            '/textures/env/pz.jpg', '/textures/env/nz.jpg'
+        ]);
+        scene.environment = envMap;
+
+        // Texture loader
+        const textureLoader = new THREE.TextureLoader();
+
+        // Room geometry with textures
+        const floorTexture = textureLoader.load('/textures/wood_diffuse.jpg');
+        floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+        floorTexture.repeat.set(4, 4);
+        const floorNormal = textureLoader.load('/textures/wood_normal.jpg');
+        floorNormal.wrapS = floorNormal.wrapT = THREE.RepeatWrapping;
+        floorNormal.repeat.set(4, 4);
+
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            map: floorTexture,
+            normalMap: floorNormal,
+            roughness: 0.7,
+            metalness: 0.1
         });
-        const wallMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xffffff, 
-            roughness: 0.85, 
-            metalness: 0 
+        const wallTexture = textureLoader.load('/textures/wall_diffuse.jpg');
+        const wallNormal = textureLoader.load('/textures/wall_normal.jpg');
+        const wallMaterial = new THREE.MeshStandardMaterial({
+            map: wallTexture,
+            normalMap: wallNormal,
+            roughness: 0.85,
+            metalness: 0
         });
-        const brickMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xb22222, 
-            roughness: 0.9, 
-            metalness: 0 
+        const brickTexture = textureLoader.load('/textures/brick_diffuse.jpg');
+        const brickNormal = textureLoader.load('/textures/brick_normal.jpg');
+        const brickMaterial = new THREE.MeshStandardMaterial({
+            map: brickTexture,
+            normalMap: brickNormal,
+            roughness: 0.9,
+            metalness: 0
         });
 
         const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), floorMaterial);
         floor.rotation.x = -Math.PI / 2;
         floor.receiveShadow = true;
         scene.add(floor);
-
-        const rugMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x4682b4, 
-            roughness: 0.9, 
-            metalness: 0 
-        });
-        const rug = new THREE.Mesh(new THREE.CircleGeometry(1.5, 32), rugMaterial);
-        rug.rotation.x = -Math.PI / 2;
-        rug.position.set(0, 0.01, 2);
-        rug.receiveShadow = true;
-        scene.add(rug);
 
         const backWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
         backWall.position.set(0, 5, -10);
@@ -346,270 +366,375 @@
         rightWall.receiveShadow = true;
         scene.add(rightWall);
 
-        // Materials
-        const rackMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x333333, 
-            roughness: 0.5, 
-            metalness: 0.9 
+        // Clothing racks
+        const rackMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.5,
+            metalness: 0.9,
+            envMap: envMap
         });
-        const shelfMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xaaaaaa, 
-            roughness: 0.7, 
-            metalness: 0.9 
-        });
+        const rackGeometry = new THREE.BoxGeometry(2, 0.1, 0.5);
+
+        const coatRack = new THREE.Mesh(rackGeometry, rackMaterial);
+        coatRack.position.set(-6, 1.5, -2);
+        coatRack.castShadow = true;
+        scene.add(coatRack);
+
+        const shirtRack = new THREE.Mesh(rackGeometry, rackMaterial);
+        shirtRack.position.set(-6, 1.5, 0);
+        shirtRack.castShadow = true;
+        scene.add(shirtRack);
+
+        const dressRack = new THREE.Mesh(rackGeometry, rackMaterial);
+        dressRack.position.set(-6, 1.5, 2);
+        dressRack.castShadow = true;
+        scene.add(dressRack);
+
+        const hatRack = new THREE.Mesh(rackGeometry, rackMaterial);
+        hatRack.position.set(6, 1.5, -2);
+        hatRack.castShadow = true;
+        scene.add(hatRack);
+
+        const jacketRack = new THREE.Mesh(rackGeometry, rackMaterial);
+        jacketRack.position.set(6, 1.5, 0);
+        jacketRack.castShadow = true;
+        scene.add(jacketRack);
+
+        const extraRack = new THREE.Mesh(rackGeometry, rackMaterial);
+        extraRack.position.set(-8, 1.5, -4);
+        extraRack.castShadow = true;
+        scene.add(extraRack);
+
+        // Fabric textures for clothing
+        const fabricTexture = textureLoader.load('/textures/fabric_diffuse.jpg');
+        const fabricNormal = textureLoader.load('/textures/fabric_normal.jpg');
+        const fabricRoughness = textureLoader.load('/textures/fabric_roughness.jpg');
+
+        // Clothing colors
         const clothingColors = [
-            0x4682b4, 0x228b22, 0x800080, 0xff4500, 0x696969,
-            0xdeb887, 0x191970, 0xffd700, 0x00ced1, 0xc71585
+            0x4682b4, 0x228b22, 0x800080, 0xff4500,
+            0x696969, 0xdeb887, 0x191970, 0xffd700,
+            0x00ced1, 0xc71585
         ];
 
-        // Hanger Racks
-        const hangerRackPole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2, 16), rackMaterial);
-        hangerRackPole.position.set(-6, 1.5, -2);
-        hangerRackPole.rotation.z = Math.PI / 2;
-        hangerRackPole.castShadow = true;
-        scene.add(hangerRackPole);
+        // GLTF loader with Draco for compressed models
+        const dracoLoader = new THREE.DRACOLoader();
+        dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/libs/draco/');
+        const gltfLoader = new THREE.GLTFLoader();
+        gltfLoader.setDRACOLoader(dracoLoader);
 
-        const hangerRackPole2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2, 16), rackMaterial);
-        hangerRackPole2.position.set(-6, 1.5, 2);
-        hangerRackPole2.rotation.z = Math.PI / 2;
-        hangerRackPole2.castShadow = true;
-        scene.add(hangerRackPole2);
+        // Load clothing models
+        const shirtsGroup = new THREE.Group();
+        const jacketsGroup = new THREE.Group();
+        const dressesGroup = new THREE.Group();
+        const hatsGroup = new THREE.Group();
+        const extraJacketsGroup = new THREE.Group();
+        const scarvesGroup = new THREE.Group();
+        const jeansGroup = new THREE.Group();
+        const sweatersGroup = new THREE.Group();
+        const shoesGroup = new THREE.Group();
+        const foldedShirtsGroup = new THREE.Group();
+        const foldedJeansGroup = new THREE.Group();
 
-        const hangerGeometry = new THREE.BoxGeometry(0.3, 0.02, 0.2);
-        const hangerMaterial = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.6, metalness: 0.8 });
-        const hangers1 = new THREE.InstancedMesh(hangerGeometry, hangerMaterial, 10);
-        const hangers2 = new THREE.InstancedMesh(hangerGeometry, hangerMaterial, 10);
-        const hangerDummy = new THREE.Object3D();
-        for (let i = 0; i < 10; i++) {
-            hangerDummy.position.set(-6.5 + i * 0.2, 1.65, -2);
-            hangerDummy.rotation.z = Math.PI / 4;
-            hangerDummy.updateMatrix();
-            hangers1.setMatrixAt(i, hangerDummy.matrix);
-            hangerDummy.position.set(-6.5 + i * 0.2, 1.65, 2);
-            hangerDummy.updateMatrix();
-            hangers2.setMatrixAt(i, hangerDummy.matrix);
-        }
-        hangers1.castShadow = true;
-        hangers2.castShadow = true;
-        scene.add(hangers1, hangers2);
-
-        // Clothing on Hanger Racks
-        const shirtMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
-            color, roughness: 0.8, metalness: 0 
-        }));
-        const shirtPoints = [
-            new THREE.Vector2(0, 0),
-            new THREE.Vector2(0.15, 0.05),
-            new THREE.Vector2(0.1, 0.1),
-            new THREE.Vector2(0.05, 0.15),
-            new THREE.Vector2(0, 0.2)
-        ];
-        const shirtGeometry = new THREE.LatheGeometry(shirtPoints, 8);
-        const shirts = new THREE.InstancedMesh(shirtGeometry, shirtMaterials[0], 10);
+        // Shirt model (simplified cylinder for hanging shirts)
+        const shirtGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.5, 16);
         let shirtIndex = 0;
         for (let x = -6.5; x <= -5.5; x += 0.2) {
-            shirtDummy.position.set(x, 1.5, -2);
-            shirtDummy.rotation.y = Math.PI / 2;
-            shirtDummy.scale.set(0.5, 0.5, 0.5);
-            shirtDummy.updateMatrix();
-            shirts.setMatrixAt(shirtIndex, shirtDummy.matrix);
-            shirts.setColorAt(shirtIndex, new THREE.Color(clothingColors[shirtIndex % clothingColors.length]));
+            const shirtMaterial = new THREE.MeshStandardMaterial({
+                map: fabricTexture,
+                normalMap: fabricNormal,
+                roughnessMap: fabricRoughness,
+                color: clothingColors[shirtIndex % clothingColors.length],
+                roughness: 0.8,
+                metalness: 0
+            });
+            const shirt = new THREE.Mesh(shirtGeometry, shirtMaterial);
+            shirt.position.set(x, 1.65, 0);
+            shirt.rotation.x = Math.PI / 2;
+            shirt.castShadow = true;
+            shirtsGroup.add(shirt);
             shirtIndex++;
         }
-        shirts.castShadow = true;
-        scene.add(shirts);
+        scene.add(shirtsGroup);
 
-        const jacketMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
-            color, roughness: 0.7, metalness: 0 
-        }));
-        const jacketPoints = [
-            new THREE.Vector2(0, 0),
-            new THREE.Vector2(0.2, 0.1),
-            new THREE.Vector2(0.15, 0.15),
-            new THREE.Vector2(0.1, 0.2),
-            new THREE.Vector2(0, 0.25)
-        ];
-        const jacketGeometry = new THREE.LatheGeometry(jacketPoints, 8);
-        const jackets = new THREE.InstancedMesh(jacketGeometry, jacketMaterials[0], 10);
-        let jacketIndex = 0;
-        for (let x = -6.5; x <= -5.5; x += 0.2) {
-            jacketDummy.position.set(x, 1.5, 2);
-            jacketDummy.rotation.y = Math.PI / 2;
-            jacketDummy.scale.set(0.5, 0.5, 0.5);
-            jacketDummy.updateMatrix();
-            jackets.setMatrixAt(jacketIndex, jacketDummy.matrix);
-            jackets.setColorAt(jacketIndex, new THREE.Color(clothingColors[jacketIndex % clothingColors.length]));
-            jacketIndex++;
-        }
-        jackets.castShadow = true;
-        scene.add(jackets);
+        // Jacket model (GLTF)
+        gltfLoader.load('/models/jacket.glb', (gltf) => {
+            let jacketIndex = 0;
+            for (let x = -6.5; x <= -5.5; x += 0.2) {
+                const jacket = gltf.scene.clone();
+                jacket.position.set(x, 1.65, -2);
+                jacket.scale.set(0.2, 0.2, 0.2);
+                jacket.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = new THREE.MeshStandardMaterial({
+                            map: fabricTexture,
+                            normalMap: fabricNormal,
+                            roughnessMap: fabricRoughness,
+                            color: clothingColors[jacketIndex % clothingColors.length],
+                            roughness: 0.7,
+                            metalness: 0,
+                            envMap: envMap
+                        });
+                        child.castShadow = true;
+                    }
+                });
+                jacketsGroup.add(jacket);
+                jacketIndex++;
+            }
+            scene.add(jacketsGroup);
+        });
 
-        // Shoe and Hat Rack
-        const shoeHatRackFrame = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2, 0.1), rackMaterial);
-        shoeHatRackFrame.position.set(6, 1, -2);
-        shoeHatRackFrame.castShadow = true;
-        scene.add(shoeHatRackFrame);
+        // Dress model (GLTF)
+        gltfLoader.load('/models/dress.glb', (gltf) => {
+            let dressIndex = 0;
+            for (let x = -6.5; x <= -5.5; x += 0.2) {
+                const dress = gltf.scene.clone();
+                dress.position.set(x, 1.65, 2);
+                dress.scale.set(0.2, 0.2, 0.2);
+                dress.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = new THREE.MeshStandardMaterial({
+                            map: fabricTexture,
+                            normalMap: fabricNormal,
+                            roughnessMap: fabricRoughness,
+                            color: clothingColors[dressIndex % clothingColors.length],
+                            roughness: 0.6,
+                            metalness: 0,
+                            envMap: envMap
+                        });
+                        child.castShadow = true;
+                    }
+                });
+                dressesGroup.add(dress);
+                dressIndex++;
+            }
+            scene.add(dressesGroup);
+        });
 
-        const shoeHatRackFrame2 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2, 0.1), rackMaterial);
-        shoeHatRackFrame2.position.set(8, 1, -2);
-        shoeHatRackFrame2.castShadow = true;
-        scene.add(shoeHatRackFrame2);
-
-        const shoeShelf = new THREE.Mesh(new THREE.BoxGeometry(2, 0.05, 0.5), shelfMaterial);
-        shoeShelf.position.set(7, 0.5, -2);
-        shoeShelf.castShadow = true;
-        scene.add(shoeShelf);
-
-        const hatShelf = new THREE.Mesh(new THREE.BoxGeometry(2, 0.05, 0.5), shelfMaterial);
-        hatShelf.position.set(7, 1.5, -2);
-        hatShelf.castShadow = true;
-        scene.add(hatShelf);
-
-        const shoesMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
-            color, roughness: 0.6, metalness: 0.1 
-        }));
-        const shoeGeometry = new THREE.BoxGeometry(0.3, 0.1, 0.15);
-        const shoes = new THREE.InstancedMesh(shoeGeometry, shoesMaterials[0], 10);
-        const shoesDummy = new THREE.Object3D();
-        let shoesIndex = 0;
-        for (let x = 6.5; x <= 7.5; x += 0.2) {
-            shoesDummy.position.set(x, 0.65, -2);
-            shoesDummy.rotation.y = Math.random() * 0.2 - 0.1;
-            shoesDummy.updateMatrix();
-            shoes.setMatrixAt(shoesIndex, shoesDummy.matrix);
-            shoes.setColorAt(shoesIndex, new THREE.Color(clothingColors[shoesIndex % clothingColors.length]));
-            shoesIndex++;
-        }
-        shoes.castShadow = true;
-        scene.add(shoes);
-
-        const hatMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
-            color, roughness: 0.8, metalness: 0 
-        }));
-        const hatGeometry = new THREE.CylinderGeometry(0.2, 0.25, 0.1, 16);
-        const hats = new THREE.InstancedMesh(hatGeometry, hatMaterials[0], 10);
-        const hatDummy = new THREE.Object3D();
+        // Hat model (simplified torus for caps)
+        const hatGeometry = new THREE.TorusGeometry(0.15, 0.05, 8, 16);
         let hatIndex = 0;
-        for (let x = 6.5; x <= 7.5; x += 0.2) {
-            hatDummy.position.set(x, 1.65, -2);
-            hatDummy.rotation.y = Math.random() * 0.2 - 0.1;
-            hatDummy.updateMatrix();
-            hats.setMatrixAt(hatIndex, hatDummy.matrix);
-            hats.setColorAt(hatIndex, new THREE.Color(clothingColors[hatIndex % clothingColors.length]));
+        for (let x = 5.5; x <= 6.5; x += 0.2) {
+            const hatMaterial = new THREE.MeshStandardMaterial({
+                map: fabricTexture,
+                normalMap: fabricNormal,
+                roughnessMap: fabricRoughness,
+                color: clothingColors[hatIndex % clothingColors.length],
+                roughness: 0.8,
+                metalness: 0
+            });
+            const hat = new THREE.Mesh(hatGeometry, hatMaterial);
+            hat.position.set(x, 1.65, -2);
+            hat.rotation.x = Math.PI / 2;
+            hat.castShadow = true;
+            hatsGroup.add(hat);
             hatIndex++;
         }
-        hats.castShadow = true;
-        scene.add(hats);
+        scene.add(hatsGroup);
 
-        // Folded Clothing on Shelves
-        const jeansMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
-            color, roughness: 0.8, metalness: 0 
-        }));
-        const jeansPoints = [
-            new THREE.Vector2(0, 0),
-            new THREE.Vector2(0.25, 0.05),
-            new THREE.Vector2(0.2, 0.1),
-            new THREE.Vector2(0.1, 0.15),
-            new THREE.Vector2(0, 0.2)
-        ];
-        const jeansGeometry = new THREE.LatheGeometry(jeansPoints, 8);
-        const jeans = new THREE.InstancedMesh(jeansGeometry, jeansMaterials[0], 16);
-        const jeansDummy = new THREE.Object3D();
+        // Extra jackets (GLTF)
+        gltfLoader.load('/models/jacket.glb', (gltf) => {
+            let extraJacketIndex = 0;
+            for (let x = 5.5; x <= 6.5; x += 0.2) {
+                const jacket = gltf.scene.clone();
+                jacket.position.set(x, 1.65, 0);
+                jacket.scale.set(0.2, 0.2, 0.2);
+                jacket.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = new THREE.MeshStandardMaterial({
+                            map: fabricTexture,
+                            normalMap: fabricNormal,
+                            roughnessMap: fabricRoughness,
+                            color: clothingColors[extraJacketIndex % clothingColors.length],
+                            roughness: 0.7,
+                            metalness: 0,
+                            envMap: envMap
+                        });
+                        child.castShadow = true;
+                    }
+                });
+                extraJacketsGroup.add(jacket);
+                extraJacketIndex++;
+            }
+            scene.add(extraJacketsGroup);
+        });
+
+        // Scarf model (thin plane)
+        const scarfGeometry = new THREE.PlaneGeometry(0.2, 0.4);
+        let scarfIndex = 0;
+        for (let x = -8.5; x <= -7.5; x += 0.2) {
+            const scarfMaterial = new THREE.MeshStandardMaterial({
+                map: fabricTexture,
+                normalMap: fabricNormal,
+                roughnessMap: fabricRoughness,
+                color: clothingColors[scarfIndex % clothingColors.length],
+                roughness: 0.6,
+                metalness: 0,
+                side: THREE.DoubleSide
+            });
+            const scarf = new THREE.Mesh(scarfGeometry, scarfMaterial);
+            scarf.position.set(x, 1.65, -4);
+            scarf.castShadow = true;
+            scarvesGroup.add(scarf);
+            scarfIndex++;
+        }
+        scene.add(scarvesGroup);
+
+        // Jeans model (folded box with texture)
+        const jeansGeometry = new THREE.BoxGeometry(0.5, 0.2, 0.3);
         let jeansIndex = 0;
         for (let x = 3.5; x <= 4.5; x += 0.5) {
             for (let y = 2.2; y <= 3.2; y += 0.5) {
-                jeansDummy.position.set(x, y, -9);
-                jeansDummy.rotation.y = Math.PI / 2;
-                jeansDummy.scale.set(0.5, 0.5, 0.5);
-                jeansDummy.updateMatrix();
-                jeans.setMatrixAt(jeansIndex, jeansDummy.matrix);
-                jeans.setColorAt(jeansIndex, new THREE.Color(clothingColors[jeansIndex % clothingColors.length]));
+                const jeansMaterial = new THREE.MeshStandardMaterial({
+                    map: fabricTexture,
+                    normalMap: fabricNormal,
+                    roughnessMap: fabricRoughness,
+                    color: clothingColors[jeansIndex % clothingColors.length],
+                    roughness: 0.8,
+                    metalness: 0
+                });
+                const jeans = new THREE.Mesh(jeansGeometry, jeansMaterial);
+                jeans.position.set(x, y, -9);
+                jeans.castShadow = true;
+                jeansGroup.add(jeans);
                 jeansIndex++;
             }
         }
-        jeans.castShadow = true;
-        scene.add(jeans);
+        scene.add(jeansGroup);
 
-        const sweaterMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
-            color, roughness: 0.8, metalness: 0 
-        }));
-        const sweaterPoints = [
-            new THREE.Vector2(0, 0),
-            new THREE.Vector2(0.3, 0.1),
-            new THREE.Vector2(0.25, 0.15),
-            new THREE.Vector2(0.15, 0.2),
-            new THREE.Vector2(0, 0.25)
-        ];
-        const sweaterGeometry = new THREE.LatheGeometry(sweaterPoints, 8);
-        const sweaters = new THREE.InstancedMesh(sweaterGeometry, sweaterMaterials[0], 12);
-        const sweaterDummy = new THREE.Object3D();
+        // Sweater model (folded box with texture)
+        const sweaterGeometry = new THREE.BoxGeometry(0.5, 0.25, 0.3);
         let sweaterIndex = 0;
         for (let x = -4.5; x <= -3.5; x += 0.5) {
             for (let y = 2.2; y <= 3.2; y += 0.5) {
-                sweaterDummy.position.set(x, y, -9);
-                sweaterDummy.rotation.y = Math.PI / 2;
-                sweaterDummy.scale.set(0.5, 0.5, 0.5);
-                sweaterDummy.updateMatrix();
-                sweaters.setMatrixAt(sweaterIndex, sweaterDummy.matrix);
-                sweaters.setColorAt(sweaterIndex, new THREE.Color(clothingColors[sweaterIndex % clothingColors.length]));
+                const sweaterMaterial = new THREE.MeshStandardMaterial({
+                    map: fabricTexture,
+                    normalMap: fabricNormal,
+                    roughnessMap: fabricRoughness,
+                    color: clothingColors[sweaterIndex % clothingColors.length],
+                    roughness: 0.8,
+                    metalness: 0
+                });
+                const sweater = new THREE.Mesh(sweaterGeometry, sweaterMaterial);
+                sweater.position.set(x, y, -9);
+                sweater.castShadow = true;
+                sweatersGroup.add(sweater);
                 sweaterIndex++;
             }
         }
-        sweaters.castShadow = true;
-        scene.add(sweaters);
+        scene.add(sweatersGroup);
 
-        // Scarf Rack
-        const scarfMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
-            color, roughness: 0.6, metalness: 0 
-        }));
-        const scarfShape = new THREE.Shape();
-        scarfShape.moveTo(0, 0);
-        scarfShape.quadraticCurveTo(0.1, 0.05, 0.2, 0);
-        scarfShape.lineTo(0.2, 0.1);
-        scarfShape.quadraticCurveTo(0.1, 0.15, 0, 0.1);
-        scarfShape.lineTo(0, 0);
-        const scarfExtrudeSettings = { depth: 0.05, bevelEnabled: false };
-        const scarfGeometry = new THREE.ExtrudeGeometry(scarfShape, scarfExtrudeSettings);
-        const scarves = new THREE.InstancedMesh(scarfGeometry, scarfMaterials[0], 10);
-        const scarfDummy = new THREE.Object3D();
-        let scarfIndex = 0;
-        for (let x = -8.5; x <= -7.5; x += 0.2) {
-            scarfDummy.position.set(x, 1.65, -4);
-            scarfDummy.rotation.y = Math.random() * 0.2 - 0.1;
-            scarfDummy.updateMatrix();
-            scarves.setMatrixAt(scarfIndex, scarfDummy.matrix);
-            scarves.setColorAt(scarfIndex, new THREE.Color(clothingColors[scarfIndex % clothingColors.length]));
-            scarfIndex++;
+        // Shoes model (GLTF)
+        gltfLoader.load('/models/shoe.glb', (gltf) => {
+            let shoesIndex = 0;
+            for (let x = -4.5; x <= -3.5; x += 0.2) {
+                const shoe = gltf.scene.clone();
+                shoe.position.set(x, 0.65, -9);
+                shoe.scale.set(0.1, 0.1, 0.1);
+                shoe.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = new THREE.MeshStandardMaterial({
+                            map: fabricTexture,
+                            normalMap: fabricNormal,
+                            roughnessMap: fabricRoughness,
+                            color: clothingColors[shoesIndex % clothingColors.length],
+                            roughness: 0.6,
+                            metalness: 0.1,
+                            envMap: envMap
+                        });
+                        child.castShadow = true;
+                    }
+                });
+                shoesGroup.add(shoe);
+                shoesIndex++;
+            }
+            scene.add(shoesGroup);
+        });
+
+        // Folded shirts
+        const foldedShirtGeometry = new THREE.BoxGeometry(0.3, 0.05, 0.3);
+        let foldedShirtIndex = 0;
+        for (let x = -0.5; x <= 0.5; x += 0.3) {
+            for (let z = -4.3; z <= -3.7; z += 0.3) {
+                const foldedShirtMaterial = new THREE.MeshStandardMaterial({
+                    map: fabricTexture,
+                    normalMap: fabricNormal,
+                    roughnessMap: fabricRoughness,
+                    color: clothingColors[foldedShirtIndex % clothingColors.length],
+                    roughness: 0.8,
+                    metalness: 0
+                });
+                const foldedShirt = new THREE.Mesh(foldedShirtGeometry, foldedShirtMaterial);
+                foldedShirt.position.set(x, 0.85, z);
+                foldedShirt.castShadow = true;
+                foldedShirtsGroup.add(foldedShirt);
+                foldedShirtIndex++;
+            }
         }
-        scarves.castShadow = true;
-        scene.add(scarves);
+        scene.add(foldedShirtsGroup);
 
-        // Shelves
-        const shelf1 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 0.5), shelfMaterial);
+        // Folded jeans
+        const foldedJeansGeometry = new THREE.BoxGeometry(0.5, 0.2, 0.3);
+        let foldedJeansIndex = 0;
+        for (let x = 1.5; x <= 2.5; x += 0.5) {
+            for (let z = -6.3; z <= -5.7; z += 0.6) {
+                const foldedJeansMaterial = new THREE.MeshStandardMaterial({
+                    map: fabricTexture,
+                    normalMap: fabricNormal,
+                    roughnessMap: fabricRoughness,
+                    color: clothingColors[foldedJeansIndex % clothingColors.length],
+                    roughness: 0.8,
+                    metalness: 0
+                });
+                const foldedJeans = new THREE.Mesh(foldedJeansGeometry, foldedJeansMaterial);
+                foldedJeans.position.set(x, 0.85, z);
+                foldedJeans.castShadow = true;
+                foldedJeansGroup.add(foldedJeans);
+                foldedJeansIndex++;
+            }
+        }
+        scene.add(foldedJeansGroup);
+
+        // Metal shelves
+        const shelfMaterial = new THREE.MeshStandardMaterial({
+            color: 0xaaaaaa,
+            roughness: 0.7,
+            metalness: 0.9,
+            envMap: envMap
+        });
+        const shelfGeometry = new THREE.BoxGeometry(3, 0.1, 0.5);
+
+        const shelf1 = new THREE.Mesh(shelfGeometry, shelfMaterial);
         shelf1.position.set(4, 2, -9);
         shelf1.castShadow = true;
         scene.add(shelf1);
 
-        const shelf2 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 0.5), shelfMaterial);
+        const shelf2 = new THREE.Mesh(shelfGeometry, shelfMaterial);
         shelf2.position.set(4, 3, -9);
         shelf2.castShadow = true;
         scene.add(shelf2);
 
-        const shelf3 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 0.5), shelfMaterial);
+        const shelf3 = new THREE.Mesh(shelfGeometry, shelfMaterial);
         shelf3.position.set(-4, 2, -9);
         shelf3.castShadow = true;
         scene.add(shelf3);
 
-        const shelf4 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 0.5), shelfMaterial);
+        const shelf4 = new THREE.Mesh(shelfGeometry, shelfMaterial);
         shelf4.position.set(-4, 3, -9);
         shelf4.castShadow = true;
         scene.add(shelf4);
 
+        const shoeRack = new THREE.Mesh(new THREE.BoxGeometry(2, 0.1, 0.5), rackMaterial);
+        shoeRack.position.set(-4, 0.5, -9);
+        shoeRack.castShadow = true;
+        scene.add(shoeRack);
+
         // Tables
-        const tableMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xaaaaaa, 
-            roughness: 0.7, 
-            metalness: 0 
+        const tableMaterial = new THREE.MeshStandardMaterial({
+            color: 0xaaaaaa,
+            roughness: 0.7,
+            metalness: 0,
+            envMap: envMap
         });
         const tableGeometry = new THREE.BoxGeometry(2, 0.1, 1);
 
@@ -623,62 +748,20 @@
         table2.castShadow = true;
         scene.add(table2);
 
-        // Folded Shirts on Table
-        const foldedShirtMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
-            color, roughness: 0.8, metalness: 0 
-        }));
-        const foldedShirts = new THREE.InstancedMesh(shirtGeometry, foldedShirtMaterials[0], 12);
-        const foldedShirtDummy = new THREE.Object3D();
-        let foldedShirtIndex = 0;
-        for (let x = -0.5; x <= 0.5; x += 0.3) {
-            for (let z = -4.3; z <= -3.7; z += 0.3) {
-                foldedShirtDummy.position.set(x, 0.85, z);
-                foldedShirtDummy.rotation.y = Math.PI / 2;
-                foldedShirtDummy.scale.set(0.5, 0.5, 0.5);
-                foldedShirtDummy.updateMatrix();
-                foldedShirts.setMatrixAt(foldedShirtIndex, foldedShirtDummy.matrix);
-                foldedShirts.setColorAt(foldedShirtIndex, new THREE.Color(clothingColors[foldedShirtIndex % clothingColors.length]));
-                foldedShirtIndex++;
-            }
-        }
-        foldedShirts.castShadow = true;
-        scene.add(foldedShirts);
-
-        // Folded Jeans on Table
-        const foldedJeansMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
-            color, roughness: 0.8, metalness: 0 
-        }));
-        const foldedJeans = new THREE.InstancedMesh(jeansGeometry, foldedJeansMaterials[0], 8);
-        const foldedJeansDummy = new THREE.Object3D();
-        let foldedJeansIndex = 0;
-        for (let x = 1.5; x <= 2.5; x += 0.5) {
-            for (let z = -6.3; z <= -5.7; z += 0.6) {
-                foldedJeansDummy.position.set(x, 0.85, z);
-                foldedJeansDummy.rotation.y = Math.PI / 2;
-                foldedJeansDummy.scale.set(0.5, 0.5, 0.5);
-                foldedJeansDummy.updateMatrix();
-                foldedJeans.setMatrixAt(foldedJeansIndex, foldedJeansDummy.matrix);
-                foldedJeans.setColorAt(foldedJeansIndex, new THREE.Color(clothingColors[foldedJeansIndex % clothingColors.length]));
-                foldedJeansIndex++;
-            }
-        }
-        foldedJeans.castShadow = true;
-        scene.add(foldedJeans);
-
-        // Decorative Boxes
-        const boxMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x8b4513, 
-            roughness: 0.9, 
-            metalness: 0 
+        // Cardboard boxes
+        const boxMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8b4513,
+            roughness: 0.9,
+            metalness: 0
         });
-        const boxGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
-        const boxes = new THREE.InstancedMesh(boxGeometry, boxMaterial, 6);
+        const boxGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+
+        const boxes = new THREE.InstancedMesh(boxGeometry, boxMaterial, 16);
         const boxDummy = new THREE.Object3D();
         let boxIndex = 0;
-        for (let x = -0.5; x <= 0.5; x += 1) {
-            for (let z = -4.3; z <= -3.7; z += 0.6) {
-                boxDummy.position.set(x, 0.95, z);
-                boxDummy.rotation.y = Math.random() * 0.2 - 0.1;
+        for (let x = -1.5; x <= 1.5; x += 1) {
+            for (let z = -5; z <= -3; z += 1) {
+                boxDummy.position.set(x, 0.25, z);
                 boxDummy.updateMatrix();
                 boxes.setMatrixAt(boxIndex++, boxDummy.matrix);
             }
@@ -686,62 +769,75 @@
         boxes.castShadow = true;
         scene.add(boxes);
 
+        const tableBoxes = new THREE.InstancedMesh(boxGeometry, boxMaterial, 6);
+        const tableBoxDummy = new THREE.Object3D();
+        let tableBoxIndex = 0;
+        for (let x = 1.5; x <= 2.5; x += 0.5) {
+            for (let z = -6.3; z <= -5.7; z += 0.6) {
+                tableBoxDummy.position.set(x, 0.95, z);
+                tableBoxDummy.updateMatrix();
+                tableBoxes.setMatrixAt(tableBoxIndex++, tableBoxDummy.matrix);
+            }
+        }
+        tableBoxes.castShadow = true;
+        scene.add(tableBoxes);
+
         // Cacti
-        const cactusPotMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x8b4513, 
-            roughness: 0.85, 
-            metalness: 0 
+        const cactusPotMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8b4513,
+            roughness: 0.85,
+            metalness: 0
         });
         const cactusPot = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.3, 16), cactusPotMaterial);
         cactusPot.position.set(-8, 0.15, -8);
         cactusPot.castShadow = true;
         scene.add(cactusPot);
 
-        const cactusMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x228b22, 
-            roughness: 0.9, 
-            metalness: 0 
+        const cactusMaterial = new THREE.MeshStandardMaterial({
+            color: 0x228b22,
+            roughness: 0.9,
+            metalness: 0
         });
         const cactus = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), cactusMaterial);
         cactus.position.set(-8, 0.4, -8);
         cactus.castShadow = true;
         scene.add(cactus);
 
-        // Checkout Desk
-        const deskMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xaaaaaa, 
-            roughness: 0.7, 
-            metalness: 0 
+        // Enhanced checkout desk
+        const deskMaterial = new THREE.MeshStandardMaterial({
+            color: 0xaaaaaa,
+            roughness: 0.7,
+            metalness: 0
         });
         const desk = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 1.5), deskMaterial);
         desk.position.set(0, 0.75, 2);
         desk.castShadow = true;
         scene.add(desk);
 
-        const monitorMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x333333, 
-            roughness: 0.5, 
-            metalness: 0.9 
+        const monitorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.5,
+            metalness: 0.9
         });
         const monitor = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.05), monitorMaterial);
         monitor.position.set(0, 1.3, 1.4);
         monitor.castShadow = true;
         scene.add(monitor);
 
-        const keyboardMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x333333, 
-            roughness: 0.6, 
-            metalness: 0.5 
+        const keyboardMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.6,
+            metalness: 0.5
         });
         const keyboard = new THREE.Mesh(new THREE.BoxGeometry(1, 0.05, 0.3), keyboardMaterial);
         keyboard.position.set(0, 0.85, 1.8);
         keyboard.castShadow = true;
         scene.add(keyboard);
 
-        const shoppingBagMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xdeb887, 
-            roughness: 0.8, 
-            metalness: 0 
+        const shoppingBagMaterial = new THREE.MeshStandardMaterial({
+            color: 0xdeb887,
+            roughness: 0.8,
+            metalness: 0
         });
         const shoppingBag = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.3), shoppingBagMaterial);
         shoppingBag.position.set(1, 0.95, 2.5);
@@ -750,14 +846,14 @@
 
         // Shop items and cart logic
         const shopItems = [
-            { name: "Shirt", title: "Classic Shirt", price: 30, mesh: shirts, description: "Versatile cotton shirt in vibrant colors." },
-            { name: "Jacket", title: "Denim Jacket", price: 60, mesh: jackets, description: "Stylish denim jacket for all seasons." },
-            { name: "Dress", title: "Elegant Dress", price: 50, mesh: null, description: "Chic silk dress for any occasion." },
-            { name: "Jeans", title: "Slim Fit Jeans", price: 45, mesh: jeans, description: "Durable slim-fit jeans with a modern look." },
-            { name: "Shoes", title: "Leather Sneakers", price: 70, mesh: shoes, description: "Comfortable leather sneakers for everyday wear." },
-            { name: "Hat", title: "Trendy Cap", price: 25, mesh: hats, description: "Stylish cap to complete your look." },
-            { name: "Sweater", title: "Cozy Sweater", price: 55, mesh: sweaters, description: "Warm sweater in soft fabrics." },
-            { name: "Scarf", title: "Woven Scarf", price: 20, mesh: scarves, description: "Elegant scarf for a touch of style." }
+            { name: "Shirt", title: "Classic Shirt", price: 30, mesh: shirtsGroup, description: "Versatile cotton shirt in vibrant colors." },
+            { name: "Jacket", title: "Denim Jacket", price: 60, mesh: jacketsGroup, description: "Stylish denim jacket for all seasons." },
+            { name: "Dress", title: "Elegant Dress", price: 50, mesh: dressesGroup, description: "Chic silk dress for any occasion." },
+            { name: "Jeans", title: "Slim Fit Jeans", price: 45, mesh: jeansGroup, description: "Durable slim-fit jeans with a modern look." },
+            { name: "Shoes", title: "Leather Sneakers", price: 70, mesh: shoesGroup, description: "Comfortable leather sneakers for everyday wear." },
+            { name: "Hat", title: "Trendy Cap", price: 25, mesh: hatsGroup, description: "Stylish cap to complete your look." },
+            { name: "Sweater", title: "Cozy Sweater", price: 55, mesh: sweatersGroup, description: "Warm sweater in soft fabrics." },
+            { name: "Scarf", title: "Woven Scarf", price: 20, mesh: scarvesGroup, description: "Elegant scarf for a touch of style." }
         ];
 
         let cart = [];
@@ -799,13 +895,13 @@
         const pages = {
             home: {
                 cameraPos: new THREE.Vector3(0, 5, 10),
-                lookAt: new THREE.Vector3(0, 2, -5),
+                target: new THREE.Vector3(0, 2, -5),
                 text: "Welcome to Style Haven\nExplore our curated collection of trendy clothing.",
                 centerText: "Discover Style Haven<br>Browse our chic clothing collection."
             },
             shop: {
                 cameraPos: new THREE.Vector3(-6, 2, 3),
-                lookAt: new THREE.Vector3(-6, 1.5, 0),
+                target: new THREE.Vector3(-6, 1.5, 0),
                 text: "Shop Items:\nClassic Shirt - $30\nDenim Jacket - $60\nElegant Dress - $50\nSlim Fit Jeans - $45\nLeather Sneakers - $70\nTrendy Cap - $25\nCozy Sweater - $55\nWoven Scarf - $20",
                 centerText: `Shop Now<br>
                     <div class="shop-item">
@@ -859,13 +955,13 @@
             },
             cart: {
                 cameraPos: new THREE.Vector3(0, 2, 4),
-                lookAt: new THREE.Vector3(0, 1, 1.4),
+                target: new THREE.Vector3(0, 1, 1.4),
                 text: "Cart: No items",
                 centerText: "Your Cart<br>Cart is empty"
             },
             about: {
                 cameraPos: new THREE.Vector3(-8, 2, -6),
-                lookAt: new THREE.Vector3(-8, 0.4, -8),
+                target: new THREE.Vector3(-8, 0.4, -8),
                 text: "About: Style Haven\nYour go-to reseller for trendy, high-quality clothing.",
                 centerText: "About Style Haven"
             }
@@ -878,11 +974,17 @@
             const pageData = pages[page];
 
             shopItems.forEach(item => {
-                if (item.mesh) item.mesh.material.emissiveIntensity = page === 'shop' ? 0.5 : 0;
+                item.mesh.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material.emissive.set(page === 'shop' ? 0x222222 : 0x000000);
+                        child.material.emissiveIntensity = page === 'shop' ? 0.5 : 0;
+                    }
+                });
             });
 
             camera.position.copy(pageData.cameraPos);
-            camera.lookAt(pageData.lookAt);
+            controls.target.copy(pageData.target);
+            controls.update();
             document.getElementById('textOverlay').innerText = pageData.text;
             document.getElementById('centerOverlay').innerHTML = page === 'cart' ? pages.cart.centerText : pageData.centerText;
 
@@ -895,25 +997,10 @@
         // Initial page load
         navigateTo('home');
 
-        // Animation loop with subtle clothing sway
-        let time = 0;
+        // Animation loop
         function animate() {
             requestAnimationFrame(animate);
-            time += 0.01;
-            for (let i = 0; i < shirts.count; i++) {
-                shirts.getMatrixAt(i, shirtDummy.matrix);
-                shirtDummy.rotation.z = Math.sin(time + i) * 0.05;
-                shirtDummy.updateMatrix();
-                shirts.setMatrixAt(i, shirtDummy.matrix);
-            }
-            for (let i = 0; i < jackets.count; i++) {
-                jackets.getMatrixAt(i, jacketDummy.matrix);
-                jacketDummy.rotation.z = Math.sin(time + i + 0.5) * 0.05;
-                jacketDummy.updateMatrix();
-                jackets.setMatrixAt(i, jacketDummy.matrix);
-            }
-            shirts.instanceMatrix.needsUpdate = true;
-            jackets.instanceMatrix.needsUpdate = true;
+            controls.update();
             renderer.render(scene, camera);
         }
         animate();
