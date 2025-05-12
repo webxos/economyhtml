@@ -151,7 +151,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: rotate(0deg); /* Ensure horizontal playback */
+            transform: rotate(0deg);
         }
         .matrix-text {
             color: #00ff00;
@@ -257,12 +257,17 @@
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = isMobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
 
+        // Debug WebGL context
+        if (!renderer.getContext()) {
+            console.error("WebGL context not available. Check browser compatibility or GPU support.");
+        }
+
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0x00ff00, isMobile ? 0.3 : 0.4);
+        const ambientLight = new THREE.AmbientLight(0x00ff00, isMobile ? 0.5 : 0.6);
         scene.add(ambientLight);
-        const naturalAmbientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        const naturalAmbientLight = new THREE.AmbientLight(0xffffff, 0.3);
         scene.add(naturalAmbientLight);
-        const spotlight1 = new THREE.SpotLight(0x00ff00, isMobile ? 1.5 : 2);
+        const spotlight1 = new THREE.SpotLight(0x00ff00, isMobile ? 2 : 3);
         spotlight1.position.set(0, 5, 4);
         spotlight1.angle = Math.PI / 6;
         spotlight1.penumbra = 0.5;
@@ -292,7 +297,7 @@
             scene.add(lightGlow);
         });
 
-        // Neural network ceiling effect (enhanced with more nodes)
+        // Neural network ceiling effect
         const neuralMaterial = new THREE.MeshBasicMaterial({
             color: 0x00ff00,
             emissive: 0x00ff00,
@@ -303,7 +308,7 @@
         const neuralNodeGeometry = new THREE.SphereGeometry(0.03, isMobile ? 8 : 16, isMobile ? 8 : 16);
         const neuralLineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
         const nodes = [];
-        const numNodes = isMobile ? 50 : 100; // Increased nodes for denser effect
+        const numNodes = isMobile ? 50 : 100;
         for (let i = 0; i < numNodes; i++) {
             const node = new THREE.Mesh(neuralNodeGeometry, neuralMaterial);
             node.position.set(Math.random() * 8 - 4, 4.8, Math.random() * 8 - 4);
@@ -314,7 +319,7 @@
         const lineVertices = [];
         for (let i = 0; i < numNodes; i++) {
             for (let j = i + 1; j < numNodes; j++) {
-                if (Math.random() < (isMobile ? 0.08 : 0.15)) { // Increased connections
+                if (Math.random() < (isMobile ? 0.08 : 0.15)) {
                     lineVertices.push(nodes[i].x, nodes[i].y, nodes[i].z);
                     lineVertices.push(nodes[j].x, nodes[j].y, nodes[j].z);
                 }
@@ -345,7 +350,7 @@
         rugCanvas.width = isMobile ? 256 : 512;
         rugCanvas.height = isMobile ? 256 : 512;
         const rugContext = rugCanvas.getContext('2d');
-        rugContext.fillStyle = '#000000'; // Matte black base
+        rugContext.fillStyle = '#000000';
         rugContext.fillRect(0, 0, rugCanvas.width, rugCanvas.height);
 
         // Draw glowing neon green spider web
@@ -355,7 +360,6 @@
         const centerY = rugCanvas.height / 2;
         rugContext.shadowColor = '#00ff00';
         rugContext.shadowBlur = isMobile ? 8 : 15;
-        // Radial web lines
         const segments = isMobile ? 12 : 16;
         for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / segments) {
             rugContext.beginPath();
@@ -367,7 +371,6 @@
             }
             rugContext.stroke();
         }
-        // Circular web connections
         for (let r = 50; r <= 250; r += isMobile ? 25 : 15) {
             rugContext.beginPath();
             for (let angle = 0; angle < 2 * Math.PI; angle += 0.05) {
@@ -388,7 +391,7 @@
             emissive: 0x00ff00,
             emissiveIntensity: 1.8
         });
-        const rugGeometry = new THREE.PlaneGeometry(3.5, 2.5); // Slightly larger
+        const rugGeometry = new THREE.PlaneGeometry(3.5, 2.5);
         const rug = new THREE.Mesh(rugGeometry, rugMaterial);
         rug.rotation.x = -Math.PI / 2;
         rug.position.set(0, 0.01, 0);
@@ -443,7 +446,7 @@
         const leg3 = new THREE.Mesh(legGeometry, deskMaterial);
         leg3.position.set(-1.9, 0.35, 3.2);
         scene.add(leg3);
-        const leg_phase_4 = new THREE.Mesh(legGeometry, deskMaterial);
+        const leg4 = new THREE.Mesh(legGeometry, deskMaterial);
         leg4.position.set(1.9, 0.35, 3.2);
         scene.add(leg4);
 
@@ -578,13 +581,13 @@
         }
 
         // Futuristic Jet Black Monitors with Horizontal Video Playback
-        const monitorFrameGeometry = new THREE.BoxGeometry(1.3, 0.75, 0.05); // Sleeker, thinner design
+        const monitorFrameGeometry = new THREE.BoxGeometry(1.3, 0.75, 0.05);
         const monitorMaterial = new THREE.MeshStandardMaterial({
-            color: 0x1a1a1a, // Jet black
+            color: 0x1a1a1a,
             metalness: 0.9,
             roughness: 0.1
         });
-        const monitorScreenGeometry = new THREE.PlaneGeometry(1.2, 0.67); // Slightly larger screen
+        const monitorScreenGeometry = new THREE.PlaneGeometry(1.2, 0.67);
         const monitorPositions = [-1.3, 0, 1.3];
         monitorPositions.forEach((x, index) => {
             const monitorFrame = new THREE.Mesh(monitorFrameGeometry, monitorMaterial);
@@ -602,10 +605,10 @@
 
             const monitorGlowLight = new THREE.PointLight(0x00ff00, isMobile ? 1 : 1.5, 3);
             monitorGlowLight.position.set(x, 1.1, 4.1);
-            scene.add(mentorGlowLight);
+            scene.add(monitorGlowLight);
 
             const monitorStandBaseGeometry = new THREE.BoxGeometry(0.3, 0.05, 0.3);
-            const monitorStandArmGeometry = new THREE.BoxGeometry(0.08, 0.25, 0.08); // Slimmer stand
+            const monitorStandArmGeometry = new THREE.BoxGeometry(0.08, 0.25, 0.08);
             const monitorStandBase = new THREE.Mesh(monitorStandBaseGeometry, monitorMaterial);
             monitorStandBase.position.set(x, 0.8, 4);
             scene.add(monitorStandBase);
@@ -613,7 +616,6 @@
             monitorStandArm.position.set(x, 0.93, 4);
             scene.add(monitorStandArm);
 
-            // Add neon green accent LEDs on monitor edges
             if (!isMobile) {
                 const ledGeometry = new THREE.SphereGeometry(0.02, 8, 8);
                 const ledMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -639,9 +641,9 @@
                 const screenX = (vector.x * 0.5 + 0.5) * width;
                 const screenY = (-vector.y * 0.5 + 0.5) * height;
                 const monitorOverlay = document.getElementById(`monitor${index + 1}`);
-                const overlaySize = isMobile ? 0.15 : 0.18; // Adjusted for larger screens
+                const overlaySize = isMobile ? 0.15 : 0.18;
                 monitorOverlay.style.width = `${width * overlaySize}px`;
-                monitorOverlay.style.height = `${(width * overlaySize) * (9 / 16)}px`; // 16:9 aspect ratio
+                monitorOverlay.style.height = `${(width * overlaySize) * (9 / 16)}px`;
                 monitorOverlay.style.left = `${screenX - (width * overlaySize) / 2}px`;
                 monitorOverlay.style.top = `${screenY - ((width * overlaySize) * (9 / 16)) / 2}px`;
             });
@@ -650,7 +652,7 @@
         // LED-Lit Gaming Keyboard with Neon Green Glow
         const keyboardGeometry = new THREE.BoxGeometry(0.9, 0.04, 0.35);
         const keyboardMaterial = new THREE.MeshStandardMaterial({
-            color: 0x1a1a1a, // Jet black to match monitors
+            color: 0x1a1a1a,
             metalness: 0.9,
             roughness: 0.1
         });
@@ -659,7 +661,6 @@
         keyboard.castShadow = !isMobile;
         scene.add(keyboard);
 
-        // Add neon green key glow
         const keyGeometry = new THREE.BoxGeometry(0.04, 0.01, 0.04);
         const keyMaterial = new THREE.MeshBasicMaterial({
             color: 0x00ff00,
@@ -697,7 +698,7 @@
         scene.add(tabletScreen);
 
         const tabletGlowLight = new THREE.PointLight(0x00ff00, isMobile ? 0.6 : 0.8, 1.5);
-        tabletGlowLight.position.set(-1.0, 0.86, 3.35);
+        tabletGlowLight.position.set(-1.0, 0.86, 3.3);
         scene.add(tabletGlowLight);
 
         // Sofa with Neon Green Base Glow
@@ -820,8 +821,14 @@
             updateMonitorOverlays();
         }
 
-        // Initial page load
-        navigateTo('about');
+        // Initial page load with fallback
+        try {
+            navigateTo('about');
+        } catch (e) {
+            console.error("Navigation failed:", e);
+            camera.position.set(0, 2, 5);
+            camera.lookAt(0, 0, 0);
+        }
 
         // Animation loop
         let time = 0;
