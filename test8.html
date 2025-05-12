@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photorealistic Clothing Studio - 3D E-commerce Shop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f5f5;
+            color: #333333;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -220px;
+            width: 220px;
+            height: 100vh;
+            background: linear-gradient(180deg, #ffffff, #dfe4ea);
+            padding: 20px;
+            z-index: 10;
+            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.2);
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar h1 {
+            font-size: 2rem;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+            margin-top: 60px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin: 14px 0;
+        }
+
+        .sidebar a {
+            color: #444444;
+            text-decoration: none;
+            font-size: 1.2rem;
+            display: block;
+            padding: 10px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar a:hover {
+            background: linear-gradient(90deg, #2a2a2a, #3a3a3a);
+            color: #ffffff;
+            transform: translateX(5px);
+        }
+
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.3s ease;
+        }
+
+        .sidebar a:hover::before {
+            left: 100%;
+        }
+
+        .menu-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 12px 16px;
+            background: linear-gradient(45deg, #2a2a2a, #4a4a4a);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 11;
+            font-size: 1.1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .menu-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .text-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            color: #222222;
+            font-size: 1.1rem;
+            z-index: 10;
+            max-width: 80%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .center-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            color: #222222;
+            font-size: 1.6rem;
+            text-align: center;
+            z-index: 10;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .center-overlay button {
+            margin: 10px;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #2a2a2a, #3a3a3a);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .center-overlay button:hover {
+            background: linear-gradient(45deg, #3a3a3a, #4a4a4a);
+            transform: translateY(-2px);
+        }
+
+        .center-overlay button.remove {
+            background: linear-gradient(45deg, #ff5555, #ff3333);
+        }
+
+        .center-overlay button.remove:hover {
+            background: linear-gradient(45deg, #ff3333, #ff1111);
+        }
+
+        .center-overlay ul {
+            list-style: none;
+            margin: 14px 0;
+            padding: 0;
+        }
+
+        .center-overlay li {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+        }
+
+        .shop-item {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 14px 0;
+            width: 340px;
+            text-align: left;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .shop-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+        }
+
+        .shop-item h3 {
+            color: #1a1a1a;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .shop-item p {
+            color: #555555;
+            font-size: 1rem;
+            margin: 8px 0;
+        }
+
+        .shop-item button {
+            width: 100%;
+            margin-top: 14px;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            display: none;
+        }
+
+        .loading::before {
+            content: '';
+            width: 48px;
+            height: 48px;
+            border: 5px solid #2a2a2a;
+            border-top: 5px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 180px;
+                left: -180px;
+            }
+
+            .sidebar h1 {
+                font-size: 1.6rem;
+                margin-top: 50px;
+            }
+
+            .sidebar a {
+                font-size: 1rem;
+                padding: 8px 10px;
+            }
+
+            .menu-toggle {
+                padding: 10px 14px;
+                font-size: 1rem;
+            }
+
+            .text-overlay {
+                font-size: 0.95rem;
+                padding: 12px;
+                bottom: 15px;
+                left: 15px;
+            }
+
+            .center-overlay {
+                font-size: 1.4rem;
+                padding: 18px;
+            }
+
+            .center-overlay button {
+                font-size: 0.9rem;
+                padding: 8px 16px;
+            }
+
+            .shop-item {
+                width: 280px;
+            }
+
+            .shop-item h3 {
+                font-size: 1.2rem;
+            }
+
+            .shop-item p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    <div class="sidebar" id="sidebar">
+        <h1>Style Haven</h1>
+        <ul>
+            <li><a href="#" onclick="navigateTo('home')">Home</a></li>
+            <li><a href="#" onclick="navigateTo('shop')">Shop</a></li>
+            <li><a href="#" onclick="navigateTo('cart')">Cart</a></li>
+            <li><a href="#" onclick="navigateTo('about')">About</a></li>
+        </ul>
+    </div>
+    <div class="text-overlay" id="textOverlay"></div>
+    <div class="center-overlay" id="centerOverlay"></div>
+    <div class="loading" id="loading"></div>
+
+    <!-- Three.js and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+        renderer.setClearColor(0xf5f5f5, 1);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // OrbitControls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.maxPolarAngle = Math.PI / 2;
+
+        // Lighting (dramatic setup)
+        const light1 = new THREE.DirectionalLight(0xffffff, 1.0);
+        light1.position.set(12, 12, 12);
+        light1.castShadow = true;
+        light1.shadow.mapSize.set(512, 512);
+        light1.shadow.bias = -0.0001;
+        scene.add(light1);
+
+        const light2 = new THREE.DirectionalLight(0xffffff, 0.8);
+        light2.position.set(-12, 12, 12);
+        light2.castShadow = true;
+        light2.shadow.mapSize.set(512, 512);
+        light2.shadow.bias = -0.0001;
+        scene.add(light2);
+
+        const light3 = new THREE.DirectionalLight(0xffffff, 0.6);
+        light3.position.set(12, 12, -12);
+        light3.castShadow = true;
+        light3.shadow.mapSize.set(512, 512);
+        light3.shadow.bias = -0.0001;
+        scene.add(light3);
+
+        const light4 = new THREE.DirectionalLight(0xffffff, 0.4);
+        light4.position.set(-12, 12, -12);
+        light4.castShadow = true;
+        light4.shadow.mapSize.set(512, 512);
+        light4.shadow.bias = -0.0001;
+        scene.add(light4);
+
+        // Texture loader
+        const textureLoader = new THREE.TextureLoader();
+        const loadingManager = new THREE.LoadingManager();
+        const loadingSpinner = document.getElementById('loading');
+        loadingManager.onStart = () => { loadingSpinner.style.display = 'block'; };
+        loadingManager.onLoad = () => { loadingSpinner.style.display = 'none'; };
+        loadingManager.onError = (url) => { console.error(`Error loading ${url}`); };
+        textureLoader.setLoadingManager(loadingManager);
+
+        // Room geometry with textures
+        const floorTexture = textureLoader.load('/textures/wood_diffuse.jpg');
+        floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+        floorTexture.repeat.set(4, 4);
+        const floorNormal = textureLoader.load('/textures/wood_normal.jpg');
+        floorNormal.wrapS = floorNormal.wrapT = THREE.RepeatWrapping;
+        floorNormal.repeat.set(4, 4);
+        const floorRoughness = textureLoader.load('/textures/wood_roughness.jpg');
+        floorRoughness.wrapS = floorRoughness.wrapT = THREE.RepeatWrapping;
+        floorRoughness.repeat.set(4, 4);
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            map: floorTexture,
+            normalMap: floorNormal,
+            roughnessMap: floorRoughness,
+            roughness: 0.7,
+            metalness: 0.1
+        });
+
+        const wallTexture = textureLoader.load('/textures/white_wall_diffuse.jpg');
+        const wallNormal = textureLoader.load('/textures/white_wall_normal.jpg');
+        const wallRoughness = textureLoader.load('/textures/white_wall_roughness.jpg');
+        const wallMaterial = new THREE.MeshStandardMaterial({
+            map: wallTexture,
+            normalMap: wallNormal,
+            roughnessMap: wallRoughness,
+            roughness: 0.85,
+            metalness: 0,
+            color: 0xffffff
+        });
+
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        const backWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
+        backWall.position.set(0, 5, -10);
+        backWall.receiveShadow = true;
+        scene.add(backWall);
+
+        const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
+        leftWall.position.set(-10, 5, 0);
+        leftWall.rotation.y = Math.PI / 2;
+        leftWall.receiveShadow = true;
+        scene.add(leftWall);
+
+        const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
+        rightWall.position.set(10, 5, 0);
+        rightWall.rotation.y = -Math.PI / 2;
+        rightWall.receiveShadow = true;
+        scene.add(rightWall);
+
+        // Color palette
+        const clothingColors = [
+            0x4682b4, // Steel Blue
+            0xff4500, // Orange Red
+            0x228b22, // Forest Green
+            0xffff00, // Yellow
+            0x800080, // Purple
+            0xff69b4, // Hot Pink
+            0x00ced1, // Dark Turquoise
+            0xdeb887, // Burly Wood
+            0x191970, // Midnight Blue
+            0xdda0dd  // Plum
+        ];
+
+        // Clothing material
+        const clothMaterial = (color) => new THREE.MeshStandardMaterial({
+            color: color,
+            roughness: 0.8,
+            metalness: 0,
+            normalMap: textureLoader.load('/textures/fabric_normal.jpg'),
+            roughnessMap: textureLoader.load('/textures/fabric_roughness.jpg')
+        });
+
+        // Clothing groups
+        const foldedShirtsGroup = new THREE.Group();
+        const foldedJeansGroup = new THREE.Group();
+        const jacketsGroup = new THREE.Group();
+        const dressesGroup = new THREE.Group();
+
+        // Folded Shirt Mesh
+        function createFoldedShirt(x, y, z, color) {
+            const shirtGroup = new THREE.Group();
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(0.3, 0.1, 0.4, 16, 16, 16),
+                clothMaterial(color)
+            );
+            body.position.set(0, 0, 0);
+            body.castShadow = true;
+            body.receiveShadow = true;
+            shirtGroup.add(body);
+
+            const fold = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05, 16, 16),
+                clothMaterial(color)
+            );
+            fold.position.set(0.15, 0.05, 0);
+            fold.castShadow = true;
+            fold.receiveShadow = true;
+            shirtGroup.add(fold);
+
+            shirtGroup.position.set(x, y, z);
+            shirtGroup.scale.set(0.8, 0.8, 0.8);
+            return shirtGroup;
+        }
+
+        // Folded Jeans Mesh
+        function createFoldedJeans(x, y, z, color) {
+            const jeansGroup = new THREE.Group();
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(0.25, 0.15, 0.4, 16, 16, 16),
+                clothMaterial(color)
+            );
+            body.position.set(0, 0, 0);
+            body.castShadow = true;
+            body.receiveShadow = true;
+            jeansGroup.add(body);
+
+            const fold = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.05, 0.3, 16),
+                clothMaterial(color)
+            );
+            fold.rotation.z = Math.PI / 2;
+            fold.position.set(0.1, 0.075, 0);
+            fold.castShadow = true;
+            fold.receiveShadow = true;
+            jeansGroup.add(fold);
+
+            jeansGroup.position.set(x, y, z);
+            jeansGroup.scale.set(0.8, 0.8, 0.8);
+            return jeansGroup;
+        }
+
+        // Jacket on Hanger Mesh
+        function createJacket(x, y, z, color) {
+            const jacketGroup = new THREE.Group();
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(0.4, 0.5, 0.2, 16, 16, 16),
+                clothMaterial(color)
+            );
+            body.position.set(0, -0.25, 0);
+            body.castShadow = true;
+            body.receiveShadow = true;
+            jacketGroup.add(body);
+
+            const shoulder = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 16, 16),
+                clothMaterial(color)
+            );
+            shoulder.position.set(0, 0.25, 0);
+            shoulder.castShadow = true;
+            shoulder.receiveShadow = true;
+            jacketGroup.add(shoulder);
+
+            const hanger = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.01, 0.01, 0.5, 8),
+                new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.9 })
+            );
+            hanger.rotation.z = Math.PI / 2;
+            hanger.position.set(0, 0.35, 0);
+            hanger.castShadow = true;
+            jacketGroup.add(hanger);
+
+            jacketGroup.position.set(x, y, z);
+            jacketGroup.scale.set(0.7, 0.7, 0.7);
+            return jacketGroup;
+        }
+
+        // Dress on Hanger Mesh
+        function createDress(x, y, z, color) {
+            const dressGroup = new THREE.Group();
+            const bodice = new THREE.Mesh(
+                new THREE.BoxGeometry(0.3, 0.3, 0.15, 16, 16, 16),
+                clothMaterial(color)
+            );
+            bodice.position.set(0, 0.15, 0);
+            bodice.castShadow = true;
+            bodice.receiveShadow = true;
+            dressGroup.add(bodice);
+
+            const skirt = new THREE.Mesh(
+                new THREE.ConeGeometry(0.3, 0.5, 16),
+                clothMaterial(color)
+            );
+            skirt.position.set(0, -0.25, 0);
+            skirt.castShadow = true;
+            skirt.receiveShadow = true;
+            dressGroup.add(skirt);
+
+            const hanger = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.01, 0.01, 0.5, 8),
+                new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.9 })
+            );
+            hanger.rotation.z = Math.PI / 2;
+            hanger.position.set(0, 0.35, 0);
+            hanger.castShadow = true;
+            dressGroup.add(hanger);
+
+            dressGroup.position.set(x, y, z);
+            dressGroup.scale.set(0.7, 0.7, 0.7);
+            return dressGroup;
+        }
+
+        // Populate shelves and racks
+        let shirtIndex = 0;
+        for (let x = -0.5; x <= 0.5; x += 0.35) {
+            for (let z = -4.3; z <= -3.7; z += 0.35) {
+                const shirt = createFoldedShirt(x, 0.85, z, clothingColors[shirtIndex % clothingColors.length]);
+                foldedShirtsGroup.add(shirt);
+                shirtIndex++;
+            }
+        }
+        scene.add(foldedShirtsGroup);
+
+        let jeansIndex = 0;
+        for (let x = 1.5; x <= 2.5; x += 0.35) {
+            for (let z = -6.3; z <= -5.7; z += 0.35) {
+                const jeans = createFoldedJeans(x, 0.85, z, clothingColors[jeansIndex % clothingColors.length]);
+                foldedJeansGroup.add(jeans);
+                jeansIndex++;
+            }
+        }
+        scene.add(foldedJeansGroup);
+
+        let jacketIndex = 0;
+        for (let x = -6.5; x <= -5.5; x += 0.3) {
+            const jacket = createJacket(x, 1.65, -9.5, clothingColors[jacketIndex % clothingColors.length]);
+            jacketsGroup.add(jacket);
+            jacketIndex++;
+        }
+        scene.add(jacketsGroup);
+
+        let dressIndex = 0;
+        for (let x = -4.5; x <= -3.5; x += 0.3) {
+            const dress = createDress(x, 1.65, -9.5, clothingColors[dressIndex % clothingColors.length]);
+            dressesGroup.add(dress);
+            dressIndex++;
+        }
+        scene.add(dressesGroup);
+
+        // Wall-mounted hanger rack
+        const rackMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.5,
+            metalness: 0.9
+        });
+        const rackGeometry = new THREE.BoxGeometry(4, 0.1, 0.1);
+        const jacketRack = new THREE.Mesh(rackGeometry, rackMaterial);
+        jacketRack.position.set(-5, 2, -9.5);
+        jacketRack.castShadow = true;
+        scene.add(jacketRack);
+
+        // Shelves
+        const shelfMaterial = new THREE.MeshStandardMaterial({
+            color: 0xaaaaaa,
+            roughness: 0.7,
+            metalness: 0
+        });
+        const shelfGeometry = new THREE.BoxGeometry(2, 0.1, 1);
+
+        const shelf1 = new THREE.Mesh(shelfGeometry, shelfMaterial);
+        shelf1.position.set(0, 0.75, -4);
+        shelf1.castShadow = true;
+        scene.add(shelf1);
+
+        const shelf2 = new THREE.Mesh(shelfGeometry, shelfMaterial);
+        shelf2.position.set(2, ﾃｯ0.75, -6);
+        shelf2.castShadow = true;
+        scene.add(shelf2);
+
+        // Checkout desk
+        const desk = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 1.5), shelfMaterial);
+        desk.position.set(0, 0.75, 2);
+        desk.castShadow = true;
+        scene.add(desk);
+
+        const monitorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.5,
+            metalness: 0.9
+        });
+        const monitor = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.05), monitorMaterial);
+        monitor.position.set(0, 1.3, 1.4);
+        monitor.castShadow = true;
+        scene.add(monitor);
+
+        const keyboardMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.6,
+            metalness: 0.5
+        });
+        const keyboard = new THREE.Mesh(new THREE.BoxGeometry(1, 0.05, 0.3), keyboardMaterial);
+        keyboard.position.set(0, 0.85, 1.8);
+        keyboard.castShadow = true;
+        scene.add(keyboard);
+
+        // Shop items and cart logic
+        const shopItems = [
+            { name: "Shirt", title: "Classic Shirt", price: 30, mesh: foldedShirtsGroup, description: "Versatile cotton shirt in vibrant colors." },
+            { name: "Jeans", title: "Slim Fit Jeans", price: 45, mesh: foldedJeansGroup, description: "Durable slim-fit jeans with a modern look." },
+            { name: "Jacket", title: "Denim Jacket", price: 60, mesh: jacketsGroup, description: "Stylish denim jacket for all seasons." },
+            { name: "Dress", title: "A-Line Dress", price: 50, mesh: dressesGroup, description: "Elegant dress with a flattering silhouette." }
+        ];
+
+        let cart = [];
+
+        function addToCart(itemName) {
+            const item = shopItems.find(i => i.name === itemName);
+            if (item) {
+                cart.push({ name: item.name, price: item.price });
+                if (currentPage === 'cart') {
+                    updateCartPage();
+                }
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartPage();
+        }
+
+        function updateCartPage() {
+            const centerOverlay = document.getElementById('centerOverlay');
+            const textOverlay = document.getElementById('textOverlay');
+            if (cart.length === 0) {
+                centerOverlay.innerHTML = "Your Cart<br>Cart is empty";
+                textOverlay.innerText = "Cart: No items";
+            } else {
+                let total = cart.reduce((sum, item) => sum + item.price, 0);
+                let cartHtml = "Your Cart<ul>";
+                cart.forEach((item, index) => {
+                    cartHtml += `<li>${item.name} - $${item.price} <button class="remove" onclick="removeFromCart(${index})">Remove</button></li>`;
+                });
+                cartHtml += `</ul>Total: $${total}`;
+                centerOverlay.innerHTML = cartHtml;
+                textOverlay.innerText = `Cart: ${cart.length} item(s), Total: $${total}`;
+            }
+        }
+
+        // Page navigation and camera positions
+        const pages = {
+            home: {
+                cameraPos: new THREE.Vector3(0, 5, 10),
+                target: new THREE.Vector3(0, 2, -5),
+                text: "Welcome to Style Haven\nExplore our curated collection of trendy clothing.",
+                centerText: "Discover Style Haven<br>Browse our chic clothing collection."
+            },
+            shop: {
+                cameraPos: new THREE.Vector3(-6, 2, -7),
+                target: new THREE.Vector3(-6, 1.5, -9.5),
+                text: "Shop Items:\nClassic Shirt - $30\nSlim Fit Jeans - $45\nDenim Jacket - $60\nA-Line Dress - $50",
+                centerText: `Shop Now<br>
+                    <div class="shop-item">
+                        <h3>Classic Shirt</h3>
+                        <p>Versatile cotton shirt in vibrant colors.</p>
+                        <p>Price: $30</p>
+                        <button onclick="addToCart('Shirt')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Slim Fit Jeans</h3>
+                        <p>Durable slim-fit jeans with a modern look.</p>
+                        <p>Price: $45</p>
+                        <button onclick="addToCart('Jeans')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Denim Jacket</h3>
+                        <p>Stylish denim jacket for all seasons.</p>
+                        <p>Price: $60</p>
+                        <button onclick="addToCart('Jacket')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>A-Line Dress</h3>
+                        <p>Elegant dress with a flattering silhouette.</p>
+                        <p>Price: $50</p>
+                        <button onclick="addToCart('Dress')">Add to Cart</button>
+                    </div>`
+            },
+            cart: {
+                cameraPos: new THREE.Vector3(0, 2, 4),
+                target: new THREE.Vector3(0, 1, 1.4),
+                text: "Cart: No items",
+                centerText: "Your Cart<br>Cart is empty"
+            },
+            about: {
+                cameraPos: new THREE.Vector3(-8, 2, -6),
+                target: new THREE.Vector3(-8, 0.4, -8),
+                text: "About: Style Haven\nYour go-to reseller for trendy, high-quality clothing.",
+                centerText: "About Style Haven"
+            }
+        };
+
+        let currentPage = 'home';
+
+        function navigateTo(page) {
+            currentPage = page;
+            const pageData = pages[page];
+
+            shopItems.forEach(item => {
+                item.mesh.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material.emissive.set(page === 'shop' ? 0x222222 : 0x000000);
+                        child.material.emissiveIntensity = page === 'shop' ? 0.5 : 0;
+                    }
+                });
+            });
+
+            camera.position.copy(pageData.cameraPos);
+            controls.target.copy(pageData.target);
+            controls.update();
+            document.getElementById('textOverlay').innerText = pageData.text;
+            document.getElementById('centerOverlay').innerHTML = page === 'cart' ? pages.cart.centerText : pageData.centerText;
+
+            if (page === 'cart') {
+                updateCartPage();
+            }
+            toggleMenu();
+        }
+
+        // Initial page load
+        navigateTo('home');
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Menu toggle
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
