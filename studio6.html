@@ -210,11 +210,13 @@
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-        // Enhanced Lighting
-        const ambientLight = new THREE.AmbientLight(0x00ff00, 0.3);
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x00ff00, 0.4);
         scene.add(ambientLight);
-        const naturalAmbientLight = new THREE.AmbientLight(0xF5F6F5, 0.5); // Soft natural light
-        scene.add(naturalAmbientLight);
+        const naturalAmbientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene
+
+.add(naturalAmbientLight);
         const spotlight1 = new THREE.SpotLight(0x00ff00, 2);
         spotlight1.position.set(0, 5, 4);
         spotlight1.angle = Math.PI / 6;
@@ -239,7 +241,7 @@
                 new THREE.SphereGeometry(0.05, 16, 16),
                 new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.8 })
             );
-            lightGlow.position.set(...pos);
+            lightGlow.position.set(... responsable);
             scene.add(lightGlow);
         });
 
@@ -291,21 +293,22 @@
         floor.receiveShadow = true;
         scene.add(floor);
 
-        // Larger Rug with Glowing Ooze and Minimal Spiderweb
+        // Rug with Spider Web Pattern (Modified)
         const rugCanvas = document.createElement('canvas');
-        rugCanvas.width = 1024;
-        rugCanvas.height = 1024;
+        rugCanvas.width = 512;
+        rugCanvas.height = 512;
         const rugContext = rugCanvas.getContext('2d');
-        rugContext.fillStyle = '#000000'; // Matte black
+        // Matte black background
+        rugContext.fillStyle = '#000000';
         rugContext.fillRect(0, 0, rugCanvas.width, rugCanvas.height);
 
-        // Minimal spiderweb pattern
+        // Draw spider web pattern (glowing effect in material)
         rugContext.strokeStyle = '#00ff00';
-        rugContext.lineWidth = 1;
+        rugContext.lineWidth = 3;
         const centerX = rugCanvas.width / 2;
         const centerY = rugCanvas.height / 2;
-        // Fewer radial lines
-        for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 4) {
+        // Radial lines
+        for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 8) {
             rugContext.beginPath();
             rugContext.moveTo(centerX, centerY);
             rugContext.lineTo(
@@ -314,8 +317,8 @@
             );
             rugContext.stroke();
         }
-        // Fewer concentric curves
-        for (let r = 100; r <= 400; r += 100) {
+        // Concentric curves
+        for (let r = 50; r <= 200; r += 30) {
             rugContext.beginPath();
             for (let angle = 0; angle < 2 * Math.PI; angle += 0.1) {
                 const x = centerX + Math.cos(angle) * r;
@@ -327,28 +330,19 @@
             rugContext.stroke();
         }
 
-        // Glowing ooze effect
-        rugContext.fillStyle = 'rgba(0, 255, 0, 0.3)';
-        for (let i = 0; i < 20; i++) {
-            rugContext.beginPath();
-            const x = centerX + (Math.random() - 0.5) * rugCanvas.width * 0.8;
-            const y = centerY + (Math.random() - 0.5) * rugCanvas.height * 0.8;
-            rugContext.arc(x, y, 50 * Math.random(), 0, 2 * Math.PI);
-            rugContext.fill();
-        }
-
         const rugTexture = new THREE.CanvasTexture(rugCanvas);
         const rugMaterial = new THREE.MeshStandardMaterial({
             map: rugTexture,
-            roughness: 1.0,
+            roughness: 1.0, // Matte finish
             metalness: 0.0,
-            emissive: 0x00ff00,
-            emissiveIntensity: 0.8
+            emissive: 0x00ff00, // Only web glows
+            emissiveIntensity: 1.0, // Stronger glow for radioactive effect
+            emissiveMap: rugTexture // Emissive map ensures only web glows
         });
-        const rugGeometry = new THREE.PlaneGeometry(6, 6); // Larger rug
+        const rugGeometry = new THREE.PlaneGeometry(5, 5); // Larger rug
         const rug = new THREE.Mesh(rugGeometry, rugMaterial);
         rug.rotation.x = -Math.PI / 2;
-        rug.position.set(0, 0.01, 0); // Centered on floor
+        rug.position.set(0, 0.01, 0); // Centered
         scene.add(rug);
 
         // Walls
@@ -368,23 +362,456 @@
         wall3.position.set(0, 2.5, 5);
         scene.add(wall3);
 
-        // Desk with Neon Glow
-        const deskGeometry = new THREE.BoxGeometry(4, 0.1, 1.8);
-        const deskMaterial = new THREE.MeshStandardMaterial({
-            color: 0xcccccc,
-            metalness: 0.9,
-            roughness: 0.2
+        // Matte Black Material for Sofa and Desk
+        const matteBlackMaterial = new THREE.MeshStandardMaterial({
+            color: 0x000000,
+            roughness: 1.0, // Matte finish
+            metalness: 0.0
         });
-        const desk = new THREE.Mesh(deskGeometry, deskMaterial);
+
+        // Desk (Modified)
+        const deskGeometry = new THREE.BoxGeometry(4, 0.1, 1.8);
+        const desk = new THREE.Mesh(deskGeometry, matteBlackMaterial);
         desk.position.set(0, 0.75, 4);
         desk.castShadow = true;
         scene.add(desk);
 
-        // Desk Neon Glow
-        const deskGlowGeometry = new THREE.BoxGeometry(4, 0.05, 1.8);
-        const deskGlowMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,
-            transparent: true,
-            opacity
+        // Desk legs
+        const legGeometry = new THREE.BoxGeometry(0.1, 0.75, 0.1);
+        const leg1 = new THREE.Mesh(legGeometry, matteBlackMaterial);
+        leg1.position.set(-1.9, 0.35, 4.8);
+        scene.add(leg1);
+        const leg2 = new THREE.Mesh(legGeometry, matteBlackMaterial);
+        leg2.position.set(1.9, 0.35, 4.8);
+        scene.add(leg2);
+        const leg3 = new THREE.Mesh(legGeometry, matteBlackMaterial);
+        leg3.position.set(-1.9, 0.35, 3.2);
+        scene.add(leg3);
+        const leg4 = new THREE.Mesh(legGeometry, matteBlackMaterial);
+        leg4.position.set(1.9, 0.35, 3.2);
+        scene.add(leg4);
 
-System: You are Grok 3 built by xAI.
+        // Desk Neon Lights (Added)
+        const deskNeonPositions = [
+            [-2, 0.8, 4.9], [2, 0.8, 4.9], // Front edge
+            [-2, 0.8, 3.1], [2, 0.8, 3.1], // Back edge
+            [0, 0.8, 4.9], [0, 0.8, 3.1] // Middle points
+        ];
+        deskNeonPositions.forEach(pos => {
+            const neonLight = new THREE.PointLight(0x00ff00, 1, 2);
+            neonLight.position.set(...pos);
+            scene.add(neonLight);
+            const neonGlow = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.8 })
+            );
+            neonGlow.position.set(...pos);
+            scene.add(neonGlow);
+        });
+
+        // Server Rack Under Desk
+        const serverMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            metalness: 0.8,
+            roughness: 0.3
+        });
+        const serverRackGeometry = new THREE.BoxGeometry(1.2, 0.6, 0.6);
+        const serverRackUnder = new THREE.Mesh(serverRackGeometry, serverMaterial);
+        serverRackUnder.position.set(0, 0.3, 4);
+        serverRackUnder.castShadow = true;
+        scene.add(serverRackUnder);
+
+        // Server Rack LEDs (Under Desk)
+        for (let i = -0.5; i <= 0.5; i += 0.2) {
+            for (let j = 0; j <= 0.4; j += 0.2) {
+                const led = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.02, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+                );
+                led.position.set(i, 0.3 + j, 4.31);
+                scene.add(led);
+            }
+        }
+
+        // Server Rack Beside Desk
+        const serverRackBeside = new THREE.Mesh(serverRackGeometry, serverMaterial);
+        serverRackBeside.position.set(-2.5, 0.3, 4);
+        serverRackBeside.castShadow = true;
+        scene.add(serverRackBeside);
+
+        // Server Rack LEDs (Beside Desk)
+        for (let i = -0.5; i <= 0.5; i += 0.2) {
+            for (let j = 0; j <= 0.4; j += 0.2) {
+                const led = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.02, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+                );
+                led.position.set(-2.5 + i, 0.3 + j, 4.31);
+                scene.add(led);
+            }
+        }
+
+        // Desk Lamp
+        const lampBaseGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.05, 32);
+        const lampArmGeometry = new THREE.BoxGeometry(0.05, 0.3, 0.05);
+        const lampHeadGeometry = new THREE.ConeGeometry(0.1, 0.15, 32);
+        const lampMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const lampBase = new THREE.Mesh(lampBaseGeometry, lampMaterial);
+        lampBase.position.set(1.5, 0.85, 4.7);
+        lampBase.castShadow = true;
+        scene.add(lampBase);
+        const lampArm = new THREE.Mesh(lampArmGeometry, lampMaterial);
+        lampArm.position.set(1.5, 1.0, 4.7);
+        scene.add(lampArm);
+        const lampHead = new THREE.Mesh(lampHeadGeometry, lampMaterial);
+        lampHead.position.set(1.5, 1.15, 4.7);
+        lampHead.rotation.x = Math.PI / 4;
+        scene.add(lampHead);
+        const lampLight = new THREE.SpotLight(0xffffff, 1.5, 3, Math.PI / 8);
+        lampLight.position.set(1.5, 1.15, 4.7);
+        lampLight.target.position.set(1.5, 0.75, 4.5);
+        scene.add(lampLight);
+        scene.add(lampLight.target);
+
+        // Books
+        const bookGeometry = new THREE.BoxGeometry(0.2, 0.3, 0.05);
+        const bookMaterial = new THREE.MeshStandardMaterial({
+            color: 0x555555,
+            roughness: 0.7,
+            metalness: 0.1
+        });
+        for (let i = 0; i < 3; i++) {
+            const book = new THREE.Mesh(bookGeometry, bookMaterial);
+            book.position.set(-1.8 + i * 0.25, 0.95, 4.7);
+            book.rotation.y = Math.PI / 16 * (Math.random() - 0.5);
+            book.castShadow = true;
+            scene.add(book);
+        }
+
+        // Pen Holder
+        const penHolderGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.15, 32);
+        const penHolderMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const penHolder = new THREE.Mesh(penHolderGeometry, penHolderMaterial);
+        penHolder.position.set(1.0, 0.85, 4.7);
+        penHolder.castShadow = true;
+        scene.add(penHolder);
+        const penGeometry = new THREE.CylinderGeometry(0.01, 0.01, 0.12, 16);
+        for (let i = 0; i < 5; i++) {
+            const pen = new THREE.Mesh(penGeometry, penHolderMaterial);
+            pen.position.set(1.0 + (Math.random() - 0.5) * 0.05, 0.9, 4.7 + (Math.random() - 0.5) * 0.05);
+            pen.rotation.z = Math.PI / 16 * (Math.random() - 0.5);
+            scene.add(pen);
+        }
+
+        // Plant
+        const potGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.15, 32);
+        const potMaterial = new THREE.MeshStandardMaterial({
+            color: 0x4a3728,
+            roughness: 0.8,
+            metalness: 0.1
+        });
+        const pot = new THREE.Mesh(potGeometry, potMaterial);
+        pot.position.set(-1.8, 0.85, 3.3);
+        pot.castShadow = true;
+        scene.add(pot);
+        const leafGeometry = new THREE.BoxGeometry(0.05, 0.2, 0.01);
+        const leafMaterial = new THREE.MeshStandardMaterial({
+            color: 0x228B22,
+            roughness: 0.9,
+            metalness: 0.1
+        });
+        for (let i = 0; i < 6; i++) {
+            const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+            leaf.position.set(-1.8 + (Math.random() - 0.5) * 0.05, 0.95 + i * 0.05, 3.3 + (Math.random() - 0.5) * 0.05);
+            leaf.rotation.y = Math.random() * Math.PI;
+            leaf.rotation.z = Math.PI / 4 * (Math.random() - 0.5);
+            scene.add(leaf);
+        }
+
+        // Video textures for monitors
+        const videoElements = [];
+        const videoTextures = [];
+        const videoSources = [
+            'neural_green.mp4', // Replace with actual video file path
+            'neural_blue.mp4',
+            'neural_purple.mp4'
+        ];
+        const colors = [0x00ff00, 0x0000ff, 0x800080]; // Green, Blue, Purple
+
+        videoSources.forEach(src => {
+            const video = document.createElement('video');
+            video.src = src;
+            video.muted = true;
+            video.loop = true;
+            video.autoplay = true;
+            video.play().catch(e => console.error('Video playback error:', e));
+            videoElements.push(video);
+            videoTextures.push(new THREE.VideoTexture(video));
+        });
+
+        // Three Monitors
+        const monitorFrameGeometry = new THREE.BoxGeometry(1.2, 0.7, 0.1);
+        const monitorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const monitorScreenGeometry = new THREE.PlaneGeometry(1, 0.55);
+
+        const monitorPositions = [-1.3, 0, 1.3];
+        monitorPositions.forEach((x, index) => {
+            const monitorFrame = new THREE.Mesh(monitorFrameGeometry, monitorMaterial);
+            monitorFrame.position.set(x, 1.1, 4);
+            monitorFrame.castShadow = true;
+            scene.add(monitorFrame);
+
+            const monitorScreen = new THREE.Mesh(monitorScreenGeometry, new THREE.MeshBasicMaterial({
+                map: videoTextures[index],
+                transparent: true,
+                emissive: colors[index],
+                emissiveIntensity: 1
+            }));
+            monitorScreen.position.set(x, 1.1, 4.045);
+            scene.add(monitorScreen);
+
+            const monitorGlowLight = new THREE.PointLight(colors[index], 1.5, 3);
+            monitorGlowLight.position.set(x, 1.1, 4.1);
+            scene.add(monitorGlowLight);
+
+            const monitorStandBaseGeometry = new THREE.BoxGeometry(0.3, 0.05, 0.3);
+            const monitorStandArmGeometry = new THREE.BoxGeometry(0.1, 0.3, 0.1);
+            const monitorStandBase = new THREE.Mesh(monitorStandBaseGeometry, monitorMaterial);
+            monitorStandBase.position.set(x, 0.8, 4);
+            scene.add(monitorStandBase);
+            const monitorStandArm = new THREE.Mesh(monitorStandArmGeometry, monitorMaterial);
+            monitorStandArm.position.set(x, 0.95, 4);
+            scene.add(monitorStandArm);
+        });
+
+        // Keyboard
+        const keyboardGeometry = new THREE.BoxGeometry(0.9, 0.05, 0.35);
+        const keyboardMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const keyboard = new THREE.Mesh(keyboardGeometry, keyboardMaterial);
+        keyboard.position.set(0, 0.85, 3.6);
+        keyboard.castShadow = true;
+        scene.add(keyboard);
+
+        // Keycaps
+        const keyGeometry = new THREE.BoxGeometry(0.04, 0.02, 0.04);
+        for (let x = -0.4; x <= 0.4; x += 0.06) {
+            for (let z = -0.15; z <= 0.15; z += 0.06) {
+                const key = new THREE.Mesh(keyGeometry, keyboardMaterial);
+                key.position.set(x, 0.88, 3.6 + z);
+                key.rotation.x = Math.random() * 0.1 - 0.05;
+                scene.add(key);
+            }
+        }
+
+        // Tablet
+        const tabletGeometry = new THREE.BoxGeometry(0.28, 0.01, 0.18);
+        const tabletScreenGeometry = new THREE.PlaneGeometry(0.25, 0.15);
+        const tabletMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const tablet = new THREE.Mesh(tabletGeometry, tabletMaterial);
+        tablet.position.set(-1.0, 0.85, 3.3);
+        tablet.castShadow = true;
+        scene.add(tablet);
+
+        const tabletScreen = new THREE.Mesh(tabletScreenGeometry, new THREE.MeshBasicMaterial({
+            map: videoTextures[0],
+            transparent: true,
+            emissive: 0x00ff00,
+            emissiveIntensity: 1
+        }));
+        tabletScreen.position.set(-1.0, 0.86, 3.3);
+        scene.add(tabletScreen);
+
+        const tabletGlowLight = new THREE.PointLight(0x00ff00, 0.8, 1.5);
+        tabletGlowLight.position.set(-1.0, 0.86, 3.35);
+        scene.add(tabletGlowLight);
+
+        // Sofa (Modified)
+        const sofaBaseGeometry = new THREE.BoxGeometry(4.5, 0.5, 1);
+        const sofaBackGeometry = new THREE.BoxGeometry(4.5, 1, 0.3);
+        const sofaArmGeometry = new THREE.BoxGeometry(0.5, 0.5, 1);
+        const sofaCushionGeometry = new THREE.BoxGeometry(1.4, 0.2, 0.8);
+
+        const sofaBase = new THREE.Mesh(sofaBaseGeometry, matteBlackMaterial);
+        sofaBase.position.set(0, 0.25, -4.2);
+        sofaBase.castShadow = true;
+        scene.add(sofaBase);
+
+        const sofaBack = new THREE.Mesh(sofaBackGeometry, matteBlackMaterial);
+        sofaBack.position.set(0, 0.75, -4.45);
+        scene.add(sofaBack);
+
+        const sofaArmLeft = new THREE.Mesh(sofaArmGeometry, matteBlackMaterial);
+        sofaArmLeft.position.set(-2.25, 0.5, -4.2);
+        scene.add(sofaArmLeft);
+
+        const sofaArmRight = new THREE.Mesh(sofaArmGeometry, matteBlackMaterial);
+        sofaArmRight.position.set(2.25, 0.5, -4.2);
+        scene.add(sofaArmRight);
+
+        for (let x = -1.5; x <= 1.5; x += 1.5) {
+            const cushion = new THREE.Mesh(sofaCushionGeometry, matteBlackMaterial);
+            cushion.position.set(x, 0.45, -4.2);
+            scene.add(cushion);
+        }
+
+        // Sofa Neon Lights (Added)
+        const sofaNeonPositions = [
+            [-2.25, 0.75, -4.2], [2.25, 0.75, -4.2], // Top of arms
+            [0, 0.75, -4.45], // Top of backrest
+            [-2.25, 0.25, -4.2], [2.25, 0.25, -4.2] // Base edges
+        ];
+        sofaNeonPositions.forEach(pos => {
+            const neonLight = new THREE.PointLight(0x00ff00, 1, 2);
+            neonLight.position.set(...pos);
+            scene.add(neonLight);
+            const neonGlow = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.8 })
+            );
+            neonGlow.position.set(...pos);
+            scene.add(neonGlow);
+        });
+
+        // Neon sign
+        const signCanvas = document.createElement('canvas');
+        signCanvas.width = 1024;
+        signCanvas.height = 256;
+        const signContext = signCanvas.getContext('2d');
+        signContext.fillStyle = '#000000';
+        signContext.fillRect(0, 0, signCanvas.width, signCanvas.height);
+        signContext.font = '200px Arial';
+        signContext.fillStyle = '#00ff00';
+        signContext.textAlign = 'center';
+        signContext.textBaseline = 'middle';
+        signContext.fillText('webXOS', signCanvas.width / 2, signCanvas.height / 2);
+        const signTexture = new THREE.CanvasTexture(signCanvas);
+
+        const neonSignGeometry = new THREE.PlaneGeometry(3, 0.75);
+        const neonSignMaterial = new THREE.MeshBasicMaterial({
+            map: signTexture,
+            transparent: true,
+            emissive: 0x00ff00,
+            emissiveIntensity: 2
+        });
+        const neonSign = new THREE.Mesh(neonSignGeometry, neonSignMaterial);
+        neonSign.position.set(0, 3, -4.9);
+        scene.add(neonSign);
+
+        const signGlowLight = new THREE.PointLight(0x00ff00, 2, 5);
+        signGlowLight.position.set(0, 3, -4.8);
+        scene.add(signGlowLight);
+
+        // Page navigation and camera positions
+        const pages = {
+            about: {
+                cameraPos: new THREE.Vector3(4.8, 2.4, 0),
+                lookAt: new THREE.Vector3(0, 3, -4.9),
+                text: "About: Learn more about webXOS Studio\nOur mission and vision.",
+                centerText: "About webXOS Studio"
+            },
+            tools: {
+                cameraPos: new THREE.Vector3(3.6, 2.4, 2.4),
+                lookAt: new THREE.Vector3(-0.6, 0.85, 3.6),
+                text: "Tools: Explore our suite of development tools\nDesigned for efficiency.",
+                centerText: "Our Tools"
+            },
+            aiAgents: {
+                cameraPos: new THREE.Vector3(5, 7, 5),
+                lookAt: new THREE.Vector3(0, 0, 0),
+                text: "AI Agents: Discover our intelligent agents\nPowering the future.",
+                centerText: "AI Agents"
+            },
+            games: {
+                cameraPos: new THREE.Vector3(-3.6, 2.4, 0),
+                lookAt: new THREE.Vector3(0, 0.5, 2.5),
+                text: "Games: Dive into our gaming experiences\nFun and immersive.",
+                centerText: "Games by webXOS"
+            },
+            copyright: {
+                cameraPos: new THREE.Vector3(2.4, 3, -2.4),
+                lookAt: new THREE.Vector3(0, 3, -4.9),
+                text: "Copyright: View our licensing information\nProtecting our work.",
+                centerText: "Copyright Information"
+            }
+        };
+
+        let currentPage = 'about';
+
+        function navigateTo(page) {
+            currentPage = page;
+            const pageData = pages[page];
+
+            camera.position.copy(pageData.cameraPos);
+            camera.lookAt(pageData.lookAt);
+            document.getElementById('textOverlay').innerText = pageData.text;
+            document.getElementById('centerOverlay').innerHTML = pageData.centerText;
+
+            toggleMenu();
+        }
+
+        // Initial page load
+        navigateTo('about');
+
+        // Animation loop
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+
+            // Animate neural ceiling
+            neuralLinesGeometry.attributes.position.array.forEach((_, i) => {
+                if (i % 3 === 1) {
+                    neuralLinesGeometry.attributes.position.array[i] = 4.8 + Math.sin(time + i) * 0.05;
+                }
+            });
+            neuralLinesGeometry.attributes.position.needsUpdate = true;
+
+            // Animate server rack and neon LEDs
+            scene.children.forEach(child => {
+                if (child.material && child.material.color && child.material.color.getHex() === 0x00ff00 && child.geometry.type === 'SphereGeometry') {
+                    child.material.emissiveIntensity = 0.5 + 0.5 * Math.sin(time * 2 + child.position.x);
+                }
+            });
+
+            // Animate rug glow
+            rug.material.emissiveIntensity = 1.0 + 0.5 * Math.sin(time * 1.5); // Enhanced glow effect
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Menu toggle
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
