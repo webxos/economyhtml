@@ -125,7 +125,7 @@
         .shop-item h3 {
             color: #00ff00;
             font-size: 1.2rem;
-            margin-bottom: 5px;
+            margin        margin-bottom: 5px;
         }
         .shop-item p {
             color: #aaa6c3;
@@ -135,6 +135,16 @@
         .shop-item button {
             width: 100%;
             margin-top: 10px;
+        }
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff5555;
+            font-size: 1.5rem;
+            text-align: center;
+            z-index: 10;
         }
         @media (max-width: 768px) {
             canvas {
@@ -198,25 +208,37 @@
     </div>
     <div class="text-overlay" id="textOverlay"></div>
     <div class="center-overlay" id="centerOverlay"></div>
+    <div class="error-message" id="errorMessage" style="display: none;">WebGL not supported or scene failed to load.</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r167/three.min.js"></script>
     <script>
+        // Check WebGL support
+        if (!window.WebGLRenderingContext || !document.createElement('canvas').getContext('webgl')) {
+            document.getElementById('errorMessage').style.display = 'block';
+            throw new Error('WebGL not supported');
+        }
+
         // Scene setup
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        let scene, camera, renderer;
+        try {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        } catch (e) {
+            console.error('Renderer setup failed:', e);
+            document.getElementById('errorMessage').style.display = 'block';
+            throw e;
+        }
 
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x00ff00, 0.4);
         scene.add(ambientLight);
         const naturalAmbientLight = new THREE.AmbientLight(0xffffff, 0.2);
-        scene
-
-.add(naturalAmbientLight);
+        scene.add(naturalAmbientLight);
         const spotlight1 = new THREE.SpotLight(0x00ff00, 2);
         spotlight1.position.set(0, 5, 4);
         spotlight1.angle = Math.PI / 6;
@@ -241,7 +263,7 @@
                 new THREE.SphereGeometry(0.05, 16, 16),
                 new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.8 })
             );
-            lightGlow.position.set(... responsable);
+            lightGlow.position.set(...pos);
             scene.add(lightGlow);
         });
 
@@ -293,21 +315,18 @@
         floor.receiveShadow = true;
         scene.add(floor);
 
-        // Rug with Spider Web Pattern (Modified)
+        // Rug with Spider Web Pattern
         const rugCanvas = document.createElement('canvas');
         rugCanvas.width = 512;
         rugCanvas.height = 512;
         const rugContext = rugCanvas.getContext('2d');
-        // Matte black background
         rugContext.fillStyle = '#000000';
         rugContext.fillRect(0, 0, rugCanvas.width, rugCanvas.height);
 
-        // Draw spider web pattern (glowing effect in material)
         rugContext.strokeStyle = '#00ff00';
         rugContext.lineWidth = 3;
         const centerX = rugCanvas.width / 2;
         const centerY = rugCanvas.height / 2;
-        // Radial lines
         for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 8) {
             rugContext.beginPath();
             rugContext.moveTo(centerX, centerY);
@@ -317,7 +336,6 @@
             );
             rugContext.stroke();
         }
-        // Concentric curves
         for (let r = 50; r <= 200; r += 30) {
             rugContext.beginPath();
             for (let angle = 0; angle < 2 * Math.PI; angle += 0.1) {
@@ -333,16 +351,16 @@
         const rugTexture = new THREE.CanvasTexture(rugCanvas);
         const rugMaterial = new THREE.MeshStandardMaterial({
             map: rugTexture,
-            roughness: 1.0, // Matte finish
+            roughness: 1.0,
             metalness: 0.0,
-            emissive: 0x00ff00, // Only web glows
-            emissiveIntensity: 1.0, // Stronger glow for radioactive effect
-            emissiveMap: rugTexture // Emissive map ensures only web glows
+            emissive: 0x00ff00,
+            emissiveIntensity: 1.0,
+            emissiveMap: rugTexture
         });
-        const rugGeometry = new THREE.PlaneGeometry(5, 5); // Larger rug
+        const rugGeometry = new THREE.PlaneGeometry(5, 5);
         const rug = new THREE.Mesh(rugGeometry, rugMaterial);
         rug.rotation.x = -Math.PI / 2;
-        rug.position.set(0, 0.01, 0); // Centered
+        rug.position.set(0, 0.01, 0);
         scene.add(rug);
 
         // Walls
@@ -362,21 +380,20 @@
         wall3.position.set(0, 2.5, 5);
         scene.add(wall3);
 
-        // Matte Black Material for Sofa and Desk
+        // Matte Black Material
         const matteBlackMaterial = new THREE.MeshStandardMaterial({
             color: 0x000000,
-            roughness: 1.0, // Matte finish
+            roughness: 1.0,
             metalness: 0.0
         });
 
-        // Desk (Modified)
+        // Desk
         const deskGeometry = new THREE.BoxGeometry(4, 0.1, 1.8);
         const desk = new THREE.Mesh(deskGeometry, matteBlackMaterial);
         desk.position.set(0, 0.75, 4);
         desk.castShadow = true;
         scene.add(desk);
 
-        // Desk legs
         const legGeometry = new THREE.BoxGeometry(0.1, 0.75, 0.1);
         const leg1 = new THREE.Mesh(legGeometry, matteBlackMaterial);
         leg1.position.set(-1.9, 0.35, 4.8);
@@ -391,11 +408,11 @@
         leg4.position.set(1.9, 0.35, 3.2);
         scene.add(leg4);
 
-        // Desk Neon Lights (Added)
+        // Desk Neon Lights
         const deskNeonPositions = [
-            [-2, 0.8, 4.9], [2, 0.8, 4.9], // Front edge
-            [-2, 0.8, 3.1], [2, 0.8, 3.1], // Back edge
-            [0, 0.8, 4.9], [0, 0.8, 3.1] // Middle points
+            [-2, 0.8, 4.9], [2, 0.8, 4.9],
+            [-2, 0.8, 3.1], [2, 0.8, 3.1],
+            [0, 0.8, 4.9], [0, 0.8, 3.1]
         ];
         deskNeonPositions.forEach(pos => {
             const neonLight = new THREE.PointLight(0x00ff00, 1, 2);
@@ -536,28 +553,7 @@
             scene.add(leaf);
         }
 
-        // Video textures for monitors
-        const videoElements = [];
-        const videoTextures = [];
-        const videoSources = [
-            'neural_green.mp4', // Replace with actual video file path
-            'neural_blue.mp4',
-            'neural_purple.mp4'
-        ];
-        const colors = [0x00ff00, 0x0000ff, 0x800080]; // Green, Blue, Purple
-
-        videoSources.forEach(src => {
-            const video = document.createElement('video');
-            video.src = src;
-            video.muted = true;
-            video.loop = true;
-            video.autoplay = true;
-            video.play().catch(e => console.error('Video playback error:', e));
-            videoElements.push(video);
-            videoTextures.push(new THREE.VideoTexture(video));
-        });
-
-        // Three Monitors
+        // Monitors (Simplified to static colors)
         const monitorFrameGeometry = new THREE.BoxGeometry(1.2, 0.7, 0.1);
         const monitorMaterial = new THREE.MeshStandardMaterial({
             color: 0x333333,
@@ -565,6 +561,7 @@
             roughness: 0.2
         });
         const monitorScreenGeometry = new THREE.PlaneGeometry(1, 0.55);
+        const monitorColors = [0x00ff00, 0x0000ff, 0x800080];
 
         const monitorPositions = [-1.3, 0, 1.3];
         monitorPositions.forEach((x, index) => {
@@ -574,15 +571,14 @@
             scene.add(monitorFrame);
 
             const monitorScreen = new THREE.Mesh(monitorScreenGeometry, new THREE.MeshBasicMaterial({
-                map: videoTextures[index],
-                transparent: true,
-                emissive: colors[index],
+                color: monitorColors[index],
+                emissive: monitorColors[index],
                 emissiveIntensity: 1
             }));
             monitorScreen.position.set(x, 1.1, 4.045);
             scene.add(monitorScreen);
 
-            const monitorGlowLight = new THREE.PointLight(colors[index], 1.5, 3);
+            const monitorGlowLight = new THREE.PointLight(monitorColors[index], 1.5, 3);
             monitorGlowLight.position.set(x, 1.1, 4.1);
             scene.add(monitorGlowLight);
 
@@ -608,7 +604,6 @@
         keyboard.castShadow = true;
         scene.add(keyboard);
 
-        // Keycaps
         const keyGeometry = new THREE.BoxGeometry(0.04, 0.02, 0.04);
         for (let x = -0.4; x <= 0.4; x += 0.06) {
             for (let z = -0.15; z <= 0.15; z += 0.06) {
@@ -633,8 +628,7 @@
         scene.add(tablet);
 
         const tabletScreen = new THREE.Mesh(tabletScreenGeometry, new THREE.MeshBasicMaterial({
-            map: videoTextures[0],
-            transparent: true,
+            color: 0x00ff00,
             emissive: 0x00ff00,
             emissiveIntensity: 1
         }));
@@ -645,7 +639,7 @@
         tabletGlowLight.position.set(-1.0, 0.86, 3.35);
         scene.add(tabletGlowLight);
 
-        // Sofa (Modified)
+        // Sofa
         const sofaBaseGeometry = new THREE.BoxGeometry(4.5, 0.5, 1);
         const sofaBackGeometry = new THREE.BoxGeometry(4.5, 1, 0.3);
         const sofaArmGeometry = new THREE.BoxGeometry(0.5, 0.5, 1);
@@ -674,11 +668,11 @@
             scene.add(cushion);
         }
 
-        // Sofa Neon Lights (Added)
+        // Sofa Neon Lights
         const sofaNeonPositions = [
-            [-2.25, 0.75, -4.2], [2.25, 0.75, -4.2], // Top of arms
-            [0, 0.75, -4.45], // Top of backrest
-            [-2.25, 0.25, -4.2], [2.25, 0.25, -4.2] // Base edges
+            [-2.25, 0.75, -4.2], [2.25, 0.75, -4.2],
+            [0, 0.75, -4.45],
+            [-2.25, 0.25, -4.2], [2.25, 0.25, -4.2]
         ];
         sofaNeonPositions.forEach(pos => {
             const neonLight = new THREE.PointLight(0x00ff00, 1, 2);
@@ -760,16 +754,13 @@
         function navigateTo(page) {
             currentPage = page;
             const pageData = pages[page];
-
             camera.position.copy(pageData.cameraPos);
             camera.lookAt(pageData.lookAt);
             document.getElementById('textOverlay').innerText = pageData.text;
             document.getElementById('centerOverlay').innerHTML = pageData.centerText;
-
             toggleMenu();
         }
 
-        // Initial page load
         navigateTo('about');
 
         // Animation loop
@@ -778,7 +769,6 @@
             requestAnimationFrame(animate);
             time += 0.01;
 
-            // Animate neural ceiling
             neuralLinesGeometry.attributes.position.array.forEach((_, i) => {
                 if (i % 3 === 1) {
                     neuralLinesGeometry.attributes.position.array[i] = 4.8 + Math.sin(time + i) * 0.05;
@@ -786,15 +776,13 @@
             });
             neuralLinesGeometry.attributes.position.needsUpdate = true;
 
-            // Animate server rack and neon LEDs
             scene.children.forEach(child => {
                 if (child.material && child.material.color && child.material.color.getHex() === 0x00ff00 && child.geometry.type === 'SphereGeometry') {
                     child.material.emissiveIntensity = 0.5 + 0.5 * Math.sin(time * 2 + child.position.x);
                 }
             });
 
-            // Animate rug glow
-            rug.material.emissiveIntensity = 1.0 + 0.5 * Math.sin(time * 1.5); // Enhanced glow effect
+            rug.material.emissiveIntensity = 1.0 + 0.5 * Math.sin(time * 1.5);
 
             renderer.render(scene, camera);
         }
