@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Clothing Design Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #333333; /* Gray background */
+            color: #cccccc; /* Light gray text */
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+        #menu-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #4a4a4a; /* Gray button */
+            border: none;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            filter: grayscale(100%); /* Grayscale UI */
+            z-index: 10;
+        }
+        #menu-button:hover {
+            background: #666666;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: -250px; /* Hidden off-screen initially */
+            width: 200px;
+            background: #4a4a4a; /* Gray menu background */
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            filter: grayscale(100%); /* Grayscale UI */
+            transition: left 0.3s ease;
+            z-index: 10;
+        }
+        #ui.open {
+            left: 10px; /* Slide in when open */
+        }
+        #ui h1 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+        #ui p {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #cccccc;
+        }
+        #ui button {
+            background: #666666;
+            border: none;
+            color: #ffffff;
+            padding: 8px 16px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        #ui button:hover {
+            background: #888888;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Button -->
+    <button id="menu-button">☰ Menu</button>
+    <!-- UI Menu (Hidden by Default) -->
+    <div id="ui">
+        <h1>Clothing Portfolio</h1>
+        <p>Click items to zoom, toggle rotation, or reset view.</p>
+        <button onclick="resetCamera()">Reset View</button>
+        <button onclick="toggleRotation()">Toggle Rotation</button>
+    </div>
+
+    <!-- Three.js and OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r167/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.167.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Scene Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x333333); // Gray background
+        document.body.appendChild(renderer.domElement);
+
+        // Camera Position (Locked to view all objects)
+        camera.position.set(0, 5, 20); // Adjusted to fit all 12 items
+        camera.lookAt(0, 0, 0); // Center of the scene
+
+        // Disable OrbitControls to lock camera
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enabled = false; // Lock camera
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 7.5);
+        scene.add(directionalLight);
+
+        // Clothing Objects Array
+        const clothingItems = [];
+        let rotationEnabled = true;
+        let targetCameraPos = camera.position.clone();
+        let targetLookAt = new THREE.Vector3(0, 0, 0);
+
+        // Canvas Texture Generator
+        function createFabricTexture(color, type) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const context = canvas.getContext('2d');
+            context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+            context.fillRect(0, 0, 256, 256);
+            if (type === 'denim') {
+                context.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                for (let i = 0; i < 256; i += 10) {
+                    context.beginPath();
+                    context.moveTo(0, i);
+                    context.lineTo(256, i + 5);
+                    context.stroke();
+                }
+            } else if (type === 'wool') {
+                context.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                for (let i = 0; i < 50; i++) {
+                    context.beginPath();
+                    context.arc(Math.random() * 256, Math.random() * 256, 2, 0, Math.PI * 2);
+                    context.fill();
+                }
+            } else if (type === 'leather') {
+                context.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                for (let i = 0; i < 256; i += 20) {
+                    context.fillRect(i, 0, 10, 256);
+                }
+            }
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Function to Create Clothing Item
+        function createClothingItem(geometry, color, position, name, textureType, scale) {
+            const texture = createFabricTexture(color, textureType);
+            const material = new THREE.MeshStandardMaterial({
+                map: texture,
+                roughness: textureType === 'leather' ? 0.4 : 0.8,
+                metalness: 0.1
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.copy(position);
+            mesh.scale.copy(scale);
+            mesh.userData = { name: name };
+            return mesh;
+        }
+
+        // Clothing Items (12, arranged in 2 rows of 6)
+        const items = [];
+
+        // 1. Blue Jeans
+        const jeansGroup = new THREE.Group();
+        jeansGroup.add(createClothingItem(new THREE.CylinderGeometry(0.2, 0.2, 1.5, 16), 0x0000ff, new THREE.Vector3(-0.25, -0.75, 0), "Jeans Leg 1", "denim", new THREE.Vector3(1, 1, 1)));
+        jeansGroup.add(createClothingItem(new THREE.CylinderGeometry(0.2, 0.2, 1.5, 16), 0x0000ff, new THREE.Vector3(0.25, -0.75, 0), "Jeans Leg 2", "denim", new THREE.Vector3(1, 1, 1)));
+        jeansGroup.add(createClothingItem(new THREE.BoxGeometry(0.8, 0.4, 0.4), 0x0000ff, new THREE.Vector3(0, 0, 0), "Jeans Waist", "denim", new THREE.Vector3(1, 1, 1)));
+        jeansGroup.position.set(-7.5, 1.5, 0);
+        scene.add(jeansGroup);
+        items.push(jeansGroup);
+
+        // 2. Red T-Shirt
+        const tshirtShape = new THREE.BoxGeometry(1.5, 1.2, 0.2);
+        tshirtShape.vertices.forEach(v => { if (v.y < 0) v.x *= 0.8; });
+        const tshirt = createClothingItem(tshirtShape, 0xff0000, new THREE.Vector3(-4.5, 1.5, 0), "Red T-Shirt", "cotton", new THREE.Vector3(1, 1, 1));
+        scene.add(tshirt);
+        items.push(tshirt);
+
+        // 3. Brown Jacket
+        const jacket = createClothingItem(new THREE.BoxGeometry(1.8, 1.5, 0.4), 0x8b4513, new THREE.Vector3(-1.5, 1.5, 0), "Brown Jacket", "leather", new THREE.Vector3(1, 1, 1));
+        scene.add(jacket);
+        items.push(jacket);
+
+        // 4. Pink Dress
+        const dress = createClothingItem(new THREE.ConeGeometry(0.8, 2, 32, 1, true), 0xff69b4, new THREE.Vector3(1.5, 1.5, 0), "Pink Dress", "cotton", new THREE.Vector3(1, 1, 1));
+        scene.add(dress);
+        items.push(dress);
+
+        // 5. Black Dress Shoes
+        const shoesGroup = new THREE.Group();
+        shoesGroup.add(createClothingItem(new THREE.BoxGeometry(0.3, 0.2, 0.5), 0x000000, new THREE.Vector3(-0.2, 0, 0), "Left Shoe", "leather", new THREE.Vector3(1, 1, 1)));
+        shoesGroup.add(createClothingItem(new THREE.BoxGeometry(0.3, 0.2, 0.5), 0x000000, new THREE.Vector3(0.2, 0, 0), "Right Shoe", "leather", new THREE.Vector3(1, 1, 1)));
+        shoesGroup.position.set(4.5, 1.5, 0);
+        scene.add(shoesGroup);
+        items.push(shoesGroup);
+
+        // 6. Men's Suit Jacket
+        const suitJacket = createClothingItem(new THREE.BoxGeometry(1.8, 1.5, 0.3), 0x2f4f4f, new THREE.Vector3(7.5, 1.5, 0), "Men's Suit Jacket", "cotton", new THREE.Vector3(1, 1, 1));
+        scene.add(suitJacket);
+        items.push(suitJacket);
+
+        // 7. Men's Suit Pants
+        const suitPantsGroup = new THREE.Group();
+        suitPantsGroup.add(createClothingItem(new THREE.CylinderGeometry(0.2, 0.2, 1.5, 16), 0x2f4f4f, new THREE.Vector3(-0.25, -0.75, 0), "Suit Pants Leg 1", "cotton", new THREE.Vector3(1, 1, 1)));
+        suitPantsGroup.add(createClothingItem(new THREE.CylinderGeometry(0.2, 0.2, 1.5, 16), 0x2f4f4f, new THREE.Vector3(0.25, -0.75, 0), "Suit Pants Leg 2", "cotton", new THREE.Vector3(1, 1, 1)));
+        suitPantsGroup.add(createClothingItem(new THREE.BoxGeometry(0.8, 0.4, 0.4), 0x2f4f4f, new THREE.Vector3(0, 0, 0), "Suit Pants Waist", "cotton", new THREE.Vector3(1, 1, 1)));
+        suitPantsGroup.position.set(-7.5, -1.5, 0);
+        scene.add(suitPantsGroup);
+        items.push(suitPantsGroup);
+
+        // 8. Men's Suit Vest
+        const vest = createClothingItem(new THREE.BoxGeometry(1.2, 1, 0.1), 0x2f4f4f, new THREE.Vector3(-4.5, -1.5, 0), "Men's Suit Vest", "cotton", new THREE.Vector3(1, 1, 1));
+        scene.add(vest);
+        items.push(vest);
+
+        // 9. White Dress Shirt
+        const shirt = createClothingItem(new THREE.BoxGeometry(1.5, 1.2, 0.1), 0xffffff, new THREE.Vector3(-1.5, -1.5, 0), "White Dress Shirt", "cotton", new THREE.Vector3(1, 1, 1));
+        scene.add(shirt);
+        items.push(shirt);
+
+        // 10. Green Skirt
+        const skirt = createClothingItem(new THREE.CylinderGeometry(0.8, 0.6, 1, 32), 0x008000, new THREE.Vector3(1.5, -1.5, 0), "Green Skirt", "cotton", new THREE.Vector3(1, 1, 1));
+        scene.add(skirt);
+        items.push(skirt);
+
+        // 11. Yellow Sweater
+        const sweater = createClothingItem(new THREE.BoxGeometry(1.6, 1.3, 0.3), 0xffff00, new THREE.Vector3(4.5, -1.5, 0), "Yellow Sweater", "wool", new THREE.Vector3(1, 1, 1));
+        scene.add(sweater);
+        items.push(sweater);
+
+        // 12. Purple Scarf
+        const scarfShape = new THREE.BoxGeometry(2, 0.1, 0.05);
+        scarfShape.vertices.forEach(v => { if (Math.abs(v.x) > 0.5) v.y += Math.sin(v.x * 2) * 0.1; });
+        const scarf = createClothingItem(scarfShape, 0x800080, new THREE.Vector3(7.5, -1.5, 0), "Purple Scarf", "cotton", new THREE.Vector3(1, 1, 1));
+        scene.add(scarf);
+        items.push(scarf);
+
+        // Raycaster for Clicking
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // Click Handler
+        window.addEventListener('click', (event) => {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+            if (intersects.length > 0) {
+                const object = intersects[0].object;
+                const parent = object.parent.type === 'Group' ? object.parent : object;
+                targetCameraPos = new THREE.Vector3(parent.position.x, parent.position.y + 1, parent.position.z + 5);
+                targetLookAt = parent.position.clone();
+            }
+        });
+
+        // Menu Toggle
+        const menuButton = document.getElementById('menu-button');
+        const ui = document.getElementById('ui');
+        menuButton.addEventListener('click', () => {
+            ui.classList.toggle('open');
+        });
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            if (rotationEnabled) {
+                items.forEach(item => {
+                    item.rotation.y += 0.005; // Slow rotation
+                });
+            }
+            // Smooth camera transition
+            camera.position.lerp(targetCameraPos, 0.1);
+            camera.lookAt(targetLookAt.lerp(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(-1).add(camera.position), 0.1));
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // UI Functions
+        function resetCamera() {
+            targetCameraPos.set(0, 5, 20);
+            targetLookAt.set(0, 0, 0);
+        }
+
+        function toggleRotation() {
+            rotationEnabled = !rotationEnabled;
+        }
+
+        // Window Resize Handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Error Logging
+        if (!renderer.domElement) {
+            console.error("Renderer failed to initialize.");
+        }
+    </script>
+</body>
+</html>
