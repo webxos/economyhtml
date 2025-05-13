@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Clothing Design Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #333333; /* Dark gray background */
+            color: #cccccc; /* Light gray text */
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #4a4a4a; /* Gray UI background */
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            filter: grayscale(100%); /* Grayscale UI */
+        }
+        #ui h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+        #ui p {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #cccccc;
+        }
+        #ui button {
+            background: #666666;
+            border: none;
+            color: #ffffff;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        #ui button:hover {
+            background: #888888;
+        }
+    </style>
+</head>
+<body>
+    <!-- UI Container -->
+    <div id="ui">
+        <h1>Clothing Design Portfolio</h1>
+        <p>Explore 3D clothing designs in a dynamic palette view.</p>
+        <button onclick="resetCamera()">Reset View</button>
+        <button onclick="toggleRotation()">Toggle Rotation</button>
+    </div>
+
+    <!-- Three.js Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Scene Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x333333); // Match gray background
+        document.body.appendChild(renderer.domElement);
+
+        // Camera Position
+        camera.position.set(0, 5, 15);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 7.5);
+        scene.add(directionalLight);
+
+        // Clothing Objects Array
+        const clothingItems = [];
+        let rotationEnabled = true;
+
+        // Canvas Texture Generator
+        function createFabricTexture(color, type) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const context = canvas.getContext('2d');
+
+            // Base color
+            context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+            context.fillRect(0, 0, 256, 256);
+
+            // Fabric patterns
+            if (type === 'denim') {
+                context.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                for (let i = 0; i < 256; i += 10) {
+                    context.beginPath();
+                    context.moveTo(0, i);
+                    context.lineTo(256, i + 5);
+                    context.stroke();
+                }
+            } else if (type === 'wool') {
+                context.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                for (let i = 0; i < 50; i++) {
+                    context.beginPath();
+                    context.arc(
+                        Math.random() * 256,
+                        Math.random() * 256,
+                        2,
+                        0,
+                        Math.PI * 2
+                    );
+                    context.fill();
+                }
+            } else if (type === 'leather') {
+                context.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                for (let i = 0; i < 256; i += 20) {
+                    context.fillRect(i, 0, 10, 256);
+                }
+            }
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Function to Create Clothing Item
+        function createClothingItem(geometry, color, position, name, textureType, scale) {
+            const texture = createFabricTexture(color, textureType);
+            const material = new THREE.MeshStandardMaterial({
+                map: texture,
+                roughness: textureType === 'leather' ? 0.4 : 0.8,
+                metalness: 0.1
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.copy(position);
+            mesh.scale.copy(scale);
+            mesh.userData = { name: name };
+            scene.add(mesh);
+            clothingItems.push(mesh);
+        }
+
+        // Clothing Geometries with Improved Shapes and Textures
+        // 1. Blue Jeans (Two cylinders for legs + box for waist)
+        const jeansGroup = new THREE.Group();
+        const leg1 = new THREE.CylinderGeometry(0.2, 0.2, 1.5, 16);
+        const leg2 = new THREE.CylinderGeometry(0.2, 0.2, 1.5, 16);
+        const waist = new THREE.BoxGeometry(0.8, 0.4, 0.4);
+        createClothingItem(leg1, 0x0000ff, new THREE.Vector3(-0.25, -0.75, 0), "Jeans Leg 1", "denim", new THREE.Vector3(1, 1, 1));
+        createClothingItem(leg2, 0x0000ff, new THREE.Vector3(0.25, -0.75, 0), "Jeans Leg 2", "denim", new THREE.Vector3(1, 1, 1));
+        createClothingItem(waist, 0x0000ff, new THREE.Vector3(0, 0, 0), "Jeans Waist", "denim", new THREE.Vector3(1, 1, 1));
+        jeansGroup.position.set(-5, 0, 0);
+        scene.add(jeansGroup);
+        clothingItems.push(jeansGroup);
+
+        // 2. Red T-Shirt (Box with slight taper)
+        const tshirtShape = new THREE.BoxGeometry(1.5, 1.2, 0.2);
+        tshirtShape.vertices.forEach(v => {
+            if (v.y < 0) v.x *= 0.8; // Taper bottom
+        });
+        createClothingItem(tshirtShape, 0xff0000, new THREE.Vector3(-3, 0, 0), "Red T-Shirt", "cotton", new THREE.Vector3(1, 1, 1));
+
+        // 3. Brown Jacket (Box with thicker depth)
+        createClothingItem(
+            new THREE.BoxGeometry(1.8, 1.5, 0.4),
+            0x8b4513,
+            new THREE.Vector3(-1, 0, 0),
+            "Brown Jacket",
+            "leather",
+            new THREE.Vector3(1, 1, 1)
+        );
+
+        // 4. Pink Dress (Flared cone)
+        createClothingItem(
+            new THREE.ConeGeometry(0.8, 2, 32, 1, true),
+            0xff69b4,
+            new THREE.Vector3(1, 0, 0),
+            "Pink Dress",
+            "cotton",
+            new THREE.Vector3(1, 1, 1)
+        );
+
+        // 5. Black Dress Shoes (Two boxes for pair)
+        const shoesGroup = new THREE.Group();
+        createClothingItem(
+            new THREE.BoxGeometry(0.3, 0.2, 0.5),
+            0x000000,
+            new THREE.Vector3(-0.2, 0, 0),
+            "Left Shoe",
+            "leather",
+            new THREE.Vector3(1, 1, 1)
+        );
+        createClothingItem(
+            new THREE.BoxGeometry(0.3, 0.2, 0.5),
+            0x000000,
+            new THREE.Vector3(0.2, 0, 0),
+            "Right Shoe",
+            "leather",
+            new THREE.Vector3(1, 1, 1)
+        );
+        shoesGroup.position.set(3, 0, 0);
+        scene.add(shoesGroup);
+        clothingItems.push(shoesGroup);
+
+        // 6. Men's Suit Jacket
+        createClothingItem(
+            new THREE.BoxGeometry(1.8, 1.5, 0.3),
+            0x2f4f4f,
+            new THREE.Vector3(5, 0, 0),
+            "Men's Suit Jacket",
+            "cotton",
+            new THREE.Vector3(1, 1, 1)
+        );
+
+        // 7. Men's Suit Pants
+        const suitPantsGroup = new THREE.Group();
+        createClothingItem(
+            new THREE.CylinderGeometry(0.2, 0.2, 1.5, 16),
+            0x2f4f4f,
+            new THREE.Vector3(-0.25, -0.75, 0),
+            "Suit Pants Leg 1",
+            "cotton",
+            new THREE.Vector3(1, 1, 1)
+        );
+        createClothingItem(
+            new THREE.CylinderGeometry(0.2, 0.2, 1.5, 16),
+            0x2f4f4f,
+            new THREE.Vector3(0.25, -0.75, 0),
+            "Suit Pants Leg 2",
+            "cotton",
+            new THREE.Vector3(1, 1, 1)
+        );
+        createClothingItem(
+            new THREE.BoxGeometry(0.8, 0.4, 0.4),
+            0x2f4f4f,
+            new THREE.Vector3(0, 0, 0),
+            "Suit Pants Waist",
+            "cotton",
+            new THREE.Vector3(1, 1, 1)
+        );
+        suitPantsGroup.position.set(-5, -3, 0);
+        scene.add(suitPantsGroup);
+        clothingItems.push(suitPantsGroup);
+
+        // 8. Men's Suit Vest
+        createClothingItem(
+            new THREE.BoxGeometry(1.2, 1, 0.1),
+            0x2f4f4f,
+            new THREE.Vector3(-3, -3, 0),
+            "Men's Suit Vest",
+            "cotton",
+            new THREE.Vector3(1, 1, 1)
+        );
+
+        // 9. White Dress Shirt
+        createClothingItem(
+            new THREE.BoxGeometry(1.5, 1.2, 0.1),
+            0xffffff,
+            new THREE.Vector3(-1, -3, 0),
+            "White Dress Shirt",
+            "cotton",
+            new THREE.Vector3(1, 1, 1)
+        );
+
+        // 10. Green Skirt
+        createClothingItem(
+            new THREE.CylinderGeometry(0.8, 0.6, 1, 32),
+            0x008000,
+            new THREE.Vector3(1, -3, 0),
+            "Green Skirt",
+            "cotton",
+            new THREE.Vector3(1, 1, 1)
+        );
+
+        // 11. Yellow Sweater
+        createClothingItem(
+            new THREE.BoxGeometry(1.6, 1.3, 0.3),
+            0xffff00,
+            new THREE.Vector3(3, -3, 0),
+            "Yellow Sweater",
+            "wool",
+            new THREE.Vector3(1, 1, 1)
+        );
+
+        // 12. Purple Scarf
+        const scarfShape = new THREE.BoxGeometry(2, 0.1, 0.05);
+        scarfShape.vertices.forEach(v => {
+            if (Math.abs(v.x) > 0.5) v.y += Math.sin(v.x * 2) * 0.1; // Wavy effect
+        });
+        createClothingItem(scarfShape, 0x800080, new THREE.Vector3(5, -3, 0), "Purple Scarf", "cotton", new THREE.Vector3(1, 1, 1));
+
+        // Orbit Controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            if (rotationEnabled) {
+                clothingItems.forEach(item => {
+                    item.rotation.y += 0.005; // Slower rotation
+                });
+            }
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // UI Functions
+        function resetCamera() {
+            camera.position.set(0, 5, 15);
+            controls.reset();
+        }
+
+        function toggleRotation() {
+            rotationEnabled = !rotationEnabled;
+        }
+
+        // Window Resize Handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
