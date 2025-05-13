@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Clothing Studio - 3D E-commerce Shop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f5f5;
+            color: #333333;
+            font-family: 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -200px;
+            width: 200px;
+            height: 100vh;
+            background: linear-gradient(180deg, #ffffff, #e8ecef);
+            padding: 20px;
+            z-index: 10;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.15);
+            transition: left 0.3s ease;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar h1 {
+            font-size: 1.8rem;
+            color: #2a2a2a;
+            margin-bottom: 20px;
+            margin-top: 50px;
+            font-weight: 600;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin: 12px 0;
+        }
+
+        .sidebar a {
+            color: #555555;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar a:hover {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .menu-toggle {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 10px;
+            background: #2a2a2a;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 11;
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+
+        .menu-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .text-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 6px;
+            color: #333333;
+            font-size: 1rem;
+            z-index: 10;
+            max-width: 80%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .center-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #2a2a2a;
+            border-radius: 8px;
+            color: #2a2a2a;
+            font-size: 1.5rem;
+            text-align: center;
+            z-index: 10;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .center-overlay button {
+            margin: 8px;
+            padding: 8px 16px;
+            background: #2a2a2a;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .center-overlay button:hover {
+            background: #3a3a3a;
+        }
+
+        .center-overlay button.remove {
+            background: #ff5555;
+        }
+
+        .center-overlay button.remove:hover {
+            background: #ff3333;
+        }
+
+        .center-overlay ul {
+            list-style: none;
+            margin: 12px 0;
+            padding: 0;
+        }
+
+        .center-overlay li {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shop-item {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 12px 0;
+            width: 320px;
+            text-align: left;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .shop-item h3 {
+            color: #2a2a2a;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .shop-item p {
+            color: #555555;
+            font-size: 0.95rem;
+            margin: 6px 0;
+        }
+
+        .shop-item button {
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 160px;
+                left: -160px;
+            }
+
+            .sidebar h1 {
+                font-size: 1.4rem;
+                margin-top: 40px;
+            }
+
+            .sidebar a {
+                font-size: 0.95rem;
+                padding: 6px;
+            }
+
+            .menu-toggle {
+                padding: 8px;
+                font-size: 0.9rem;
+            }
+
+            .text-overlay {
+                font-size: 0.9rem;
+                padding: 10px;
+                bottom: 15px;
+                left: 15px;
+            }
+
+            .center-overlay {
+                font-size: 1.3rem;
+                padding: 15px;
+            }
+
+            .center-overlay button {
+                font-size: 0.85rem;
+                padding: 6px 12px;
+            }
+
+            .shop-item {
+                width: 240px;
+            }
+
+            .shop-item h3 {
+                font-size: 1.1rem;
+            }
+
+            .shop-item p {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    <div class="sidebar" id="sidebar">
+        <h1>Style Haven</h1>
+        <ul>
+            <li><a href="#" onclick="navigateTo('home')">Home</a></li>
+            <li><a href="#" onclick="navigateTo('shop')">Shop</a></li>
+            <li><a href="#" onclick="navigateTo('cart')">Cart</a></li>
+            <li><a href="#" onclick="navigateTo('about')">About</a></li>
+        </ul>
+    </div>
+    <div class="text-overlay" id="textOverlay"></div>
+    <div class="center-overlay" id="centerOverlay"></div>
+
+    <!-- Three.js dependency -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+        renderer.setClearColor(0xf5f5f5, 1);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.3);
+        directionalLight.position.set(12, 12, 12);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.set(2048, 2048);
+        scene.add(directionalLight);
+
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xaaaaaa, 0.5);
+        hemiLight.position.set(0, 20, 0);
+        scene.add(hemiLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 0.6, 10);
+        pointLight.position.set(-6, 3, 0);
+        pointLight.castShadow = true;
+        scene.add(pointLight);
+
+        // Room geometry
+        const floorMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8b5e3c, 
+            roughness: 0.7, 
+            metalness: 0.1 
+        });
+        const wallMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xffffff, 
+            roughness: 0.85, 
+            metalness: 0 
+        });
+        const brickMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xb22222, 
+            roughness: 0.9, 
+            metalness: 0 
+        });
+
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        const backWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
+        backWall.position.set(0, 5, -10);
+        backWall.receiveShadow = true;
+        scene.add(backWall);
+
+        const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), brickMaterial);
+        leftWall.position.set(-10, 5, 0);
+        leftWall.rotation.y = Math.PI / 2;
+        leftWall.receiveShadow = true;
+        scene.add(leftWall);
+
+        const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
+        rightWall.position.set(10, 5, 0);
+        rightWall.rotation.y = -Math.PI / 2;
+        rightWall.receiveShadow = true;
+        scene.add(rightWall);
+
+        // Hanger geometry
+        const hangerMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x333333, 
+            roughness: 0.5, 
+            metalness: 0.9 
+        });
+        const hangerShape = new THREE.Shape();
+        hangerShape.moveTo(-0.1, 0);
+        hangerShape.lineTo(0, 0.15);
+        hangerShape.lineTo(0.1, 0);
+        hangerShape.lineTo(0.05, -0.05);
+        hangerShape.lineTo(-0.05, -0.05);
+        hangerShape.lineTo(-0.1, 0);
+        const hangerExtrudeSettings = { depth: 0.02, bevelEnabled: false };
+        const hangerGeometry = new THREE.ExtrudeGeometry(hangerShape, hangerExtrudeSettings);
+
+        // Clothing rack with stands
+        const rackMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x333333, 
+            roughness: 0.5, 
+            metalness: 0.9 
+        });
+        const railGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2, 16);
+        const standGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 16);
+
+        function createClothingRack(x, y, z) {
+            const rackGroup = new THREE.Group();
+            const rail = new THREE.Mesh(railGeometry, rackMaterial);
+            rail.rotation.z = Math.PI / 2;
+            rail.position.set(x, y, z);
+            rail.castShadow = true;
+            rackGroup.add(rail);
+
+            const stand1 = new THREE.Mesh(standGeometry, rackMaterial);
+            stand1.position.set(x - 1, y - 0.75, z);
+            stand1.castShadow = true;
+            rackGroup.add(stand1);
+
+            const stand2 = new THREE.Mesh(standGeometry, rackMaterial);
+            stand2.position.set(x + 1, y - 0.75, z);
+            stand2.castShadow = true;
+            rackGroup.add(stand2);
+
+            scene.add(rackGroup);
+            return rackGroup;
+        }
+
+        const coatRack = createClothingRack(-6, 1.5, -2);
+        const shirtRack = createClothingRack(-6, 1.5, 0);
+        const dressRack = createClothingRack(-6, 1.5, 2);
+        const hatRack = createClothingRack(6, 1.5, -2);
+        const jacketRack = createClothingRack(6, 1.5, 0);
+        const extraRack = createClothingRack(-8, 1.5, -4);
+
+        // Clothing colors
+        const clothingColors = [
+            0x4682b4, // Steel Blue
+            0x228b22, // Forest Green
+            0x800080, // Purple
+            0xff4500, // Orange Red
+            0x696969, // Dim Gray
+            0xdeb887, // Burlywood
+            0x191970, // Midnight Blue
+            0xffd700, // Gold
+            0x00ced1, // Dark Turquoise
+            0xc71585  // Medium Violet Red
+        ];
+
+        // Shirt geometry (curved T-shape)
+        const shirtShape = new THREE.Shape();
+        shirtShape.moveTo(-0.15, 0);
+        shirtShape.quadraticCurveTo(-0.15, -0.2, -0.2, -0.4);
+        shirtShape.lineTo(-0.35, -0.4);
+        shirtShape.quadraticCurveTo(-0.4, -0.5, -0.35, -0.6);
+        shirtShape.lineTo(-0.15, -0.6);
+        shirtShape.quadraticCurveTo(-0.15, -0.8, -0.1, -1);
+        shirtShape.quadraticCurveTo(0, -1.1, 0.1, -1);
+        shirtShape.quadraticCurveTo(0.15, -0.8, 0.15, -0.6);
+        shirtShape.lineTo(0.35, -0.6);
+        shirtShape.quadraticCurveTo(0.4, -0.5, 0.35, -0.4);
+        shirtShape.lineTo(0.2, -0.4);
+        shirtShape.quadraticCurveTo(0.15, -0.2, 0.15, 0);
+        shirtShape.lineTo(-0.15, 0);
+        const shirtExtrudeSettings = { depth: 0.05, bevelEnabled: false };
+        const shirtGeometry = new THREE.ExtrudeGeometry(shirtShape, shirtExtrudeSettings);
+
+        const shirtMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
+            color, 
+            roughness: 0.8, 
+            metalness: 0 
+        }));
+        const shirts = new THREE.InstancedMesh(shirtGeometry, shirtMaterials[0], 8);
+        const shirtHangers = new THREE.InstancedMesh(hangerGeometry, hangerMaterial, 8);
+        const shirtDummy = new THREE.Object3D();
+        let shirtIndex = 0;
+        for (let x = -6.8; x <= -5.2; x += 0.25) {
+            shirtDummy.position.set(x, 1.65, 0);
+            shirtDummy.rotation.y = Math.PI / 2;
+            shirtDummy.updateMatrix();
+            shirts.setMatrixAt(shirtIndex, shirtDummy.matrix);
+            shirts.setColorAt(shirtIndex, new THREE.Color(clothingColors[shirtIndex % clothingColors.length]));
+            shirtHangers.setMatrixAt(shirtIndex, shirtDummy.matrix);
+            shirtIndex++;
+        }
+        shirts.castShadow = true;
+        shirtHangers.castShadow = true;
+        scene.add(shirts, shirtHangers);
+
+        // Jacket geometry (thicker, with collar)
+        const jacketShape = new THREE.Shape();
+        jacketShape.moveTo(-0.2, 0);
+        jacketShape.quadraticCurveTo(-0.2, -0.2, -0.25, -0.5);
+        jacketShape.lineTo(-0.4, -0.5);
+        jacketShape.lineTo(-0.4, -0.7);
+        jacketShape.lineTo(-0.25, -0.7);
+        jacketShape.quadraticCurveTo(-0.2, -0.9, -0.15, -1.1);
+        jacketShape.quadraticCurveTo(0, -1.2, 0.15, -1.1);
+        jacketShape.lineTo(0.25, -0.7);
+        jacketShape.lineTo(0.4, -0.7);
+        jacketShape.lineTo(0.4, -0.5);
+        jacketShape.quadraticCurveTo(0.2, -0.2, 0.2, 0);
+        jacketShape.lineTo(-0.2, 0);
+        const jacketExtrudeSettings = { depth: 0.1, bevelEnabled: false };
+        const jacketGeometry = new THREE.ExtrudeGeometry(jacketShape, jacketExtrudeSettings);
+
+        const jacketMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
+            color, 
+            roughness: 0.7, 
+            metalness: 0 
+        }));
+        const jackets = new THREE.InstancedMesh(jacketGeometry, jacketMaterials[0], 8);
+        const jacketHangers = new THREE.InstancedMesh(hangerGeometry, hangerMaterial, 8);
+        const jacketDummy = new THREE.Object3D();
+        let jacketIndex = 0;
+        for (let x = -6.8; x <= -5.2; x += 0.25) {
+            jacketDummy.position.set(x, 1.65, -2);
+            jacketDummy.rotation.y = Math.PI / 2;
+            jacketDummy.updateMatrix();
+            jackets.setMatrixAt(jacketIndex, jacketDummy.matrix);
+            jackets.setColorAt(jacketIndex, new THREE.Color(clothingColors[jacketIndex % clothingColors.length]));
+            jacketHangers.setMatrixAt(jacketIndex, jacketDummy.matrix);
+            jacketIndex++;
+        }
+        jackets.castShadow = true;
+        jacketHangers.castShadow = true;
+        scene.add(jackets, jacketHangers);
+
+        // Dress geometry (flared with defined waist)
+        const dressShape = new THREE.Shape();
+        dressShape.moveTo(-0.15, 0);
+        dressShape.quadraticCurveTo(-0.15, -0.2, -0.2, -0.4);
+        dressShape.lineTo(-0.3, -0.6);
+        dressShape.quadraticCurveTo(-0.5, -0.9, -0.6, -1.2);
+        dressShape.quadraticCurveTo(0, -1.4, 0.6, -1.2);
+        dressShape.lineTo(0.3, -0.6);
+        dressShape.quadraticCurveTo(0.15, -0.2, 0.15, 0);
+        dressShape.lineTo(-0.15, 0);
+        const dressExtrudeSettings = { depth: 0.05, bevelEnabled: false };
+        const dressGeometry = new THREE.ExtrudeGeometry(dressShape, dressExtrudeSettings);
+
+        const dressMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
+            color, 
+            roughness: 0.6, 
+            metalness: 0 
+        }));
+        const dresses = new THREE.InstancedMesh(dressGeometry, dressMaterials[0], 8);
+        const dressHangers = new THREE.InstancedMesh(hangerGeometry, hangerMaterial, 8);
+        const dressDummy = new THREE.Object3D();
+        let dressIndex = 0;
+        for (let x = -6.8; x <= -5.2; x += 0.25) {
+            dressDummy.position.set(x, 1.65, 2);
+            dressDummy.rotation.y = Math.PI / 2;
+            dressDummy.updateMatrix();
+            dresses.setMatrixAt(dressIndex, dressDummy.matrix);
+            dresses.setColorAt(dressIndex, new THREE.Color(clothingColors[dressIndex % clothingColors.length]));
+            dressHangers.setMatrixAt(dressIndex, dressDummy.matrix);
+            dressIndex++;
+        }
+        dresses.castShadow = true;
+        dressHangers.castShadow = true;
+        scene.add(dresses, dressHangers);
+
+        // Hat geometry (cap with curved brim)
+        const hatGeometry = new THREE.SphereGeometry(0.2, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+        const brimShape = new THREE.Shape();
+        brimShape.moveTo(0.2, 0);
+        brimShape.quadraticCurveTo(0.3, -0.05, 0.4, 0);
+        brimShape.lineTo(0.2, 0);
+        const brimExtrudeSettings = { depth: 0.01, bevelEnabled: false };
+        const brimGeometry = new THREE.ExtrudeGeometry(brimShape, brimExtrudeSettings);
+
+        const hatMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
+            color, 
+            roughness: 0.8, 
+            metalness: 0 
+        }));
+        const hats = new THREE.InstancedMesh(hatGeometry, hatMaterials[0], 8);
+        const hatBrims = new THREE.InstancedMesh(brimGeometry, hatMaterials[0], 8);
+        const hatDummy = new THREE.Object3D();
+        let hatIndex = 0;
+        for (let x = 5.2; x <= 6.8; x += 0.25) {
+            hatDummy.position.set(x, 1.65, -2);
+            hatDummy.rotation.x = Math.PI / 2;
+            hatDummy.updateMatrix();
+            hats.setMatrixAt(hatIndex, hatDummy.matrix);
+            hatBrims.setMatrixAt(hatIndex, hatDummy.matrix);
+            hats.setColorAt(hatIndex, new THREE.Color(clothingColors[hatIndex % clothingColors.length]));
+            hatBrims.setColorAt(hatIndex, new THREE.Color(clothingColors[hatIndex % clothingColors.length]));
+            hatIndex++;
+        }
+        hats.castShadow = true;
+        hatBrims.castShadow = true;
+        scene.add(hats, hatBrims);
+
+        // Extra jackets
+        const extraJackets = new THREE.InstancedMesh(jacketGeometry, jacketMaterials[0], 8);
+        const extraJacketHangers = new THREE.InstancedMesh(hangerGeometry, hangerMaterial, 8);
+        const extraJacketDummy = new THREE.Object3D();
+        let extraJacketIndex = 0;
+        for (let x = 5.2; x <= 6.8; x += 0.25) {
+            extraJacketDummy.position.set(x, 1.65, 0);
+            extraJacketDummy.rotation.y = Math.PI / 2;
+            extraJacketDummy.updateMatrix();
+            extraJackets.setMatrixAt(extraJacketIndex, extraJacketDummy.matrix);
+            extraJackets.setColorAt(extraJacketIndex, new THREE.Color(clothingColors[extraJacketIndex % clothingColors.length]));
+            extraJacketHangers.setMatrixAt(extraJacketIndex, extraJacketDummy.matrix);
+            extraJacketIndex++;
+        }
+        extraJackets.castShadow = true;
+        extraJacketHangers.castShadow = true;
+        scene.add(extraJackets, extraJacketHangers);
+
+        // Scarf geometry (flowing, wavy)
+        const scarfPoints = [];
+        for (let i = 0; i < 12; i++) {
+            scarfPoints.push(new THREE.Vector2(Math.sin(i * 0.3) * 0.07, i * 0.12 - 0.6));
+        }
+        const scarfGeometry = new THREE.LatheGeometry(scarfPoints, 16);
+        const scarfMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
+            color, 
+            roughness: 0.6, 
+            metalness: 0 
+        }));
+        const scarves = new THREE.InstancedMesh(scarfGeometry, scarfMaterials[0], 8);
+        const scarfHangers = new THREE.InstancedMesh(hangerGeometry, hangerMaterial, 8);
+        const scarfDummy = new THREE.Object3D();
+        let scarfIndex = 0;
+        for (let x = -8.8; x <= -7.2; x += 0.25) {
+            scarfDummy.position.set(x, 1.65, -4);
+            scarfDummy.rotation.y = Math.PI / 2;
+            scarfDummy.updateMatrix();
+            scarves.setMatrixAt(scarfIndex, scarfDummy.matrix);
+            scarves.setColorAt(scarfIndex, new THREE.Color(clothingColors[scarfIndex % clothingColors.length]));
+            scarfHangers.setMatrixAt(scarfIndex, scarfDummy.matrix);
+            scarfIndex++;
+        }
+        scarves.castShadow = true;
+        scarfHangers.castShadow = true;
+        scene.add(scarves, scarfHangers);
+
+        // Metal shelves
+        const shelfMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xaaaaaa, 
+            roughness: 0.7, 
+            metalness: 0.9 
+        });
+        const shelfGeometry = new THREE.BoxGeometry(3, 0.1, 0.5);
+
+        const shelf1 = new THREE.Mesh(shelfGeometry, shelfMaterial);
+        shelf1.position.set(4, 2, -9);
+        shelf1.castShadow = true;
+        scene.add(shelf1);
+
+        const shelf2 = new THREE.Mesh(shelfGeometry, shelfMaterial);
+        shelf2.position.set(4, 3, -9);
+        shelf2.castShadow = true;
+        scene.add(shelf2);
+
+        const shelf3 = new THREE.Mesh(shelfGeometry, shelfMaterial);
+        shelf3.position.set(-4, 2, -9);
+        shelf3.castShadow = true;
+        scene.add(shelf3);
+
+        const shelf4 = new THREE.Mesh(shelfGeometry, shelfMaterial);
+        shelf4.position.set(-4, 3, -9);
+        shelf4.castShadow = true;
+        scene.add(shelf4);
+
+        const shoeRack = new THREE.Mesh(new THREE.BoxGeometry(2, 0.1, 0.5), rackMaterial);
+        shoeRack.position.set(-4, 0.5, -9);
+        shoeRack.castShadow = true;
+        scene.add(shoeRack);
+
+        // Jeans geometry (folded stack and hanging)
+        const jeansFoldedShape = new THREE.Shape();
+        jeansFoldedShape.moveTo(-0.25, 0);
+        jeansFoldedShape.lineTo(-0.25, -0.3);
+        jeansFoldedShape.lineTo(0.25, -0.3);
+        jeansFoldedShape.lineTo(0.25, 0);
+        jeansFoldedShape.lineTo(-0.25, 0);
+        const jeansFoldedExtrudeSettings = { depth: 0.2, bevelEnabled: false };
+        const jeansFoldedGeometry = new THREE.ExtrudeGeometry(jeansFoldedShape, jeansFoldedExtrudeSettings);
+
+        const jeansHangingShape = new THREE.Shape();
+        jeansHangingShape.moveTo(-0.2, 0);
+        jeansHangingShape.lineTo(-0.2, -0.8);
+        jeansHangingShape.lineTo(-0.15, -1);
+        jeansHangingShape.lineTo(0.15, -1);
+        jeansHangingShape.lineTo(0.2, -0.8);
+        jeansHangingShape.lineTo(0.2, 0);
+        jeansHangingShape.lineTo(-0.2, 0);
+        const jeansHangingGeometry = new THREE.ExtrudeGeometry(jeansHangingShape, { depth: 0.05, bevelEnabled: false });
+
+        const jeansMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
+            color, 
+            roughness: 0.8, 
+            metalness: 0 
+        }));
+        const jeans = new THREE.InstancedMesh(jeansFoldedGeometry, jeansMaterials[0], 12);
+        const jeansDummy = new THREE.Object3D();
+        let jeansIndex = 0;
+        for (let x = 3.5; x <= 4.5; x += 0.6) {
+            for (let y = 2.15; y <= 3.15; y += 0.6) {
+                jeansDummy.position.set(x, y, -9);
+                jeansDummy.updateMatrix();
+                jeans.setMatrixAt(jeansIndex, jeansDummy.matrix);
+                jeans.setColorAt(jeansIndex, new THREE.Color(clothingColors[jeansIndex % clothingColors.length]));
+                jeansIndex++;
+            }
+        }
+        jeans.castShadow = true;
+        scene.add(jeans);
+
+        // Sweater geometry (softer, rounded)
+        const sweaterShape = new THREE.Shape();
+        sweaterShape.moveTo(-0.2, 0);
+        sweaterShape.quadraticCurveTo(-0.2, -0.3, -0.25, -0.5);
+        sweaterShape.lineTo(-0.4, -0.5);
+        sweaterShape.quadraticCurveTo(-0.45, -0.6, -0.4, -0.7);
+        sweaterShape.lineTo(0.4, -0.7);
+        sweaterShape.quadraticCurveTo(0.45, -0.6, 0.4, -0.5);
+        sweaterShape.lineTo(0.25, -0.5);
+        sweaterShape.quadraticCurveTo(0.2, -0.3, 0.2, 0);
+        sweaterShape.lineTo(-0.2, 0);
+        const sweaterExtrudeSettings = { depth: 0.15, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05 };
+        const sweaterGeometry = new THREE.ExtrudeGeometry(sweaterShape, sweaterExtrudeSettings);
+
+        const sweaterMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
+            color, 
+            roughness: 0.8, 
+            metalness: 0 
+        }));
+        const sweaters = new THREE.InstancedMesh(sweaterGeometry, sweaterMaterials[0], 12);
+        const sweaterDummy = new THREE.Object3D();
+        let sweaterIndex = 0;
+        for (let x = -4.5; x <= -3.5; x += 0.6) {
+            for (let y = 2.15; y <= 3.15; y += 0.6) {
+                sweaterDummy.position.set(x, y, -9);
+                sweaterDummy.updateMatrix();
+                sweaters.setMatrixAt(sweaterIndex, sweaterDummy.matrix);
+                sweaters.setColorAt(sweaterIndex, new THREE.Color(clothingColors[sweaterIndex % clothingColors.length]));
+                sweaterIndex++;
+            }
+        }
+        sweaters.castShadow = true;
+        scene.add(sweaters);
+
+        // Shoes geometry (detailed with toe and heel)
+        const shoeBodyShape = new THREE.Shape();
+        shoeBodyShape.moveTo(-0.15, 0);
+        shoeBodyShape.lineTo(-0.15, -0.1);
+        shoeBodyShape.quadraticCurveTo(-0.2, -0.15, -0.25, -0.1);
+        shoeBodyShape.lineTo(-0.25, 0);
+        shoeBodyShape.lineTo(0.1, 0);
+        shoeBodyShape.quadraticCurveTo(0.15, -0.05, 0.15, -0.1);
+        shoeBodyShape.lineTo(0.15, -0.1);
+        shoeBodyShape.lineTo(-0.15, -0.1);
+        const shoeBodyExtrudeSettings = { depth: 0.2, bevelEnabled: false };
+        const shoeBodyGeometry = new THREE.ExtrudeGeometry(shoeBodyShape, shoeBodyExtrudeSettings);
+        const shoeSoleGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.05, 16);
+
+        const shoesMaterials = clothingColors.map(color => new THREE.MeshStandardMaterial({ 
+            color, 
+            roughness: 0.6, 
+            metalness: 0.1 
+        }));
+        const shoes = new THREE.InstancedMesh(shoeBodyGeometry, shoesMaterials[0], 8);
+        const soles = new THREE.InstancedMesh(shoeSoleGeometry, shoesMaterials[0], 8);
+        const shoesDummy = new THREE.Object3D();
+        let shoesIndex = 0;
+        for (let x = -4.8; x <= -3.2; x += 0.3) {
+            shoesDummy.position.set(x, 0.65, -9);
+            shoesDummy.rotation.x = Math.PI / 2;
+            shoesDummy.updateMatrix();
+            shoes.setMatrixAt(shoesIndex, shoesDummy.matrix);
+            soles.setMatrixAt(shoesIndex, shoesDummy.matrix);
+            shoes.setColorAt(shoesIndex, new THREE.Color(clothingColors[shoesIndex % clothingColors.length]));
+            soles.setColorAt(shoesIndex, new THREE.Color(clothingColors[shoesIndex % clothingColors.length]));
+            shoesIndex++;
+        }
+        shoes.castShadow = true;
+        soles.castShadow = true;
+        scene.add(shoes, soles);
+
+        // Tables with legs
+        const tableMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xaaaaaa, 
+            roughness: 0.7, 
+            metalness: 0 
+        });
+        const tableTopGeometry = new THREE.BoxGeometry(2, 0.1, 1);
+        const legGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.75, 16);
+
+        function createTable(x, y, z) {
+            const tableGroup = new THREE.Group();
+            const tableTop = new THREE.Mesh(tableTopGeometry, tableMaterial);
+            tableTop.position.set(x, y, z);
+            tableTop.castShadow = true;
+            tableGroup.add(tableTop);
+
+            const legPositions = [
+                [x - 0.9, y - 0.375, z - 0.4],
+                [x + 0.9, y - 0.375, z - 0.4],
+                [x - 0.9, y - 0.375, z + 0.4],
+                [x + 0.9, y - 0.375, z + 0.4]
+            ];
+            legPositions.forEach(pos => {
+                const leg = new THREE.Mesh(legGeometry, tableMaterial);
+                leg.position.set(pos[0], pos[1], pos[2]);
+                leg.castShadow = true;
+                tableGroup.add(leg);
+            });
+
+            scene.add(tableGroup);
+            return tableGroup;
+        }
+
+        const table1 = createTable(0, 0.75, -4);
+        const table2 = createTable(2, 0.75, -6);
+
+        // Table items (adjusted to sit above table)
+        const foldedShirts = new THREE.InstancedMesh(shirtGeometry, shirtMaterials[0], 9);
+        const foldedShirtDummy = new THREE.Object3D();
+        let foldedShirtIndex = 0;
+        for (let x = -0.6; x <= 0.6; x += 0.4) {
+            for (let z = -4.4; z <= -3.6; z += 0.4) {
+                foldedShirtDummy.position.set(x, 0.85, z);
+                foldedShirtDummy.updateMatrix();
+                foldedShirts.setMatrixAt(foldedShirtIndex, foldedShirtDummy.matrix);
+                foldedShirts.setColorAt(foldedShirtIndex, new THREE.Color(clothingColors[foldedShirtIndex % clothingColors.length]));
+                foldedShirtIndex++;
+            }
+        }
+        foldedShirts.castShadow = true;
+        scene.add(foldedShirts);
+
+        const foldedJeans = new THREE.InstancedMesh(jeansFoldedGeometry, jeansMaterials[0], 6);
+        const foldedJeansDummy = new THREE.Object3D();
+        let foldedJeansIndex = 0;
+        for (let x = 1.4; x <= 2.6; x += 0.6) {
+            for (let z = -6.4; z <= -5.6; z += 0.8) {
+                foldedJeansDummy.position.set(x, 0.85, z);
+                foldedJeansDummy.updateMatrix();
+                foldedJeans.setMatrixAt(foldedJeansIndex, foldedJeansDummy.matrix);
+                foldedJeans.setColorAt(foldedJeansIndex, new THREE.Color(clothingColors[foldedJeansIndex % clothingColors.length]));
+                foldedJeansIndex++;
+            }
+        }
+        foldedJeans.castShadow = true;
+        scene.add(foldedJeans);
+
+        // Cardboard boxes
+        const boxMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8b4513, 
+            roughness: 0.9, 
+            metalness: 0 
+        });
+        const boxGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+
+        const boxes = new THREE.InstancedMesh(boxGeometry, boxMaterial, 12);
+        const boxDummy = new THREE.Object3D();
+        let boxIndex = 0;
+        for (let x = -1.6; x <= 1.6; x += 0.8) {
+            for (let z = -5.2; z <= -2.8; z += 0.8) {
+                boxDummy.position.set(x, 0.25, z);
+                boxDummy.updateMatrix();
+                boxes.setMatrixAt(boxIndex++, boxDummy.matrix);
+            }
+        }
+        boxes.castShadow = true;
+        scene.add(boxes);
+
+        const tableBoxes = new THREE.InstancedMesh(boxGeometry, boxMaterial, 6);
+        const tableBoxDummy = new THREE.Object3D();
+        let tableBoxIndex = 0;
+        for (let x = 1.4; x <= 2.6; x += 0.6) {
+            for (let z = -6.4; z <= -5.6; z += 0.8) {
+                tableBoxDummy.position.set(x, 0.95, z);
+                tableBoxDummy.updateMatrix();
+                tableBoxes.setMatrixAt(tableBoxIndex++, tableBoxDummy.matrix);
+            }
+        }
+        tableBoxes.castShadow = true;
+        scene.add(tableBoxes);
+
+        // Cacti
+        const cactusPotMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8b4513, 
+            roughness: 0.85, 
+            metalness: 0 
+        });
+        const cactusPot = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.3, 16), cactusPotMaterial);
+        cactusPot.position.set(-8, 0.15, -8);
+        cactusPot.castShadow = true;
+        scene.add(cactusPot);
+
+        const cactusMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x228b22, 
+            roughness: 0.9, 
+            metalness: 0 
+        });
+        const cactus = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), cactusMaterial);
+        cactus.position.set(-8, 0.4, -8);
+        cactus.castShadow = true;
+        scene.add(cactus);
+
+        // Enhanced checkout desk
+        const deskMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xaaaaaa, 
+            roughness: 0.7, 
+            metalness: 0 
+        });
+        const desk = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 1.5), deskMaterial);
+        desk.position.set(0, 0.75, 2);
+        desk.castShadow = true;
+        scene.add(desk);
+
+        const monitorMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x333333, 
+            roughness: 0.5, 
+            metalness: 0.9 
+        });
+        const monitor = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.05), monitorMaterial);
+        monitor.position.set(0, 1.3, 1.4);
+        monitor.castShadow = true;
+        scene.add(monitor);
+
+        const keyboardMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x333333, 
+            roughness: 0.6, 
+            metalness: 0.5 
+        });
+        const keyboard = new THREE.Mesh(new THREE.BoxGeometry(1, 0.05, 0.3), keyboardMaterial);
+        keyboard.position.set(0, 0.85, 1.8);
+        keyboard.castShadow = true;
+        scene.add(keyboard);
+
+        const shoppingBagMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xdeb887, 
+            roughness: 0.8, 
+            metalness: 0 
+        });
+        const shoppingBag = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.3), shoppingBagMaterial);
+        shoppingBag.position.set(1, 0.95, 2.5);
+        shoppingBag.castShadow = true;
+        scene.add(shoppingBag);
+
+        // Shop items and cart logic
+        const shopItems = [
+            { name: "Shirt", title: "Classic Shirt", price: 30, mesh: shirts, hangerMesh: shirtHangers, description: "Versatile cotton shirt in vibrant colors.", geometry: shirtGeometry, material: shirtMaterials[0], hangerGeometry: hangerGeometry },
+            { name: "Jacket", title: "Denim Jacket", price: 60, mesh: jackets, hangerMesh: jacketHangers, description: "Stylish denim jacket for all seasons.", geometry: jacketGeometry, material: jacketMaterials[0], hangerGeometry: hangerGeometry },
+            { name: "Dress", title: "Elegant Dress", price: 50, mesh: dresses, hangerMesh: dressHangers, description: "Chic silk dress for any occasion.", geometry: dressGeometry, material: dressMaterials[0], hangerGeometry: hangerGeometry },
+            { name: "Jeans", title: "Slim Fit Jeans", price: 45, mesh: jeans, description: "Durable slim-fit jeans with a modern look.", geometry: jeansHangingGeometry, material: jeansMaterials[0], hangerGeometry: hangerGeometry },
+            { name: "Shoes", title: "Leather Sneakers", price: 70, mesh: shoes, description: "Comfortable leather sneakers for everyday wear.", geometry: shoeBodyGeometry, material: shoesMaterials[0], extraMesh: soles, extraGeometry: shoeSoleGeometry },
+            { name: "Hat", title: "Trendy Cap", price: 25, mesh: hats, description: "Stylish cap to complete your look.", geometry: hatGeometry, material: hatMaterials[0], extraMesh: hatBrims, extraGeometry: brimGeometry },
+            { name: "Sweater", title: "Cozy Sweater", price: 55, mesh: sweaters, description: "Warm sweater in soft fabrics.", geometry: sweaterGeometry, material: sweaterMaterials[0] },
+            { name: "Scarf", title: "Woven Scarf", price: 20, mesh: scarves, hangerMesh: scarfHangers, description: "Elegant scarf for a touch of style.", geometry: scarfGeometry, material: scarfMaterials[0], hangerGeometry: hangerGeometry }
+        ];
+
+        let cart = [];
+        let selectedItemMesh = null;
+        let selectedExtraMesh = null;
+        let selectedHangerMesh = null;
+
+        function addToCart(itemName) {
+            const item = shopItems.find(i => i.name === itemName);
+            if (item) {
+                cart.push({ name: item.name, price: item.price });
+                if (currentPage === 'cart') {
+                    updateCartPage();
+                }
+                displaySelectedItem(item);
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartPage();
+        }
+
+        function updateCartPage() {
+            const centerOverlay = document.getElementById('centerOverlay');
+            const textOverlay = document.getElementById('textOverlay');
+            if (cart.length === 0) {
+                centerOverlay.innerHTML = "Your Cart<br>Cart is empty";
+                textOverlay.innerText = "Cart: No items";
+            } else {
+                let total = cart.reduce((sum, item) => sum + item.price, 0);
+                let cartHtml = "Your Cart<ul>";
+                cart.forEach((item, index) => {
+                    cartHtml += `<li>${item.name} - $${item.price} <button class="remove" onclick="removeFromCart(${index})">Remove</button></li>`;
+                });
+                cartHtml += `</ul>Total: $${total}`;
+                centerOverlay.innerHTML = cartHtml;
+                textOverlay.innerText = `Cart: ${cart.length} item(s), Total: $${total}`;
+            }
+            clearSelectedItem();
+        }
+
+        function displaySelectedItem(item) {
+            clearSelectedItem();
+            selectedItemMesh = new THREE.Mesh(item.geometry, item.material);
+            selectedItemMesh.position.set(0, 1.5, 0);
+            selectedItemMesh.rotation.y = Math.PI / 4;
+            selectedItemMesh.castShadow = true;
+            scene.add(selectedItemMesh);
+
+            if (item.extraMesh) {
+                selectedExtraMesh = new THREE.Mesh(item.extraGeometry, item.material);
+                selectedExtraMesh.position.set(0, 1.5, 0);
+                selectedExtraMesh.rotation.y = Math.PI / 4;
+                selectedExtraMesh.castShadow = true;
+                scene.add(selectedExtraMesh);
+            }
+
+            if (item.hangerMesh) {
+                selectedHangerMesh = new THREE.Mesh(item.hangerGeometry, hangerMaterial);
+                selectedHangerMesh.position.set(0, 1.5, 0);
+                selectedHangerMesh.rotation.y = Math.PI / 4;
+                selectedHangerMesh.castShadow = true;
+                scene.add(selectedHangerMesh);
+            }
+
+            camera.position.set(0, 2, 3);
+            camera.lookAt(0, 1.5, 0);
+        }
+
+        function clearSelectedItem() {
+            if (selectedItemMesh) {
+                scene.remove(selectedItemMesh);
+                selectedItemMesh = null;
+            }
+            if (selectedExtraMesh) {
+                scene.remove(selectedExtraMesh);
+                selectedExtraMesh = null;
+            }
+            if (selectedHangerMesh) {
+                scene.remove(selectedHangerMesh);
+                selectedHangerMesh = null;
+            }
+        }
+
+        // Page navigation and camera positions
+        const pages = {
+            home: {
+                cameraPos: new THREE.Vector3(0, 5, 10),
+                lookAt: new THREE.Vector3(0, 2, -5),
+                text: "Welcome to Style Haven\nExplore our curated collection of trendy clothing.",
+                centerText: "Discover Style Haven<br>Browse our chic clothing collection."
+            },
+            shop: {
+                cameraPos: new THREE.Vector3(-6, 2, 3),
+                lookAt: new THREE.Vector3(-6, 1.5, 0),
+                text: "Shop Items:\nClassic Shirt - $30\nDenim Jacket - $60\nElegant Dress - $50\nSlim Fit Jeans - $45\nLeather Sneakers - $70\nTrendy Cap - $25\nCozy Sweater - $55\nWoven Scarf - $20",
+                centerText: `Shop Now<br>
+                    <div class="shop-item">
+                        <h3>Classic Shirt</h3>
+                        <p>Versatile cotton shirt in vibrant colors.</p>
+                        <p>Price: $30</p>
+                        <button onclick="addToCart('Shirt')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Denim Jacket</h3>
+                        <p>Stylish denim jacket for all seasons.</p>
+                        <p>Price: $60</p>
+                        <button onclick="addToCart('Jacket')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Elegant Dress</h3>
+                        <p>Chic silk dress for any occasion.</p>
+                        <p>Price: $50</p>
+                        <button onclick="addToCart('Dress')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Slim Fit Jeans</h3>
+                        <p>Durable slim-fit jeans with a modern look.</p>
+                        <p>Price: $45</p>
+                        <button onclick="addToCart('Jeans')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Leather Sneakers</h3>
+                        <p>Comfortable leather sneakers for everyday wear.</p>
+                        <p>Price: $70</p>
+                        <button onclick="addToCart('Shoes')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Trendy Cap</h3>
+                        <p>Stylish cap to complete your look.</p>
+                        <p>Price: $25</p>
+                        <button onclick="addToCart('Hat')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Cozy Sweater</h3>
+                        <p>Warm sweater in soft fabrics.</p>
+                        <p>Price: $55</p>
+                        <button onclick="addToCart('Sweater')">Add to Cart</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Woven Scarf</h3>
+                        <p>Elegant scarf for a touch of style.</p>
+                        <p>Price: $20</p>
+                        <button onclick="addToCart('Scarf')">Add to Cart</button>
+                    </div>`
+            },
+            cart: {
+                cameraPos: new THREE.Vector3(0, 2, 4),
+                lookAt: new THREE.Vector3(0, 1, 1.4),
+                text: "Cart: No items",
+                centerText: "Your Cart<br>Cart is empty"
+            },
+            about: {
+                cameraPos: new THREE.Vector3(-8, 2, -6),
+                lookAt: new THREE.Vector3(-8, 0.4, -8),
+                text: "About: Style Haven\nYour go-to reseller for trendy, high-quality clothing.",
+                centerText: "About Style Haven"
+            }
+        };
+
+        let currentPage = 'home';
+
+        function navigateTo(page) {
+            clearSelectedItem();
+            currentPage = page;
+            const pageData = pages[page];
+
+            shopItems.forEach(item => {
+                item.mesh.material.emissiveIntensity = page === 'shop' ? 0.5 : 0;
+                if (item.extraMesh) {
+                    item.extraMesh.material.emissiveIntensity = page === 'shop' ? 0.5 : 0;
+                }
+                if (item.hangerMesh) {
+                    item.hangerMesh.material.emissiveIntensity = page === 'shop' ? 0.5 : 0;
+                }
+            });
+
+            camera.position.copy(pageData.cameraPos);
+            camera.lookAt(pageData.lookAt);
+            document.getElementById('textOverlay').innerText = pageData.text;
+            document.getElementById('centerOverlay').innerHTML = page === 'cart' ? pages.cart.centerText : pageData.centerText;
+
+            if (page === 'cart') {
+                updateCartPage();
+            }
+            toggleMenu();
+        }
+
+        // Initial page load
+        navigateTo('home');
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Menu toggle
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
