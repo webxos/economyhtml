@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Portfolio Hero - Refined Desk Setup with EQ Console</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #808080; /* Gray background */
+            font-family: 'Arial', sans-serif;
+        }
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            color: white;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            pointer-events: auto;
+        }
+        .header-left h1 {
+            font-size: 1.2rem;
+            color: #ff00ff; /* Neon pink */
+            margin: 0;
+        }
+        .header-right {
+            display: flex;
+            gap: 20px;
+        }
+        .header-right a {
+            color: #00ffff; /* Neon cyan */
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .header-right a:hover {
+            background: #ff00ff; /* Neon pink background on hover */
+            color: #000000;
+        }
+        .text-content {
+            position: absolute;
+            top: 20%;
+            left: 5%;
+        }
+        .text-content h2 {
+            font-size: 4rem;
+            color: #ff00ff; /* Neon pink */
+            margin: 0;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+        .text-content p {
+            font-size: 1.5rem;
+            color: #ffffff;
+            margin: 0;
+            text-shadow: 0 0 5px #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas"></div>
+    <div class="overlay">
+        <div class="header">
+            <div class="header-left">
+                <h1>MAIDA | Software Engineer</h1>
+            </div>
+            <div class="header-right">
+                <a href="#about">About</a>
+                <a href="#work">Work</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </div>
+        <div class="text-content">
+            <h2>Hi, I'm Maida</h2>
+            <p>I develop websites, user interfaces, and web applications</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+
+        // Renderer setup
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.setClearColor(0x808080, 0);
+        document.getElementById('canvas').appendChild(renderer.domElement);
+
+        // Camera setup
+        camera.position.set(0, 2.5, 5);
+        camera.lookAt(0, 1, 0);
+
+        // OrbitControls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 3;
+        controls.maxDistance = 15;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+        directionalLight.position.set(5, 10, 5);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 1024;
+        directionalLight.shadow.mapSize.height = 1024;
+        scene.add(directionalLight);
+
+        const neonLight = new THREE.PointLight(0x00ff00, 2, 10); // Neon green light
+        neonLight.position.set(0, 3, 0);
+        scene.add(neonLight);
+
+        // Desk
+        const deskGeometry = new THREE.BoxGeometry(8, 0.3, 4);
+        const deskMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.4,
+            metalness: 0.8
+        });
+        const desk = new THREE.Mesh(deskGeometry, deskMaterial);
+        desk.position.y = 1;
+        desk.receiveShadow = true;
+        desk.castShadow = true;
+        scene.add(desk);
+
+        // Desk legs
+        const legGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 32);
+        const legMaterial = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4, metalness: 0.8 });
+        const legs = [];
+        for (let i = 0; i < 4; i++) {
+            const leg = new THREE.Mesh(legGeometry, legMaterial);
+            leg.position.set(
+                (i % 2 === 0 ? -3.5 : 3.5),
+                0.5,
+                (i < 2 ? -1.5 : 1.5)
+            );
+            leg.castShadow = true;
+            scene.add(leg);
+            legs.push(leg);
+        }
+
+        // Desk detail
+        const deskDetailGeometry = new THREE.BoxGeometry(7.8, 0.05, 3.8);
+        const deskDetailMaterial = new THREE.MeshStandardMaterial({
+            color: 0x222222,
+            roughness: 0.5,
+            metalness: 0.7
+        });
+        const deskDetail = new THREE.Mesh(deskDetailGeometry, deskDetailMaterial);
+        deskDetail.position.set(0, 1.18, 0);
+        scene.add(deskDetail);
+
+        // Neon glow around desk
+        const deskEdgeGeometry = new THREE.EdgesGeometry(deskGeometry);
+        const deskEdgeMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.3 });
+        const deskEdge = new THREE.LineSegments(deskEdgeGeometry, deskEdgeMaterial);
+        deskEdge.position.copy(desk.position);
+        scene.add(deskEdge);
+
+        // Monitor Rack - Redesigned from the backside
+        const rackBaseGeometry = new THREE.BoxGeometry(7, 0.1, 0.5); // Wider base behind monitors
+        const rackMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.3,
+            metalness: 0.7
+        });
+        const rackBase = new THREE.Mesh(rackBaseGeometry, rackMaterial);
+        rackBase.position.set(0, 1.6, -1.9); // Moved further back
+        rackBase.castShadow = true;
+        scene.add(rackBase);
+
+        const rackSupportGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.6, 32); // Smoother supports
+        const rackSupports = [];
+        for (let i = 0; i < 3; i++) {
+            const rackSupport = new THREE.Mesh(rackSupportGeometry, rackMaterial);
+            rackSupport.position.set(-2 + i * 2, 1.85, -1.9);
+            rackSupport.rotation.x = Math.PI / 2;
+            scene.add(rackSupport);
+            rackSupports.push(rackSupport);
+        }
+
+        // Rack back panel for realism
+        const rackPanelGeometry = new THREE.BoxGeometry(7, 0.5, 0.1);
+        const rackPanel = new THREE.Mesh(rackPanelGeometry, rackMaterial);
+        rackPanel.position.set(0, 1.85, -2);
+        scene.add(rackPanel);
+
+        // Three Monitors
+        const monitorFrameGeometry = new THREE.BoxGeometry(1.8, 1.2, 0.1);
+        const monitorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.3,
+            metalness: 0.7
+        });
+        const monitors = [];
+        for (let i = 0; i < 3; i++) {
+            const monitorFrame = new THREE.Mesh(monitorFrameGeometry, monitorMaterial);
+            monitorFrame.position.set(-2 + i * 2, 1.8, -1.5);
+            monitorFrame.castShadow = true;
+            scene.add(monitorFrame);
+
+            // Monitor screen
+            const monitorScreenGeometry = new THREE.PlaneGeometry(1.7, 1.1);
+            const monitorScreenMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ff00,
+                transparent: true,
+                opacity: 0.6,
+                side: THREE.DoubleSide
+            });
+            const monitorScreen = new THREE.Mesh(monitorScreenGeometry, monitorScreenMaterial);
+            monitorScreen.position.set(-2 + i * 2, 1.8, -1.45);
+            scene.add(monitorScreen);
+
+            // Monitor stand
+            const monitorStandGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.5, 32);
+            const monitorStand = new THREE.Mesh(monitorStandGeometry, monitorMaterial);
+            monitorStand.position.set(-2 + i * 2, 1.3, -1.5);
+            scene.add(monitorStand);
+
+            // Monitor base
+            const monitorBaseGeometry = new THREE.BoxGeometry(0.8, 0.1, 0.5);
+            const monitorBase = new THREE.Mesh(monitorBaseGeometry, monitorMaterial);
+            monitorBase.position.set(-2 + i * 2, 1.05, -1.5);
+            monitorBase.castShadow = true;
+            scene.add(monitorBase);
+
+            // Monitor details
+            const monitorDetailGeometry = new THREE.BoxGeometry(1.6, 0.05, 0.05);
+            const monitorDetail = new THREE.Mesh(monitorDetailGeometry, deskDetailMaterial);
+            monitorDetail.position.set(-2 + i * 2, 2.35, -1.48);
+            scene.add(monitorDetail);
+
+            // Subtle neon glow on monitor edges
+            const monitorEdgeGeometry = new THREE.EdgesGeometry(monitorFrameGeometry);
+            const monitorEdge = new THREE.LineSegments(monitorEdgeGeometry, deskEdgeMaterial);
+            monitorEdge.position.copy(monitorFrame.position);
+            scene.add(monitorEdge);
+
+            monitors.push(monitorFrame);
+        }
+
+        // Keyboard
+        const keyboardGeometry = new THREE.BoxGeometry(2, 0.05, 0.6);
+        const keyboardMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const keyboard = new THREE.Mesh(keyboardGeometry, keyboardMaterial);
+        keyboard.position.set(0, 1.18, 0.5);
+        keyboard.castShadow = true;
+        scene.add(keyboard);
+
+        // Keyboard details
+        const keyboardDetailGeometry = new THREE.BoxGeometry(1.8, 0.01, 0.5);
+        const keyboardDetail = new THREE.Mesh(keyboardDetailGeometry, deskDetailMaterial);
+        keyboardDetail.position.set(0, 1.21, 0.5);
+        scene.add(keyboardDetail);
+
+        // Glowing keys
+        const keyGeometry = new THREE.BoxGeometry(0.08, 0.01, 0.08);
+        const keyMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const keys = [];
+        for (let i = -0.9; i <= 0.9; i += 0.12) {
+            for (let j = -0.25; j <= 0.25; j += 0.12) {
+                const key = new THREE.Mesh(keyGeometry, keyMaterial);
+                key.position.set(i, 1.23, j + 0.5);
+                scene.add(key);
+                keys.push(key);
+            }
+        }
+
+        // Mouse
+        const mouseBodyGeometry = new THREE.BoxGeometry(0.25, 0.15, 0.35);
+        const mouseMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const mouse = new THREE.Mesh(mouseBodyGeometry, mouseMaterial);
+        mouse.position.set(1.2, 1.18, 0.6);
+        mouse.castShadow = true;
+        scene.add(mouse);
+
+        // Mouse details
+        const mouseDetailGeometry = new THREE.BoxGeometry(0.2, 0.01, 0.3);
+        const mouseDetail = new THREE.Mesh(mouseDetailGeometry, deskDetailMaterial);
+        mouseDetail.position.set(1.2, 1.25, 0.6);
+        scene.add(mouseDetail);
+
+        // Mouse buttons and scroll wheel
+        const mouseButtonGeometry = new THREE.BoxGeometry(0.08, 0.01, 0.1);
+        const mouseButtonMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.5 });
+        const leftButton = new THREE.Mesh(mouseButtonGeometry, mouseButtonMaterial);
+        leftButton.position.set(1.2 - 0.05, 1.16, 0.65);
+        scene.add(leftButton);
+        const rightButton = new THREE.Mesh(mouseButtonGeometry, mouseButtonMaterial);
+        rightButton.position.set(1.2 + 0.05, 1.16, 0.65);
+        scene.add(rightButton);
+
+        const scrollWheelGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.05, 32);
+        const scrollWheelMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const scrollWheel = new THREE.Mesh(scrollWheelGeometry, scrollWheelMaterial);
+        scrollWheel.rotation.x = Math.PI / 2;
+        scrollWheel.position.set(1.2, 1.18, 0.6);
+        scene.add(scrollWheel);
+
+        // Subtle mouse neon glow
+        const mouseEdgeGeometry = new THREE.EdgesGeometry(mouseBodyGeometry);
+        const mouseEdge = new THREE.LineSegments(mouseEdgeGeometry, deskEdgeMaterial);
+        mouseEdge.position.copy(mouse.position);
+        scene.add(mouseEdge);
+
+        // Speakers
+        const speakerGeometry = new THREE.BoxGeometry(0.6, 1, 0.4);
+        const speakerMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const speaker1 = new THREE.Mesh(speakerGeometry, speakerMaterial);
+        speaker1.position.set(-3.5, 1.5, -0.5);
+        speaker1.castShadow = true;
+        scene.add(speaker1);
+
+        const speaker2 = new THREE.Mesh(speakerGeometry, speakerMaterial);
+        speaker2.position.set(3.5, 1.5, -0.5);
+        speaker2.castShadow = true;
+        scene.add(speaker2);
+
+        // Speaker details
+        const speakerDetailGeometry = new THREE.BoxGeometry(0.5, 0.8, 0.05);
+        const speakerDetailMaterial = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5, metalness: 0.7 });
+        const speakerDetail1 = new THREE.Mesh(speakerDetailGeometry, speakerDetailMaterial);
+        speakerDetail1.position.set(-3.5, 1.5, -0.3);
+        scene.add(speakerDetail1);
+
+        const speakerDetail2 = new THREE.Mesh(speakerDetailGeometry, speakerDetailMaterial);
+        speakerDetail2.position.set(3.5, 1.5, -0.3);
+        scene.add(speakerDetail2);
+
+        // White cones - Facing outward
+        const coneGeometry = new THREE.ConeGeometry(0.15, 0.1, 32);
+        const coneMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0 });
+        const cone1 = new THREE.Mesh(coneGeometry, coneMaterial);
+        cone1.position.set(-3.5, 1.5, -0.25);
+        cone1.rotation.x = -Math.PI / 2;
+        scene.add(cone1);
+
+        const cone2 = new THREE.Mesh(coneGeometry, coneMaterial);
+        cone2.position.set(3.5, 1.5, -0.25);
+        cone2.rotation.x = -Math.PI / 2;
+        scene.add(cone2);
+
+        // Subtle speaker neon glow
+        const speakerEdgeGeometry = new THREE.EdgesGeometry(speakerGeometry);
+        const speakerEdge1 = new THREE.LineSegments(speakerEdgeGeometry, deskEdgeMaterial);
+        speakerEdge1.position.copy(speaker1.position);
+        scene.add(speakerEdge1);
+
+        const speakerEdge2 = new THREE.LineSegments(speakerEdgeGeometry, deskEdgeMaterial);
+        speakerEdge2.position.copy(speaker2.position);
+        scene.add(speakerEdge2);
+
+        // EQ Console - Replacing the laptop
+        const eqConsoleGeometry = new THREE.BoxGeometry(1.5, 0.1, 1);
+        const eqConsoleMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const eqConsole = new THREE.Mesh(eqConsoleGeometry, eqConsoleMaterial);
+        eqConsole.position.set(-2, 1.23, 0.5);
+        eqConsole.castShadow = true;
+        scene.add(eqConsole);
+
+        // EQ Console details - Sliders, knobs, and lights
+        const sliderGeometry = new THREE.BoxGeometry(0.05, 0.1, 0.2);
+        const sliderMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.5 });
+        const sliders = [];
+        for (let i = 0; i < 5; i++) {
+            const slider = new THREE.Mesh(sliderGeometry, sliderMaterial);
+            slider.position.set(-2.4 + i * 0.2, 1.28 + Math.sin(i) * 0.02, 0.6);
+            scene.add(slider);
+            sliders.push(slider);
+        }
+
+        const knobGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.02, 32);
+        const knobMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.5 });
+        const knobs = [];
+        for (let i = 0; i < 4; i++) {
+            const knob = new THREE.Mesh(knobGeometry, knobMaterial);
+            knob.position.set(-2.4 + i * 0.15, 1.28, 0.4);
+            knob.rotation.x = Math.PI / 2;
+            scene.add(knob);
+            knobs.push(knob);
+        }
+
+        const eqLightGeometry = new THREE.SphereGeometry(0.02, 16, 16);
+        const eqLightMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const eqLights = [];
+        for (let i = 0; i < 5; i++) {
+            const eqLight = new THREE.Mesh(eqLightGeometry, eqLightMaterial);
+            eqLight.position.set(-2.4 + i * 0.2, 1.28, 0.5);
+            scene.add(eqLight);
+            eqLights.push(eqLight);
+        }
+
+        // Subtle EQ console neon glow
+        const eqEdgeGeometry = new THREE.EdgesGeometry(eqConsoleGeometry);
+        const eqEdge = new THREE.LineSegments(eqEdgeGeometry, deskEdgeMaterial);
+        eqEdge.position.copy(eqConsole.position);
+        scene.add(eqEdge);
+
+        // Server Rack - Enhanced with neon glow, levels, and lights
+        const serverRackGeometry = new THREE.BoxGeometry(2, 0.8, 1);
+        const serverRackMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const serverRack = new THREE.Mesh(serverRackGeometry, serverRackMaterial);
+        serverRack.position.set(2, 0.4, 0);
+        serverRack.castShadow = true;
+        scene.add(serverRack);
+
+        // Server rack details
+        const serverDetailGeometry = new THREE.BoxGeometry(1.8, 0.6, 0.05);
+        const serverDetail = new THREE.Mesh(serverDetailGeometry, deskDetailMaterial);
+        serverDetail.position.set(2, 0.4, 0.5);
+        scene.add(serverDetail);
+
+        // Server rack levels (visual bars)
+        const levelGeometry = new THREE.BoxGeometry(0.3, 0.05, 0.05);
+        const levelMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const levels = [];
+        for (let i = 0; i < 4; i++) {
+            const level = new THREE.Mesh(levelGeometry, levelMaterial);
+            level.position.set(2, 0.2 + i * 0.1, 0.5);
+            scene.add(level);
+            levels.push(level);
+        }
+
+        // Server rack blinkers and knobs
+        const blinkerGeometry = new THREE.SphereGeometry(0.03, 16, 16);
+        const blinkerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const blinkers = [];
+        for (let i = 0; i < 5; i++) {
+            const blinker = new THREE.Mesh(blinkerGeometry, blinkerMaterial);
+            blinker.position.set(1.5 + i * 0.2, 0.6, 0.5);
+            scene.add(blinker);
+            blinkers.push(blinker);
+        }
+
+        const knobGeometry2 = new THREE.CylinderGeometry(0.05, 0.05, 0.02, 32);
+        const knobMaterial2 = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.5 });
+        for (let i = 0; i < 3; i++) {
+            const knob = new THREE.Mesh(knobGeometry2, knobMaterial2);
+            knob.position.set(1.5 + i * 0.3, 0.3, 0.5);
+            knob.rotation.x = Math.PI / 2;
+            scene.add(knob);
+        }
+
+        // Server rack neon glow
+        const serverEdgeGeometry = new THREE.EdgesGeometry(serverRackGeometry);
+        const serverEdge = new THREE.LineSegments(serverEdgeGeometry, deskEdgeMaterial);
+        serverEdge.position.copy(serverRack.position);
+        scene.add(serverEdge);
+
+        // Animation loop
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Blinking lights on server rack and EQ console
+            time += 0.05;
+            blinkers.forEach((blinker, index) => {
+                blinker.material.opacity = 0.3 + 0.2 * Math.sin(time + index);
+            });
+            eqLights.forEach((light, index) => {
+                light.material.opacity = 0.3 + 0.2 * Math.sin(time + index * 0.5);
+            });
+
+            // Animate server rack levels
+            levels.forEach((level, index) => {
+                level.scale.y = 1 + Math.sin(time + index) * 0.5;
+            });
+
+            // Update controls
+            controls.update();
+
+            // Render scene
+            renderer.render(scene, camera);
+        }
+
+        // Start animation
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // Debugging logs
+        console.log("Scene children:", scene.children);
+        console.log("Renderer info:", renderer.info);
+    </script>
+</body>
+</html>
