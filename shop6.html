@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Studio - 3D E-commerce Template</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f5f5;
+            color: #333333;
+            font-family: 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -200px;
+            width: 200px;
+            height: 100vh;
+            background: linear-gradient(180deg, #ffffff, #e8ecef);
+            padding: 20px;
+            z-index: 10;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.15);
+            transition: left 0.3s ease;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar h1 {
+            font-size: 1.8rem;
+            color: #2a2a2a;
+            margin-bottom: 20px;
+            margin-top: 50px;
+            font-weight: 600;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin: 12px 0;
+        }
+
+        .sidebar a {
+            color: #555555;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar a:hover {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .menu-toggle {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 10px;
+            background: #2a2a2a;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 11;
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+
+        .menu-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .text-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 6px;
+            color: #333333;
+            font-size: 1rem;
+            z-index: 10;
+            max-width: 80%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .center-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #2a2a2a;
+            border-radius: 8px;
+            color: #2a2a2a;
+            font-size: 1.5rem;
+            text-align: center;
+            z-index: 10;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .center-overlay button {
+            margin: 8px;
+            padding: 8px 16px;
+            background: #2a2a2a;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .center-overlay button:hover {
+            background: #3a3a3a;
+        }
+
+        .center-overlay button.remove {
+            background: #ff5555;
+        }
+
+        .center-overlay button.remove:hover {
+            background: #ff3333;
+        }
+
+        .center-overlay ul {
+            list-style: none;
+            margin: 12px 0;
+            padding: 0;
+        }
+
+        .center-overlay li {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shop-item {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 12px 0;
+            width: 320px;
+            text-align: left;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .shop-item h3 {
+            color: #2a2a2a;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .shop-item p {
+            color: #555555;
+            font-size: 0.95rem;
+            margin: 6px 0;
+        }
+
+        .shop-item button {
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 160px;
+                left: -160px;
+            }
+
+            .sidebar h1 {
+                font-size: 1.4rem;
+                margin-top: 40px;
+            }
+
+            .sidebar a {
+                font-size: 0.95rem;
+                padding: 6px;
+            }
+
+            .menu-toggle {
+                padding: 8px;
+                font-size: 0.9rem;
+            }
+
+            .text-overlay {
+                font-size: 0.9rem;
+                padding: 10px;
+                bottom: 15px;
+                left: 15px;
+            }
+
+            .center-overlay {
+                font-size: 1.3rem;
+                padding: 15px;
+            }
+
+            .center-overlay button {
+                font-size: 0.85rem;
+                padding: 6px 12px;
+            }
+
+            .shop-item {
+                width: 240px;
+            }
+
+            .shop-item h3 {
+                font-size: 1.1rem;
+            }
+
+            .shop-item p {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    <div class="sidebar" id="sidebar">
+        <h1>Style Haven</h1>
+        <ul>
+            <li><a href="#" onclick="navigateTo('home')">Home</a></li>
+            <li><a href="#" onclick="navigateTo('shop')">Shop</a></li>
+            <li><a href="#" onclick="navigateTo('cart')">Cart</a></li>
+            <li><a href="#" onclick="navigateTo('about')">About</a></li>
+        </ul>
+    </div>
+    <div class="text-overlay" id="textOverlay"></div>
+    <div class="center-overlay" id="centerOverlay"></div>
+
+    <!-- Three.js dependency -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+        renderer.setClearColor(0xf5f5f5, 1);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.3);
+        directionalLight.position.set(12, 12, 12);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.set(2048, 2048);
+        scene.add(directionalLight);
+
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xaaaaaa, 0.5);
+        hemiLight.position.set(0, 20, 0);
+        scene.add(hemiLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 0.6, 10);
+        pointLight.position.set(-6, 3, 0);
+        pointLight.castShadow = true;
+        scene.add(pointLight);
+
+        // Room geometry
+        const floorMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8b5e3c, 
+            roughness: 0.7, 
+            metalness: 0.1 
+        });
+        const wallMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xffffff, 
+            roughness: 0.85, 
+            metalness: 0 
+        });
+        const brickMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xb22222, 
+            roughness: 0.9, 
+            metalness: 0 
+        });
+
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        const backWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
+        backWall.position.set(0, 5, -10);
+        backWall.receiveShadow = true;
+        scene.add(backWall);
+
+        const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), brickMaterial);
+        leftWall.position.set(-10, 5, 0);
+        leftWall.rotation.y = Math.PI / 2;
+        leftWall.receiveShadow = true;
+        scene.add(leftWall);
+
+        const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
+        rightWall.position.set(10, 5, 0);
+        rightWall.rotation.y = -Math.PI / 2;
+        rightWall.receiveShadow = true;
+        scene.add(rightWall);
+
+        // Enhanced racks with legs
+        const rackMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x333333, 
+            roughness: 0.5, 
+            metalness: 0.9 
+        });
+        const rackGeometry = new THREE.BoxGeometry(2, 0.05, 0.5);
+        const legGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.5, 16);
+
+        function createRackWithLegs(x, y, z) {
+            const rack = new THREE.Mesh(rackGeometry, rackMaterial);
+            rack.position.set(x, y, z);
+            rack.castShadow = true;
+            scene.add(rack);
+
+            const leg1 = new THREE.Mesh(legGeometry, rackMaterial);
+            leg1.position.set(x - 0.9, y - 0.75, z - 0.2);
+            leg1.castShadow = true;
+            scene.add(leg1);
+
+            const leg2 = new THREE.Mesh(legGeometry, rackMaterial);
+            leg2.position.set(x - 0.9, y - 0.75, z + 0.2);
+            leg2.castShadow = true;
+            scene.add(leg2);
+
+            const leg3 = new THREE.Mesh(legGeometry, rackMaterial);
+            leg3.position.set(x + 0.9, y - 0.75, z - 0.2);
+            leg3.castShadow = true;
+            scene.add(leg3);
+
+            const leg4 = new THREE.Mesh(legGeometry, rackMaterial);
+            leg4.position.set(x + 0.9, y - 0.75, z + 0.2);
+            leg4.castShadow = true;
+            scene.add(leg4);
+
+            return rack;
+        }
+
+        const coatRack = createRackWithLegs(-6, 1.5, -2);
+        const shirtRack = createRackWithLegs(-6, 1.5, 0);
+        const dressRack = createRackWithLegs(-6, 1.5, 2);
+        const hatRack = createRackWithLegs(6, 1.5, -2);
+        const jacketRack = createRackWithLegs(6, 1.5, 0);
+        const extraRack = createRackWithLegs(-8, 1.5, -4);
+
+        // Enhanced metal shelves with legs
+        const shelfMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xaaaaaa, 
+            roughness: 0.5, 
+            metalness: 0.9 
+        });
+        const shelfGeometry = new THREE.BoxGeometry(3, 0.05, 0.5);
+        const shelfLegGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2, 16);
+
+        function createShelfWithLegs(x, y, z) {
+            const shelf = new THREE.Mesh(shelfGeometry, shelfMaterial);
+            shelf.position.set(x, y, z);
+            shelf.castShadow = true;
+            scene.add(shelf);
+
+            const leg1 = new THREE.Mesh(shelfLegGeometry, shelfMaterial);
+            leg1.position.set(x - 1.4, y - (y - 0.05), z - 0.2);
+            leg1.castShadow = true;
+            scene.add(leg1);
+
+            const leg2 = new THREE.Mesh(shelfLegGeometry, shelfMaterial);
+            leg2.position.set(x - 1.4, y - (y - 0.05), z + 0.2);
+            leg2.castShadow = true;
+            scene.add(leg2);
+
+            const leg3 = new THREE.Mesh(shelfLegGeometry, shelfMaterial);
+            leg3.position.set(x + 1.4, y - (y - 0.05), z - 0.2);
+            leg3.castShadow = true;
+            scene.add(leg3);
+
+            const leg4 = new THREE.Mesh(shelfLegGeometry, shelfMaterial);
+            leg4.position.set(x + 1.4, y - (y - 0.05), z + 0.2);
+            leg4.castShadow = true;
+            scene.add(leg4);
+
+            return shelf;
+        }
+
+        const shelf1 = createShelfWithLegs(4, 2, -9);
+        const shelf2 = createShelfWithLegs(4, 3, -9);
+        const shelf3 = createShelfWithLegs(-4, 2, -9);
+        const shelf4 = createShelfWithLegs(-4, 3, -9);
+
+        const shoeRack = createRackWithLegs(-4, 0.5, -9);
+
+        // Enhanced tables with legs
+        const tableMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xaaaaaa, 
+            roughness: 0.7, 
+            metalness: 0 
+        });
+        const tableGeometry = new THREE.BoxGeometry(2, 0.05, 1);
+        const tableLegGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.75, 16);
+
+        function createTableWithLegs(x, y, z) {
+            const table = new THREE.Mesh(tableGeometry, tableMaterial);
+            table.position.set(x, y, z);
+            table.castShadow = true;
+            scene.add(table);
+
+            const leg1 = new THREE.Mesh(tableLegGeometry, tableMaterial);
+            leg1.position.set(x - 0.9, y - 0.375, z - 0.4);
+            leg1.castShadow = true;
+            scene.add(leg1);
+
+            const leg2 = new THREE.Mesh(tableLegGeometry, tableMaterial);
+            leg2.position.set(x - 0.9, y - 0.375, z + 0.4);
+            leg2.castShadow = true;
+            scene.add(leg2);
+
+            const leg3 = new THREE.Mesh(tableLegGeometry, tableMaterial);
+            leg3.position.set(x + 0.9, y - 0.375, z - 0.4);
+            leg3.castShadow = true;
+            scene.add(leg3);
+
+            const leg4 = new THREE.Mesh(tableLegGeometry, tableMaterial);
+            leg4.position.set(x + 0.9, y - 0.375, z + 0.4);
+            leg4.castShadow = true;
+            scene.add(leg4);
+
+            return table;
+        }
+
+        const table1 = createTableWithLegs(0, 0.75, -4);
+        const table2 = createTableWithLegs(2, 0.75, -6);
+
+        // Cardboard boxes around the corner
+        const boxMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8b4513, 
+            roughness: 0.9, 
+            metalness: 0 
+        });
+        const boxGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+
+        const cornerBoxes = new THREE.InstancedMesh(boxGeometry, boxMaterial, 12);
+        const cornerBoxDummy = new THREE.Object3D();
+        let cornerBoxIndex = 0;
+        for (let x = -9.5; x <= -8.5; x += 0.5) {
+            for (let y = 0.25; y <= 1.25; y += 0.5) {
+                for (let z = -9.5; z <= -8.5; z += 1) {
+                    cornerBoxDummy.position.set(x, y, z);
+                    cornerBoxDummy.updateMatrix();
+                    cornerBoxes.setMatrixAt(cornerBoxIndex++, cornerBoxDummy.matrix);
+                }
+            }
+        }
+        cornerBoxes.castShadow = true;
+        scene.add(cornerBoxes);
+
+        // Cacti (unchanged for About page)
+        const cactusPotMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8b4513, 
+            roughness: 0.85, 
+            metalness: 0 
+        });
+        const cactusPot = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.3, 16), cactusPotMaterial);
+        cactusPot.position.set(-8, 0.15, -8);
+        cactusPot.castShadow = true;
+        scene.add(cactusPot);
+
+        const cactusMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x228b22, 
+            roughness: 0.9, 
+            metalness: 0 
+        });
+        const cactus = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), cactusMaterial);
+        cactus.position.set(-8, 0.4, -8);
+        cactus.castShadow = true;
+        scene.add(cactus);
+
+        // Enhanced checkout desk with detailed models
+        const deskMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xaaaaaa, 
+            roughness: 0.7, 
+            metalness: 0 
+        });
+        const desk = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.05, 1.5), deskMaterial);
+        desk.position.set(0, 0.75, 2);
+        desk.castShadow = true;
+        scene.add(desk);
+
+        const deskLegGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.75, 16);
+        const deskLeg1 = new THREE.Mesh(deskLegGeometry, deskMaterial);
+        deskLeg1.position.set(-1.2, 0.375, 0.7);
+        deskLeg1.castShadow = true;
+        scene.add(deskLeg1);
+
+        const deskLeg2 = new THREE.Mesh(deskLegGeometry, deskMaterial);
+        deskLeg2.position.set(-1.2, 0.375, 1.3);
+        deskLeg2.castShadow = true;
+        scene.add(deskLeg2);
+
+        const deskLeg3 = new THREE.Mesh(deskLegGeometry, deskMaterial);
+        deskLeg3.position.set(1.2, 0.375, 0.7);
+        deskLeg3.castShadow = true;
+        scene.add(deskLeg3);
+
+        const deskLeg4 = new THREE.Mesh(deskLegGeometry, deskMaterial);
+        deskLeg4.position.set(1.2, 0.375, 1.3);
+        deskLeg4.castShadow = true;
+        scene.add(deskLeg4);
+
+        const monitorMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x333333, 
+            roughness: 0.5, 
+            metalness: 0.9 
+        });
+        const monitorScreenMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x000000, 
+            roughness: 0.2, 
+            metalness: 0.5 
+        });
+        const monitorBase = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.2), monitorMaterial);
+        monitorBase.position.set(0, 0.85, 1.4);
+        monitorBase.castShadow = true;
+        scene.add(monitorBase);
+
+        const monitorStand = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.3, 16), monitorMaterial);
+        monitorStand.position.set(0, 1, 1.4);
+        monitorStand.castShadow = true;
+        scene.add(monitorStand);
+
+        const monitorScreen = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.05), monitorScreenMaterial);
+        monitorScreen.position.set(0, 1.35, 1.4);
+        monitorScreen.castShadow = true;
+        scene.add(monitorScreen);
+
+        const keyboardMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x333333, 
+            roughness: 0.6, 
+            metalness: 0.5 
+        });
+        const keyboard = new THREE.Mesh(new THREE.BoxGeometry(1, 0.05, 0.3), keyboardMaterial);
+        keyboard.position.set(0, 0.85, 1.8);
+        keyboard.castShadow = true;
+        scene.add(keyboard);
+
+        const cardScannerMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x555555, 
+            roughness: 0.5, 
+            metalness: 0.8 
+        });
+        const cardScannerBase = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.1, 0.2), cardScannerMaterial);
+        cardScannerBase.position.set(0.8, 0.85, 1.6);
+        cardScannerBase.castShadow = true;
+        scene.add(cardScannerBase);
+
+        const cardScannerSlot = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.05, 0.05), monitorScreenMaterial);
+        cardScannerSlot.position.set(0.8, 0.925, 1.6);
+        cardScannerSlot.castShadow = true;
+        scene.add(cardScannerSlot);
+
+        const shoppingBagMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xdeb887, 
+            roughness: 0.8, 
+            metalness: 0 
+        });
+        const shoppingBag = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.3), shoppingBagMaterial);
+        shoppingBag.position.set(1, 0.95, 2.5);
+        shoppingBag.castShadow = true;
+        scene.add(shoppingBag);
+
+        // Shop items and cart logic (empty shop for template)
+        const shopItems = [];
+        let cart = [];
+
+        function addToCart(itemName) {
+            const item = shopItems.find(i => i.name === itemName);
+            if (item) {
+                cart.push({ name: item.name, price: item.price });
+                if (currentPage === 'cart') {
+                    updateCartPage();
+                }
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartPage();
+        }
+
+        function updateCartPage() {
+            const centerOverlay = document.getElementById('centerOverlay');
+            const textOverlay = document.getElementById('textOverlay');
+            if (cart.length === 0) {
+                centerOverlay.innerHTML = "Your Cart<br>Cart is empty";
+                textOverlay.innerText = "Cart: No items";
+            } else {
+                let total = cart.reduce((sum, item) => sum + item.price, 0);
+                let cartHtml = "Your Cart<ul>";
+                cart.forEach((item, index) => {
+                    cartHtml += `<li>${item.name} - $${item.price} <button class="remove" onclick="removeFromCart(${index})">Remove</button></li>`;
+                });
+                cartHtml += `</ul>Total: $${total}`;
+                centerOverlay.innerHTML = cartHtml;
+                textOverlay.innerText = `Cart: ${cart.length} item(s), Total: $${total}`;
+            }
+        }
+
+        // Page navigation and camera positions
+        const pages = {
+            home: {
+                cameraPos: new THREE.Vector3(0, 5, 10),
+                lookAt: new THREE.Vector3(0, 2, -5),
+                text: "Welcome to Style Haven\nExplore our curated collection.",
+                centerText: "Discover Style Haven<br>Browse our collection."
+            },
+            shop: {
+                cameraPos: new THREE.Vector3(-6, 2, 3),
+                lookAt: new THREE.Vector3(-6, 1.5, 0),
+                text: "Shop Items:\nCurrently empty.",
+                centerText: "Shop Now<br>No items available."
+            },
+            cart: {
+                cameraPos: new THREE.Vector3(0, 2, 4),
+                lookAt: new THREE.Vector3(0, 1, 1.4),
+                text: "Cart: No items",
+                centerText: "Your Cart<br>Cart is empty"
+            },
+            about: {
+                cameraPos: new THREE.Vector3(-8, 2, -6),
+                lookAt: new THREE.Vector3(-8, 0.4, -8),
+                text: "About: Style Haven\nYour go-to reseller for high-quality items.",
+                centerText: "About Style Haven"
+            }
+        };
+
+        let currentPage = 'home';
+
+        function navigateTo(page) {
+            currentPage = page;
+            const pageData = pages[page];
+
+            camera.position.copy(pageData.cameraPos);
+            camera.lookAt(pageData.lookAt);
+            document.getElementById('textOverlay').innerText = pageData.text;
+            document.getElementById('centerOverlay').innerHTML = page === 'cart' ? pages.cart.centerText : pageData.centerText;
+
+            if (page === 'cart') {
+                updateCartPage();
+            }
+            toggleMenu();
+        }
+
+        // Initial page load
+        navigateTo('home');
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Menu toggle
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
