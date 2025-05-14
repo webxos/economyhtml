@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KitchenVibe Designs</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #fff;
+        }
+        canvas {
+            display: block;
+            width: 100vw !important;
+            height: 100vh !important;
+        }
+        /* UI Menu Styling */
+        #ui-menu {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        #ui-menu button {
+            display: block;
+            margin: 5px 0;
+            padding: 8px;
+            background: #333;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #ui-menu button:hover {
+            background: #555;
+        }
+        @media (max-width: 768px) {
+            canvas {
+                width: 100vw !important;
+                height: 100vh !important;
+            }
+            #ui-menu {
+                top: 5px;
+                left: 5px;
+                font-size: 12px;
+            }
+            #ui-menu button {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- UI Menu for Camera Switching -->
+    <div id="ui-menu">
+        <button onclick="switchCamera('overview')">Overview</button>
+        <button onclick="switchCamera('counter')">Counter View</button>
+        <button onclick="switchCamera('stove')">Stove View</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows for realism
+        document.body.appendChild(renderer.domElement);
+
+        // OrbitControls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 2;
+        controls.maxDistance = 10;
+        controls.maxPolarAngle = Math.PI / 2;
+        controls.target.set(0, 1, 2);
+
+        // Lighting (bright and clean for kitchen)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Increased intensity
+        scene.add(ambientLight);
+        const spotlight1 = new THREE.SpotLight(0xffffff, 2.5);
+        spotlight1.position.set(0, 5, 4);
+        spotlight1.angle = Math.PI / 6;
+        spotlight1.penumbra = 0.5;
+        spotlight1.castShadow = true;
+        spotlight1.target.position.set(0, 0, 4);
+        scene.add(spotlight1);
+        scene.add(spotlight1.target);
+        // Additional light for even illumination
+        const spotlight2 = new THREE.SpotLight(0xffffff, 1.5);
+        spotlight2.position.set(0, 5, -4);
+        spotlight2.angle = Math.PI / 6;
+        spotlight2.penumbra = 0.5;
+        spotlight2.castShadow = true;
+        spotlight2.target.position.set(0, 0, -4);
+        scene.add(spotlight2);
+        scene.add(spotlight2.target);
+
+        // Texture Loader
+        const textureLoader = new THREE.TextureLoader();
+
+        // Floor with ceramic tile texture
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            color: 0xaaaaaa, // Light gray tile base
+            roughness: 0.3,
+            metalness: 0.1
+            // Suggested texture: https://polyhaven.com/a/white_ceramic_tiles
+            // Example: map: textureLoader.load('https://polyhaven.com/a/white_ceramic_tiles/textures/white_ceramic_tiles_1k.jpg')
+        });
+        const floorGeometry = new THREE.PlaneGeometry(10, 10);
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Walls with subway tile texture
+        const wallMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff, // White for subway tiles
+            roughness: 0.2,
+            metalness: 0.1
+            // Suggested texture: https://polyhaven.com/a/subway_tiles
+        });
+        const wall1 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMaterial);
+        wall1.position.set(0, 2.5, -5);
+        wall1.receiveShadow = true;
+        scene.add(wall1);
+        const wall2 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMaterial);
+        wall2.position.set(-5, 2.5, 0);
+        wall2.rotation.y = Math.PI / 2;
+        wall2.receiveShadow = true;
+        scene.add(wall2);
+        const wall3 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMaterial);
+        wall3.position.set(0, 2.5, 5);
+        wall3.receiveShadow = true;
+        scene.add(wall3);
+
+        // Kitchen Counter (replacing register)
+        const counterGeometry = new THREE.BoxGeometry(4, 0.1, 1);
+        const counterMaterial = new THREE.MeshStandardMaterial({
+            color: 0xe0e0e0, // Quartz countertop
+            roughness: 0.2,
+            metalness: 0.1
+            // Suggested texture: https://polyhaven.com/a/quartzite
+        });
+        const counter = new THREE.Mesh(counterGeometry, counterMaterial);
+        counter.position.set(0, 0.9, 4);
+        counter.receiveShadow = true;
+        scene.add(counter);
+
+        // Counter Base (Cabinet below counter)
+        const cabinetGeometry = new THREE.BoxGeometry(4, 0.9, 1);
+        const cabinetMaterial = new THREE.MeshStandardMaterial({
+            color: 0x4a3728, // Dark wood cabinet
+            roughness: 0.4,
+            metalness: 0.1
+            // Suggested texture: https://cc0textures.com/view?id=Wood009
+        });
+        const cabinet = new THREE.Mesh(cabinetGeometry, cabinetMaterial);
+        cabinet.position.set(0, 0.45, 4);
+        cabinet.castShadow = true;
+        scene.add(cabinet);
+
+        // Fridge
+        const fridgeGeometry = new THREE.BoxGeometry(1, 2, 0.8);
+        const fridgeMaterial = new THREE.MeshStandardMaterial({
+            color: 0xcccccc, // Stainless steel
+            roughness: 0.3,
+            metalness: 0.8
+            // Suggested texture: https://polyhaven.com/a/metal_brushed
+        });
+        const fridge = new THREE.Mesh(fridgeGeometry, fridgeMaterial);
+        fridge.position.set(-3.5, 1, -4);
+        fridge.castShadow = true;
+        scene.add(fridge);
+
+        // Stove
+        const stoveGeometry = new THREE.BoxGeometry(1.5, 0.9, 0.8);
+        const stoveMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333, // Black stove
+            roughness: 0.3,
+            metalness: 0.7
+        });
+        const stove = new THREE.Mesh(stoveGeometry, stoveMaterial);
+        stove.position.set(3, 0.45, -4);
+        stove.castShadow = true;
+        scene.add(stove);
+        // Stove top (burners)
+        const stoveTopGeometry = new THREE.BoxGeometry(1.5, 0.05, 0.8);
+        const stoveTopMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            roughness: 0.2,
+            metalness: 0.9
+        });
+        const stoveTop = new THREE.Mesh(stoveTopGeometry, stoveTopMaterial);
+        stoveTop.position.set(3, 0.975, -4);
+        scene.add(stoveTop);
+
+        // Sink (embedded in counter)
+        const sinkGeometry = new THREE.BoxGeometry(0.8, 0.05, 0.5);
+        const sinkMaterial = new THREE.MeshStandardMaterial({
+            color: 0xcccccc,
+            roughness: 0.3,
+            metalness: 0.8
+        });
+        const sink = new THREE.Mesh(sinkGeometry, sinkMaterial);
+        sink.position.set(1.5, 0.925, 4);
+        scene.add(sink);
+
+        // Upper Cabinets
+        const upperCabinetGeometry = new THREE.BoxGeometry(4, 1, 0.5);
+        const upperCabinet = new THREE.Mesh(upperCabinetGeometry, cabinetMaterial);
+        upperCabinet.position.set(0, 2.5, -4.75);
+        upperCabinet.castShadow = true;
+        scene.add(upperCabinet);
+
+        // Kitchen Sign
+        const signCanvas = document.createElement('canvas');
+        signCanvas.width = 1024;
+        signCanvas.height = 256;
+        const signContext = signCanvas.getContext('2d');
+        signContext.fillStyle = '#ffffff';
+        signContext.fillRect(0, 0, signCanvas.width, signCanvas.height);
+        signContext.font = '200px Arial';
+        signContext.fillStyle = '#333333';
+        signContext.textAlign = 'center';
+        signContext.textBaseline = 'middle';
+        signContext.fillText('KitchenVibe Designs', signCanvas.width / 2, signCanvas.height / 2);
+        const signTexture = new THREE.CanvasTexture(signCanvas);
+        const signGeometry = new THREE.PlaneGeometry(3, 0.75);
+        const signMaterial = new THREE.MeshBasicMaterial({
+            map: signTexture,
+            transparent: true
+        });
+        const sign = new THREE.Mesh(signGeometry, signMaterial);
+        sign.position.set(0, 3, -4.9);
+        scene.add(sign);
+
+        // Camera Presets
+        const cameraPositions = {
+            overview: { pos: [4, 2, -3], target: [0, 1, 2] },
+            counter: { pos: [2, 1.5, 3], target: [0, 0.9, 4] },
+            stove: { pos: [4, 1.5, -2], target: [3, 0.9, -4] }
+        };
+
+        // Camera Switch Function
+        function switchCamera(view) {
+            const { pos, target } = cameraPositions[view];
+            camera.position.set(...pos);
+            controls.target.set(...target);
+            controls.update();
+        }
+
+        // Initial Camera Position
+        switchCamera('overview');
+
+        // Animation loop
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
