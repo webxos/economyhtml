@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Producer Portfolio</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #808080;
+            font-family: 'Arial', sans-serif;
+        }
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: white;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 3vw;
+            background: rgba(51, 51, 51, 0.8);
+            pointer-events: auto;
+        }
+        .header-left h1 {
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
+            color: #ffffff;
+            margin: 0;
+            text-shadow: 0 0 5px #000000;
+        }
+        .hamburger {
+            display: block;
+            font-size: 2rem;
+            color: #ffffff;
+            cursor: pointer;
+            pointer-events: auto;
+            margin-left: auto;
+        }
+        .header-right {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(51, 51, 51, 0.95);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3vw;
+            pointer-events: auto;
+            z-index: 3;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .header-right.active {
+            display: flex;
+            transform: translateX(0);
+        }
+        .header-right a {
+            color: #cccccc;
+            text-decoration: none;
+            font-size: clamp(1.2rem, 6vw, 1.8rem);
+            padding: 3vw 5vw;
+            border-radius: 8px;
+            transition: background 0.3s, color 0.3s;
+            width: 80%;
+            text-align: center;
+            pointer-events: auto;
+        }
+        .header-right a:hover {
+            background: #00ccff;
+            color: #ffffff;
+        }
+        .text-content {
+            position: absolute;
+            top: 15%;
+            left: 5%;
+            pointer-events: none;
+        }
+        .text-content h2 {
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            color: #ffffff;
+            margin: 0;
+            text-shadow: 0 0 10px #000000;
+        }
+        .text-content p {
+            font-size: clamp(1rem, 4vw, 1.3rem);
+            color: #cccccc;
+            margin: 0;
+            text-shadow: 0 0 5px #000000;
+        }
+        .page-content {
+            position: absolute;
+            top: 30%;
+            left: 5%;
+            width: 90%;
+            max-width: 90vw;
+            color: #ffffff;
+            pointer-events: auto;
+            display: none;
+            z-index: 2;
+        }
+        .page-content.active {
+            display: block;
+        }
+        .page-content h3 {
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            color: #ffffff;
+        }
+        .page-content p {
+            font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+            color: #cccccc;
+        }
+        .page-content a {
+            color: #00ccff;
+            text-decoration: none;
+        }
+        .page-content a:hover {
+            color: #ffffff;
+        }
+        @media (min-width: 769px) {
+            .hamburger {
+                display: none;
+            }
+            .header {
+                justify-content: space-between;
+                padding: 1.5vw;
+            }
+            .header-right {
+                display: flex;
+                position: static;
+                width: auto;
+                height: auto;
+                background: none;
+                flex-direction: row;
+                gap: 1vw;
+                transform: none;
+                transition: none;
+            }
+            .header-right a {
+                font-size: clamp(0.9rem, 2vw, 1.1rem);
+                padding: 1vw 2vw;
+                width: auto;
+            }
+            .text-content {
+                top: 10%;
+                left: 3%;
+            }
+            .page-content {
+                top: 20%;
+                left: 3%;
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas"></div>
+    <div class="overlay">
+        <div class="header">
+            <div class="header-left">
+                <h1>Music Producer</h1>
+            </div>
+            <div class="hamburger">☰</div>
+            <div class="header-right">
+                <a href="#home" class="nav-link" data-page="home">Home</a>
+                <a href="#about" class="nav-link" data-page="about">About</a>
+                <a href="#portfolio" class="nav-link" data-page="portfolio">Portfolio</a>
+                <a href="#shop" class="nav-link" data-page="shop">Shop</a>
+                <a href="#links" class="nav-link" data-page="links">Links</a>
+                <a href="#contact" class="nav-link" data-page="contact">Contact</a>
+            </div>
+        </div>
+        <div class="text-content" id="home">
+            <h2>Producer Extraordinaire</h2>
+            <p>Crafting beats, mixing tracks, and producing chart-topping music</p>
+        </div>
+        <div class="page-content" id="about">
+            <h3>About</h3>
+            <p>I'm a passionate music producer with over a decade of experience creating genre-defining tracks. Specializing in hip-hop, EDM, and pop, I work with artists to bring their visions to life. My studio is equipped with state-of-the-art gear, and my productions have been featured on major platforms.</p>
+        </div>
+        <div class="page-content" id="portfolio">
+            <h3>Portfolio</h3>
+            <p>Explore my latest tracks and collaborations. From hard-hitting beats to melodic soundscapes, my portfolio showcases a diverse range of projects. Check out my work on <a href="https://soundcloud.com" target="_blank">SoundCloud</a> and <a href="https://spotify.com" target="_blank">Spotify</a>.</p>
+        </div>
+        <div class="page-content" id="shop">
+            <h3>Shop</h3>
+            <p>Purchase exclusive beat packs, sound kits, and production presets. Elevate your music with high-quality resources designed for producers. Visit my <a href="https://yourshop.com" target="_blank">online store</a> for more.</p>
+        </div>
+        <div class="page-content" id="links">
+            <h3>Links</h3>
+            <p>Connect with me on social media and music platforms:<br>
+            <a href="https://soundcloud.com" target="_blank">SoundCloud</a> |
+            <a href="https://spotify.com" target="_blank">Spotify</a> |
+            <a href="https://instagram.com" target="_blank">Instagram</a> |
+            <a href="https://youtube.com" target="_blank">YouTube</a></p>
+        </div>
+        <div class="page-content" id="contact">
+            <h3>Contact</h3>
+            <p>Ready to collaborate? Reach out for bookings, custom production, or inquiries. Email me at <a href="mailto:contact@producer.com">contact@producer.com</a> or use the form on my <a href="https://yourwebsite.com/contact" target="_blank">website</a>.</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+
+        // Renderer setup
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.setClearColor(0x808080, 0);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.shadowMap.width = 1024;
+        renderer.shadowMap.height = 1024;
+        document.getElementById('canvas').appendChild(renderer.domElement);
+
+        // Camera setup
+        camera.position.set(0, 2.5, 5);
+        camera.lookAt(0, 1, 0);
+
+        // OrbitControls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 3;
+        controls.maxDistance = 15;
+        controls.enablePan = false;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        directionalLight.position.set(5, 10, 5);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 1024;
+        directionalLight.shadow.mapSize.height = 1024;
+        scene.add(directionalLight);
+
+        const neonLight = new THREE.PointLight(0x00ccff, 2, 10);
+        neonLight.position.set(0, 3, 0);
+        scene.add(neonLight);
+
+        // Desk
+        const deskGeometry = new THREE.BoxGeometry(8, 0.3, 4);
+        const deskMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.3,
+            metalness: 0.9
+        });
+        const desk = new THREE.Mesh(deskGeometry, deskMaterial);
+        desk.position.y = 1;
+        desk.receiveShadow = true;
+        desk.castShadow = true;
+        scene.add(desk);
+
+        // Desk legs
+        const legGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 32);
+        const legMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.3, metalness: 0.9 });
+        const legs = [];
+        for (let i = 0; i < 4; i++) {
+            const leg = new THREE.Mesh(legGeometry, legMaterial);
+            leg.position.set(
+                (i % 2 === 0 ? -3.5 : 3.5),
+                0.5,
+                (i < 2 ? -1.5 : 1.5)
+            );
+            leg.castShadow = true;
+            scene.add(leg);
+            legs.push(leg);
+        }
+
+        // Desk detail
+        const deskDetailGeometry = new THREE.BoxGeometry(7.8, 0.05, 3.8);
+        const deskDetailMaterial = new THREE.MeshStandardMaterial({
+            color: 0x666666,
+            roughness: 0.4,
+            metalness: 0.8
+        });
+        const deskDetail = new THREE.Mesh(deskDetailGeometry, deskDetailMaterial);
+        deskDetail.position.set(0, 1.18, 0);
+        scene.add(deskDetail);
+
+        // Monitor Rack
+        const rackBaseGeometry = new THREE.BoxGeometry(7, 0.1, 0.5);
+        const rackMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.2,
+            metalness: 0.8
+        });
+        const rackBase = new THREE.Mesh(rackBaseGeometry, rackMaterial);
+        rackBase.position.set(0, 1.4, -1.9);
+        rackBase.castShadow = true;
+        scene.add(rackBase);
+
+        const rackSupportGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4, 32);
+        const rackSupports = [];
+        for (let i = 0; i < 3; i++) {
+            const rackSupport = new THREE.Mesh(rackSupportGeometry, rackMaterial);
+            rackSupport.position.set(-2 + i * 2, 1.6, -1.9);
+            rackSupport.rotation.x = Math.PI / 2;
+            scene.add(rackSupport);
+            rackSupports.push(rackSupport);
+        }
+
+        const rackPanelGeometry = new THREE.BoxGeometry(7, 0.3, 0.1);
+        const rackPanel = new THREE.Mesh(rackPanelGeometry, rackMaterial);
+        rackPanel.position.set(0, 1.6, -2);
+        scene.add(rackPanel);
+
+        // Sound Waveform Shader for Monitors
+        const waveformShader = {
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec2 vUv;
+                uniform float time;
+                void main() {
+                    vec2 uv = vUv;
+                    float wave = sin(uv.x * 10.0 + time) * cos(uv.y * 5.0 + time) * 0.5 + 0.5;
+                    vec3 color = mix(vec3(0.0, 0.8, 1.0), vec3(1.0), wave);
+                    float intensity = 0.5 + 0.5 * sin(time + uv.x * 2.0);
+                    gl_FragColor = vec4(color * intensity, 1.0);
+                }
+            `,
+            uniforms: {
+                time: { value: 0.0 }
+            }
+        };
+
+        // Three New Monitors
+        const monitors = [];
+
+        // Monitor 1: Curved Trapezoid
+        const trapezoidShape = new THREE.Shape();
+        trapezoidShape.moveTo(-1.2, -0.6);
+        trapezoidShape.lineTo(1.2, -0.6);
+        trapezoidShape.lineTo(1.0, 0.6);
+        trapezoidShape.lineTo(-1.0, 0.6);
+        trapezoidShape.closePath();
+        const trapezoidExtrudeSettings = { depth: 0.05, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02 };
+        const trapezoidFrameGeometry = new THREE.ExtrudeGeometry(trapezoidShape, trapezoidExtrudeSettings);
+        const monitorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1c2526,
+            roughness: 0.1,
+            metalness: 0.95
+        });
+        const monitor1Frame = new THREE.Mesh(trapezoidFrameGeometry, monitorMaterial);
+        monitor1Frame.position.set(-2.5, 1.8, -1.5);
+        monitor1Frame.castShadow = true;
+        scene.add(monitor1Frame);
+
+        const trapezoidScreenGeometry = new THREE.ShapeGeometry(trapezoidShape);
+        const monitor1Screen = new THREE.Mesh(trapezoidScreenGeometry, new THREE.ShaderMaterial({
+            vertexShader: waveformShader.vertexShader,
+            fragmentShader: waveformShader.fragmentShader,
+            uniforms: { time: { value: 0.0 } },
+            side: THREE.DoubleSide
+        }));
+        monitor1Screen.position.set(-2.5, 1.8, -1.45);
+        monitor1Screen.scale.set(0.95, 0.95, 1); // Slightly smaller to fit frame
+        scene.add(monitor1Screen);
+
+        const monitor1Stand = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.6, 32), monitorMaterial);
+        monitor1Stand.position.set(-2.5, 1.3, -1.5);
+        monitor1Stand.rotation.z = Math.PI / 12; // Slight tilt
+        scene.add(monitor1Stand);
+
+        monitors.push({ frame: monitor1Frame, screen: monitor1Screen });
+
+        // Monitor 2: Hexagonal
+        const hexagonShape = new THREE.Shape();
+        const sides = 6;
+        const radius = 0.8;
+        for (let i = 0; i < sides; i++) {
+            const angle = (i / sides) * Math.PI * 2;
+            const x = radius * Math.cos(angle);
+            const y = radius * Math.sin(angle);
+            if (i === 0) hexagonShape.moveTo(x, y);
+            else hexagonShape.lineTo(x, y);
+        }
+        hexagonShape.closePath();
+        const hexagonExtrudeSettings = { depth: 0.05, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02 };
+        const hexagonFrameGeometry = new THREE.ExtrudeGeometry(hexagonShape, hexagonExtrudeSettings);
+        const monitor2Frame = new THREE.Mesh(hexagonFrameGeometry, monitorMaterial);
+        monitor2Frame.position.set(0, 1.8, -1.5);
+        monitor2Frame.castShadow = true;
+        scene.add(monitor2Frame);
+
+        const hexagonScreenGeometry = new THREE.ShapeGeometry(hexagonShape);
+        const monitor2Screen = new THREE.Mesh(hexagonScreenGeometry, new THREE.ShaderMaterial({
+            vertexShader: waveformShader.vertexShader,
+            fragmentShader: waveformShader.fragmentShader,
+            uniforms: { time: { value: 0.0 } },
+            side: THREE.DoubleSide
+        }));
+        monitor2Screen.position.set(0, 1.8, -1.45);
+        monitor2Screen.scale.set(0.95, 0.95, 1);
+        scene.add(monitor2Screen);
+
+        const monitor2Stand = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.6, 32), monitorMaterial);
+        monitor2Stand.position.set(0, 1.3, -1.5);
+        monitor2Stand.rotation.z = -Math.PI / 12;
+        scene.add(monitor2Stand);
+
+        monitors.push({ frame: monitor2Frame, screen: monitor2Screen });
+
+        // Monitor 3: Elliptical
+        const ellipseShape = new THREE.Shape();
+        const ellipseRadiusX = 1.0;
+        const ellipseRadiusY = 0.6;
+        for (let i = 0; i < 32; i++) {
+            const angle = (i / 32) * Math.PI * 2;
+            const x = ellipseRadiusX * Math.cos(angle);
+            const y = ellipseRadiusY * Math.sin(angle);
+            if (i === 0) ellipseShape.moveTo(x, y);
+            else ellipseShape.lineTo(x, y);
+        }
+        ellipseShape.closePath();
+        const ellipseExtrudeSettings = { depth: 0.1, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02 };
+        const ellipseFrameGeometry = new THREE.ExtrudeGeometry(ellipseShape, ellipseExtrudeSettings);
+        const monitor3Frame = new THREE.Mesh(ellipseFrameGeometry, monitorMaterial);
+        monitor3Frame.position.set(2.5, 1.8, -1.5);
+        monitor3Frame.castShadow = true;
+        scene.add(monitor3Frame);
+
+        const ellipseScreenGeometry = new THREE.ShapeGeometry(ellipseShape);
+        const monitor3Screen = new THREE.Mesh(ellipseScreenGeometry, new THREE.ShaderMaterial({
+            vertexShader: waveformShader.vertexShader,
+            fragmentShader: waveformShader.fragmentShader,
+            uniforms: { time: { value: 0.0 } },
+            side: THREE.DoubleSide
+        }));
+        monitor3Screen.position.set(2.5, 1.8, -1.45);
+        monitor3Screen.scale.set(0.95, 0.95, 1);
+        scene.add(monitor3Screen);
+
+        const monitor3Stand = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.6, 32), monitorMaterial);
+        monitor3Stand.position.set(2.5, 1.3, -1.5);
+        scene.add(monitor3Stand);
+
+        monitors.push({ frame: monitor3Frame, screen: monitor3Screen });
+
+        // Gaming Keyboard
+        const keyboardGeometry = new THREE.BoxGeometry(2.2, 0.05, 0.7);
+        const keyboardMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1c2526,
+            roughness: 0.4,
+            metalness: 0.6
+        });
+        const keyboard = new THREE.Mesh(keyboardGeometry, keyboardMaterial);
+        keyboard.position.set(0, 1.18, 0.5);
+        keyboard.rotation.x = -0.1;
+        keyboard.castShadow = true;
+        scene.add(keyboard);
+
+        const keyboardDetailGeometry = new THREE.BoxGeometry(2.0, 0.01, 0.6);
+        const keyboardDetail = new THREE.Mesh(keyboardDetailGeometry, deskDetailMaterial);
+        keyboardDetail.position.set(0, 1.21, 0.5);
+        keyboardDetail.rotation.x = -0.1;
+        scene.add(keyboardDetail);
+
+        const keyGeometry = new THREE.BoxGeometry(0.08, 0.01, 0.08);
+        const keyMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00ccff,
+            emissive: 0x00ccff,
+            emissiveIntensity: 0.8,
+            roughness: 0.4,
+            metalness: 0.2
+        });
+        const keys = [];
+        for (let i = -1.0; i <= 1.0; i += 0.12) {
+            for (let j = -0.3; j <= 0.3; j += 0.12) {
+                const key = new THREE.Mesh(keyGeometry, keyMaterial);
+                key.position.set(i, 1.23, j + 0.5);
+                key.rotation.x = -0.1;
+                scene.add(key);
+                keys.push(key);
+            }
+        }
+
+        // Gaming Mouse
+        const mouseBodyGeometry = new THREE.SphereGeometry(0.15, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
+        const mouseMaterial = new THREE.MeshStandardMaterial({
+            color: 0x222222,
+            roughness: 0.3,
+            metalness: 0.7
+        });
+        const mouse = new THREE.Mesh(mouseBodyGeometry, mouseMaterial);
+        mouse.position.set(1.2, 1.15, 0.6);
+        mouse.castShadow = true;
+        scene.add(mouse);
+
+        const mouseDetailGeometry = new THREE.BoxGeometry(0.2, 0.01, 0.3);
+        const mouseDetail = new THREE.Mesh(mouseDetailGeometry, deskDetailMaterial);
+        mouseDetail.position.set(1.2, 1.18, 0.6);
+        scene.add(mouseDetail);
+
+        const mouseButtonGeometry = new THREE.BoxGeometry(0.08, 0.01, 0.12);
+        const mouseButtonMaterial = new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.4, metalness: 0.6 });
+        const leftButton = new THREE.Mesh(mouseButtonGeometry, mouseButtonMaterial);
+        leftButton.position.set(1.15, 1.16, 0.65);
+        scene.add(leftButton);
+        const rightButton = new THREE.Mesh(mouseButtonGeometry, mouseButtonMaterial);
+        rightButton.position.set(1.25, 1.16, 0.65);
+        scene.add(rightButton);
+
+        const scrollWheelGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.05, 32);
+        const scrollWheelMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00ccff,
+            emissive: 0x00ccff,
+            emissiveIntensity: 0.8
+        });
+        const scrollWheel = new THREE.Mesh(scrollWheelGeometry, scrollWheelMaterial);
+        scrollWheel.rotation.x = Math.PI / 2;
+        scrollWheel.position.set(1.2, 1.18, 0.6);
+        scene.add(scrollWheel);
+
+        // Speakers
+        const speakerGeometry = new THREE.BoxGeometry(0.6, 1, 0.4);
+        const speakerMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const speaker1 = new THREE.Mesh(speakerGeometry, speakerMaterial);
+        speaker1.position.set(-3.5, 1.5, -0.5);
+        speaker1.castShadow = true;
+        scene.add(speaker1);
+
+        const speaker2 = new THREE.Mesh(speakerGeometry, speakerMaterial);
+        speaker2.position.set(3.5, 1.5, -0.5);
+        speaker2.castShadow = true;
+        scene.add(speaker2);
+
+        const speakerDetailGeometry = new THREE.BoxGeometry(0.5, 0.8, 0.05);
+        const speakerDetailMaterial = new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.5, metalness: 0.7 });
+        const speakerDetail1 = new THREE.Mesh(speakerDetailGeometry, speakerDetailMaterial);
+        speakerDetail1.position.set(-3.5, 1.5, -0.3);
+        scene.add(speakerDetail1);
+
+        const speakerDetail2 = new THREE.Mesh(speakerDetailGeometry, speakerDetailMaterial);
+        speakerDetail2.position.set(3.5, 1.5, -0.3);
+        scene.add(speakerDetail2);
+
+        const coneGeometry = new THREE.ConeGeometry(0.15, 0.1, 32);
+        const coneMaterial = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.8, metalness: 0 });
+        const cone1 = new THREE.Mesh(coneGeometry, coneMaterial);
+        cone1.position.set(-3.5, 1.5, -0.25);
+        cone1.rotation.x = -Math.PI / 2;
+        scene.add(cone1);
+
+        const cone2 = new THREE.Mesh(coneGeometry, coneMaterial);
+        cone2.position.set(3.5, 1.5, -0.25);
+        cone2.rotation.x = -Math.PI / 2;
+        scene.add(cone2);
+
+        // EQ Console
+        const eqConsoleGeometry = new THREE.BoxGeometry(1.5, 0.1, 1);
+        const eqConsoleMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const eqConsole = new THREE.Mesh(eqConsoleGeometry, eqConsoleMaterial);
+        eqConsole.position.set(-2, 1.23, 0.5);
+        eqConsole.castShadow = true;
+        scene.add(eqConsole);
+
+        const sliderGeometry = new THREE.BoxGeometry(0.05, 0.1, 0.2);
+        const sliderMaterial = new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.5, metalness: 0.5 });
+        const sliders = [];
+        for (let i = 0; i < 5; i++) {
+            const slider = new THREE.Mesh(sliderGeometry, sliderMaterial);
+            slider.position.set(-2.4 + i * 0.2, 1.28 + Math.sin(i) * 0.02, 0.6);
+            scene.add(slider);
+            sliders.push(slider);
+        }
+
+        const knobGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.02, 32);
+        const knobMaterial = new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.5, metalness: 0.5 });
+        const knobs = [];
+        for (let i = 0; i < 4; i++) {
+            const knob = new THREE.Mesh(knobGeometry, knobMaterial);
+            knob.position.set(-2.4 + i * 0.15, 1.28, 0.4);
+            knob.rotation.x = Math.PI / 2;
+            scene.add(knob);
+            knobs.push(knob);
+        }
+
+        const eqLightGeometry = new THREE.SphereGeometry(0.02, 16, 16);
+        const eqLightMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5 });
+        const eqLights = [];
+        for (let i = 0; i < 5; i++) {
+            const eqLight = new THREE.Mesh(eqLightGeometry, eqLightMaterial);
+            eqLight.position.set(-2.4 + i * 0.2, 1.28, 0.5);
+            scene.add(eqLight);
+            eqLights.push(eqLight);
+        }
+
+        // Enhanced Server Rack
+        const serverShape = new THREE.Shape();
+        serverShape.moveTo(-1, -0.6);
+        serverShape.lineTo(1, -0.6);
+        serverShape.lineTo(1, 0.6);
+        serverShape.lineTo(-1, 0.6);
+        serverShape.closePath();
+        const serverExtrudeSettings = { depth: 0.8, bevelEnabled: true, bevelSize: 0.05, bevelThickness: 0.05 };
+        const serverRackGeometry = new THREE.ExtrudeGeometry(serverShape, serverExtrudeSettings);
+        const serverRackMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1c2526,
+            roughness: 0.2,
+            metalness: 0.9
+        });
+        const serverRack = new THREE.Mesh(serverRackGeometry, serverRackMaterial);
+        serverRack.position.set(2, 0.4, 0);
+        serverRack.castShadow = true;
+        scene.add(serverRack);
+
+        // Server Rack Details
+        const serverPanelGeometry = new THREE.BoxGeometry(1.8, 0.8, 0.05);
+        const serverPanel = new THREE.Mesh(serverPanelGeometry, deskDetailMaterial);
+        serverPanel.position.set(2, 0.4, 0.45);
+        scene.add(serverPanel);
+
+        // Knobs
+        const serverKnobGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.03, 32);
+        const serverKnobMaterial = new THREE.MeshStandardMaterial({
+            color: 0x666666,
+            roughness: 0.3,
+            metalness: 0.7,
+            emissive: 0x00ccff,
+            emissiveIntensity: 0.2
+        });
+        const serverKnobs = [];
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 2; j++) {
+                const knob = new THREE.Mesh(serverKnobGeometry, serverKnobMaterial);
+                knob.position.set(1.5 + i * 0.3, 0.2 + j * 0.3, 0.5);
+                knob.rotation.x = Math.PI / 2;
+                scene.add(knob);
+                serverKnobs.push(knob);
+            }
+        }
+
+        // Status Lights
+        const serverLightGeometry = new THREE.SphereGeometry(0.02, 16, 16);
+        const serverLightMaterials = [
+            new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 }),
+            new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 0.5 }),
+            new THREE.MeshStandardMaterial({ color: 0x00ccff, emissive: 0x00ccff, emissiveIntensity: 0.5 })
+        ];
+        const serverLights = [];
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 2; j++) {
+                const light = new THREE.Mesh(serverLightGeometry, serverLightMaterials[(i + j) % 3]);
+                light.position.set(1.5 + i * 0.2, 0.5 + j * 0.2, 0.5);
+                scene.add(light);
+                serverLights.push(light);
+            }
+        }
+
+        // Vented Panel
+        const ventGeometry = new THREE.PlaneGeometry(1.6, 0.2);
+        const ventMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.5,
+            metalness: 0.5,
+            transparent: true,
+            opacity: 0.8
+        });
+        const ventPanel = new THREE.Mesh(ventGeometry, ventMaterial);
+        ventPanel.position.set(2, 0.7, 0.45);
+        scene.add(ventPanel);
+
+        // Server LCD Panel
+        const serverLCDGeometry = new THREE.PlaneGeometry(0.8, 0.15);
+        const serverLCD = new THREE.Mesh(serverLCDGeometry, new THREE.ShaderMaterial({
+            vertexShader: waveformShader.vertexShader,
+            fragmentShader: waveformShader.fragmentShader,
+            uniforms: { time: { value: 0.0 } },
+            side: THREE.DoubleSide
+        }));
+        serverLCD.position.set(2, 0.3, 0.45);
+        scene.add(serverLCD);
+
+        // Animation loop
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update shader time for monitors and server LCD
+            time += 0.05;
+            monitors.forEach(monitor => {
+                monitor.screen.material.uniforms.time.value = time;
+            });
+            serverLCD.material.uniforms.time.value = time;
+
+            // Blinking lights on server rack and EQ console
+            serverLights.forEach((light, index) => {
+                light.material.emissiveIntensity = 0.3 + 0.2 * Math.sin(time + index * 0.5);
+            });
+            eqLights.forEach((light, index) => {
+                light.material.emissiveIntensity = 0.3 + 0.2 * Math.sin(time + index * 0.5);
+            });
+
+            // Animate server knobs glow
+            serverKnobs.forEach((knob, index) => {
+                knob.material.emissiveIntensity = 0.2 + 0.1 * Math.sin(time + index * 0.3);
+            });
+
+            // Animate keyboard keys glow
+            keys.forEach((key, index) => {
+                key.material.emissiveIntensity = 0.6 + 0.2 * Math.sin(time + index * 0.3);
+            });
+
+            // Update controls
+            controls.update();
+
+            // Render scene
+            renderer.render(scene, camera);
+        }
+
+        // Start animation
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // Hamburger menu toggle
+        const hamburger = document.querySelector('.hamburger');
+        const headerRight = document.querySelector('.header-right');
+        hamburger.addEventListener('click', () => {
+            headerRight.classList.toggle('active');
+        });
+
+        // Page navigation
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pages = document.querySelectorAll('.page-content');
+        const homeContent = document.getElementById('home');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = link.getAttribute('data-page');
+
+                // Hide all pages and show the selected one
+                pages.forEach(page => page.classList.remove('active'));
+                if (pageId === 'home') {
+                    homeContent.style.display = 'block';
+                } else {
+                    homeContent.style.display = 'none';
+                    document.getElementById(pageId).classList.add('active');
+                }
+
+                // Close menu on mobile after click
+                headerRight.classList.remove('active');
+            });
+        });
+
+        // Show home content by default
+        homeContent.style.display = 'block';
+    </script>
+</body>
+</html>
