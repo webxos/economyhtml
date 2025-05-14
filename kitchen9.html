@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KitchenVibe Ghost Kitchen</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #fff;
+        }
+        canvas {
+            display: block;
+            width: 100vw !important;
+            height: 100vh !important;
+        }
+        #ui-menu {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            z-index: 10;
+        }
+        #ui-menu button {
+            display: block;
+            margin: 5px 0;
+            padding: 8px;
+            background: #333;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #ui-menu button:hover {
+            background: #555;
+        }
+        #shop-menu, #shipping-form, #about-info {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            z-index: 10;
+        }
+        #shop-menu button, #shipping-form button, #about-info button {
+            padding: 8px;
+            margin: 5px;
+            background: #333;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #shop-menu button:hover, #shipping-form button:hover, #about-info button:hover {
+            background: #555;
+        }
+        #shipping-form input {
+            display: block;
+            margin: 10px 0;
+            padding: 5px;
+            width: 200px;
+        }
+        #cart-items div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 5px 0;
+        }
+        @media (max-width: 768px) {
+            canvas {
+                width: 100vw !important;
+                height: 100vh !important;
+            }
+            #ui-menu, #shop-menu, #shipping-form, #about-info {
+                top: 5px;
+                left: 5px;
+                font-size: 12px;
+                width: 90%;
+                transform: none;
+            }
+            #ui-menu button, #shop-menu button, #shipping-form button, #about-info button {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-menu">
+        <button onclick="switchView('home')">Home</button>
+        <button onclick="switchView('about')">About</button>
+        <button onclick="switchView('shop')">Shop</button>
+        <button onclick="switchView('checkout')">Checkout</button>
+    </div>
+    <div id="shop-menu">
+        <h2>Menu</h2>
+        <button onclick="addToCart('Burger', 8.99)">Add Burger ($8.99)</button>
+        <button onclick="addToCart('Pizza', 12.99)">Add Pizza ($12.99)</button>
+        <button onclick="addToCart('Salad', 6.99)">Add Salad ($6.99)</button>
+    </div>
+    <div id="shipping-form">
+        <h2>Checkout</h2>
+        <div id="cart-items"></div>
+        <input type="text" placeholder="Name" />
+        <input type="text" placeholder="Address" />
+        <input type="text" placeholder="City" />
+        <input type="text" placeholder="Zip Code" />
+        <button onclick="alert('Order Submitted!'); cart = []; updateCart()">Submit Order</button>
+    </div>
+    <div id="about-info">
+        <h2>About KitchenVibe Ghost Kitchen</h2>
+        <p>We are a premier ghost kitchen specializing in delicious, made-to-order meals delivered straight to your door. Our state-of-the-art kitchen ensures efficiency and quality, using the freshest ingredients to create culinary delights. Contact us at info@kitchenvibe.com.</p>
+        <button onclick="document.getElementById('about-info').style.display = 'none'">Close</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Template Data
+        const templateData = {
+            name: "KitchenVibe Ghost Kitchen Template",
+            description: "A minimalist 3D ghost kitchen template optimized for online food businesses, featuring a simplified layout with a make table, stainless steel stove and fridge along the back wall, a counter with an optimized sink and faucet at the front, a desk with register and card scanner, and a shop/checkout system. Enhanced with minimal lighting, a large logo on the front wall, and optimized rendering for mobile browsers with no clipping or fading issues.",
+            features: [
+                "Simplified wooden make table, centered for prep",
+                "Minimal stainless steel stove (4x0.9x1m) and fridge with reflective texture, along back wall",
+                "Fridge with flat door and thin handle",
+                "Counter with optimized stainless steel sink and faucet at front",
+                "Desk with monitor and card scanner for online orders",
+                "Single vent hood with integrated light",
+                "Shop menu with add-to-cart and checkout with remove buttons",
+                "Minimal lighting with optimized shadows",
+                "Large logo with modern font on front wall",
+                "Highly optimized for mobile with simplified geometry and no clipping/fading"
+            ],
+            about: {
+                title: "About KitchenVibe Ghost Kitchen",
+                content: "We are a premier ghost kitchen specializing in delicious, made-to-order meals delivered straight to your door. Our state-of-the-art kitchen ensures efficiency and quality, using the freshest ingredients to create culinary delights. Contact us at info@kitchenvibe.com."
+            }
+        };
+
+        // Cart Management
+        let cart = [];
+        function addToCart(item, price) {
+            cart.push({ item, price });
+            updateCart();
+        }
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+            cart.forEach((entry, index) => {
+                const div = document.createElement('div');
+                div.innerHTML = `${entry.item} - $${entry.price.toFixed(2)} <button onclick="removeFromCart(${index})">Remove</button>`;
+                cartItems.appendChild(div);
+            });
+        }
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.5, 50); // Adjusted near/far
+        const renderer = new THREE.WebGLRenderer({ antialias: false }); // Disabled for mobile
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25)); // Optimized
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.BasicShadowMap; // Faster rendering
+        document.body.appendChild(renderer.domElement);
+
+        // OrbitControls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 2;
+        controls.maxDistance = 15;
+        controls.maxPolarAngle = Math.PI / 2;
+        controls.target.set(0, 1, 0);
+
+        // Simplified Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        directionalLight.position.set(5, 5, 5);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 512;
+        directionalLight.shadow.mapSize.height = 512;
+        scene.add(directionalLight);
+        const areaLight = new THREE.PointLight(0xffffff, 1.2, 5); // Combined stove/sink light
+        areaLight.position.set(0, 2.5, -1); // Central position
+        scene.add(areaLight); // No shadows
+
+        // Texture Loader
+        const textureLoader = new THREE.TextureLoader();
+
+        // Floor (simplified)
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            color: 0xaaaaaa,
+            roughness: 0.2,
+            metalness: 0.05
+        });
+        const floorGeometry = new THREE.PlaneGeometry(10, 10, 2, 2);
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Walls (simplified)
+        const wallMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            roughness: 0.15,
+            metalness: 0.05,
+            side: THREE.FrontSide // Prevent backface culling
+        });
+        const wall1 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5, 2, 2), wallMaterial);
+        wall1.position.set(0, 2.5, -5);
+        wall1.receiveShadow = true;
+        scene.add(wall1);
+        const wall2 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5, 2, 2), wallMaterial);
+        wall2.position.set(-5, 2.5, 0);
+        wall2.rotation.y = Math.PI / 2;
+        wall2.receiveShadow = true;
+        scene.add(wall2);
+        const wall3 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5, 2, 2), wallMaterial);
+        wall3.position.set(0, 2.5, 5);
+        wall3.receiveShadow = true;
+        scene.add(wall3);
+
+        // Kitchen Logo (Front Wall)
+        const logoCanvas = document.createElement('canvas');
+        logoCanvas.width = 512; // Reduced for performance
+        logoCanvas.height = 128;
+        const logoContext = logoCanvas.getContext('2d');
+        logoContext.fillStyle = '#ffffff';
+        logoContext.fillRect(0, 0, logoCanvas.width, logoCanvas.height);
+        logoContext.font = 'bold 75px Montserrat, Arial, sans-serif';
+        logoContext.fillStyle = '#333333';
+        logoContext.textAlign = 'center';
+        logoContext.textBaseline = 'middle';
+        logoContext.fillText('KitchenVibe', logoCanvas.width / 2, logoCanvas.height / 2 - 25);
+        logoContext.font = 'bold 40px Montserrat, Arial, sans-serif';
+        logoContext.fillText('Ghost Kitchen', logoCanvas.width / 2, logoCanvas.height / 2 + 25);
+        const logoTexture = new THREE.CanvasTexture(logoCanvas);
+        const logoGeometry = new THREE.PlaneGeometry(4, 1);
+        const logoMaterial = new THREE.MeshBasicMaterial({
+            map: logoTexture,
+            transparent: true
+        });
+        const logo = new THREE.Mesh(logoGeometry, logoMaterial);
+        logo.position.set(0, 3, 4.9);
+        logo.rotation.y = -Math.PI / 2;
+        scene.add(logo);
+
+        // Make Table (simplified)
+        const tableGeometry = new THREE.BoxGeometry(4, 0.1, 2, 4, 4, 4);
+        const tableMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8b5e3c,
+            roughness: 0.3,
+            metalness: 0.05
+        });
+        const table = new THREE.Mesh(tableGeometry, tableMaterial);
+        table.position.set(0, 0.9, 0);
+        table.castShadow = true;
+        table.receiveShadow = true;
+        scene.add(table);
+        const legGeometry = new THREE.BoxGeometry(0.05, 0.8, 0.05);
+        const legs = [
+            { pos: [1.8, 0.4, 0.9] },
+            { pos: [1.8, 0.4, -0.9] },
+            { pos: [-1.8, 0.4, 0.9] },
+            { pos: [-1.8, 0.4, -0.9] }
+        ];
+        legs.forEach(l => {
+            const leg = new THREE.Mesh(legGeometry, tableMaterial);
+            leg.position.set(...l.pos);
+            leg.castShadow = true;
+            scene.add(leg);
+        });
+
+        // Stainless Steel Material
+        const stainlessSteelMaterial = new THREE.MeshStandardMaterial({
+            color: 0xd0d0d0,
+            roughness: 0.2,
+            metalness: 0.9,
+            side: THREE.FrontSide
+            // Suggested texture: https://polyhaven.com/a/metal_brushed_1k
+        });
+
+        // Fridge (simplified, back wall)
+        const fridgeGeometry = new THREE.BoxGeometry(1, 2, 0.8, 4, 4, 4);
+        const fridge = new THREE.Mesh(fridgeGeometry, stainlessSteelMaterial);
+        fridge.position.set(-3, 1, -4);
+        fridge.castShadow = true;
+        scene.add(fridge);
+        const fridgeDoorGeometry = new THREE.BoxGeometry(0.95, 1.9, 0.01, 4, 4, 4); // Thin door
+        const fridgeDoor = new THREE.Mesh(fridgeDoorGeometry, stainlessSteelMaterial);
+        fridgeDoor.position.set(-3, 1, -3.575); // Offset to avoid z-fighting
+        scene.add(fridgeDoor);
+        const handleGeometry = new THREE.BoxGeometry(0.02, 1.2, 0.02);
+        const fridgeHandle = new THREE.Mesh(handleGeometry, stainlessSteelMaterial);
+        fridgeHandle.position.set(-2.8, 1, -3.55);
+        fridgeHandle.frustumCulled = false; // Prevent culling
+        scene.add(fridgeHandle);
+
+        // Stove (simplified, back wall)
+        const stoveGeometry = new THREE.BoxGeometry(4, 0.9, 1, 4, 4, 4);
+        const stove = new THREE.Mesh(stoveGeometry, stainlessSteelMaterial);
+        stove.position.set(0, 0.45, -4);
+        stove.castShadow = true;
+        scene.add(stove);
+        const stoveTopGeometry = new THREE.BoxGeometry(4, 0.05, 1, 4, 4, 4);
+        const stoveTopMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            roughness: 0.2,
+            metalness: 0.9
+        });
+        const stoveTop = new THREE.Mesh(stoveTopGeometry, stoveTopMaterial);
+        stoveTop.position.set(0, 0.925, -4.01); // Slight offset
+        scene.add(stoveTop);
+        const burnerGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.02, 8);
+        const burnerMaterial = new THREE.MeshStandardMaterial({
+            color: 0x222222,
+            roughness: 0.3,
+            metalness: 0.8
+        });
+        const burners = [
+            { pos: [-1.2, 0.95, -4] },
+            { pos: [-0.4, 0.95, -4] },
+            { pos: [0.4, 0.95, -4] },
+            { pos: [1.2, 0.95, -4] }
+        ];
+        burners.forEach(b => {
+            const burner = new THREE.Mesh(burnerGeometry, burnerMaterial);
+            burner.position.set(...b.pos);
+            burner.rotation.x = Math.PI / 2;
+            burner.castShadow = true;
+            burner.frustumCulled = false;
+            scene.add(burner);
+        });
+        const knobGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.02, 8);
+        const knobs = [
+            { pos: [-1.2, 0.925, -3.45] },
+            { pos: [-0.4, 0.925, -3.45] },
+            { pos: [0.4, 0.925, -3.45] },
+            { pos: [1.2, 0.925, -3.45] }
+        ];
+        knobs.forEach(k => {
+            const knob = new THREE.Mesh(knobGeometry, stainlessSteelMaterial);
+            knob.position.set(...k.pos);
+            knob.rotation.x = Math.PI / 2;
+            knob.castShadow = true;
+            knob.frustumCulled = false;
+            scene.add(knob);
+        });
+
+        // Vent Hood (simplified)
+        const hoodGeometry = new THREE.BoxGeometry(4, 0.2, 0.6, 4, 4, 4);
+        const hood = new THREE.Mesh(hoodGeometry, stainlessSteelMaterial);
+        hood.position.set(0, 2.5, -4);
+        hood.castShadow = true;
+        scene.add(hood);
+
+        // Counter with Sink (original spot, front)
+        const sideCounterGeometry = new THREE.BoxGeometry(4, 0.1, 1, 4, 4, 4);
+        const counterMaterial = new THREE.MeshStandardMaterial({
+            color: 0xe0e0e0,
+            roughness: 0.15,
+            metalness: 0.05
+        });
+        const sideCounter = new THREE.Mesh(sideCounterGeometry, counterMaterial);
+        sideCounter.position.set(0, 0.9, 3);
+        sideCounter.receiveShadow = true;
+        scene.add(sideCounter);
+        const sideCabinetGeometry = new THREE.BoxGeometry(4, 0.9, 1, 4, 4, 4);
+        const cabinetMaterial = new THREE.MeshStandardMaterial({
+            color: 0x4a3728,
+            roughness: 0.3,
+            metalness: 0.05
+        });
+        const sideCabinet = new THREE.Mesh(sideCabinetGeometry, cabinetMaterial);
+        sideCabinet.position.set(0, 0.45, 3);
+        sideCabinet.castShadow = true;
+        scene.add(sideCabinet);
+        // Optimized Sink
+        const sinkGeometry = new THREE.BoxGeometry(1, 0.15, 0.5, 6, 6, 6); // Slightly beveled
+        const sink = new THREE.Mesh(sinkGeometry, stainlessSteelMaterial);
+        sink.position.set(0.5, 0.875, 3); // Adjusted to avoid clipping
+        scene.add(sink);
+        // Simplified Faucet
+        const faucetPipeGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 8);
+        const faucetPipe = new THREE.Mesh(faucetPipeGeometry, stainlessSteelMaterial);
+        faucetPipe.position.set(0.5, 1.05, 3.2);
+        faucetPipe.rotation.x = Math.PI / 4;
+        scene.add(faucetPipe);
+        const faucetNozzleGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.05, 8);
+        const faucetNozzle = new THREE.Mesh(faucetNozzleGeometry, stainlessSteelMaterial);
+        faucetNozzle.position.set(0.5, 1.15, 3.15);
+        faucetNozzle.rotation.x = Math.PI / 4;
+        faucetNozzle.frustumCulled = false;
+        scene.add(faucetNozzle);
+
+        // Desk (simplified)
+        const deskGeometry = new THREE.BoxGeometry(1.5, 0.1, 0.8, 4, 4, 4);
+        const deskMaterial = new THREE.MeshStandardMaterial({
+            color: 0x4a3728,
+            roughness: 0.3,
+            metalness: 0.05
+        });
+        const desk = new THREE.Mesh(deskGeometry, deskMaterial);
+        desk.position.set(4, 0.8, -2);
+        desk.castShadow = true;
+        scene.add(desk);
+        const deskLegGeometry = new THREE.BoxGeometry(0.05, 0.7, 0.05);
+        const deskLegs = [
+            { pos: [4.6, 0.35, -1.7] },
+            { pos: [4.6, 0.35, -2.3] },
+            { pos: [3.4, 0.35, -1.7] },
+            { pos: [3.4, 0.35, -2.3] }
+        ];
+        deskLegs.forEach(l => {
+            const leg = new THREE.Mesh(deskLegGeometry, deskMaterial);
+            leg.position.set(...l.pos);
+            leg.castShadow = true;
+            scene.add(leg);
+        });
+        const monitorGeometry = new THREE.BoxGeometry(0.5, 0.3, 0.05, 4, 4, 4);
+        const monitorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.3,
+            metalness: 0.7
+        });
+        const monitor = new THREE.Mesh(monitorGeometry, monitorMaterial);
+        monitor.position.set(4, 1.05, -2);
+        monitor.rotation.y = -Math.PI / 4;
+        scene.add(monitor);
+        const cardScannerGeometry = new THREE.BoxGeometry(0.15, 0.1, 0.1, 4, 4, 4);
+        const cardScanner = new THREE.Mesh(cardScannerGeometry, monitorMaterial);
+        cardScanner.position.set(4.25, 0.85, -1.8);
+        cardScanner.rotation.y = -Math.PI / 4;
+        cardScanner.frustumCulled = false;
+        scene.add(cardScanner);
+
+        // Camera Presets
+        const cameraPositions = {
+            home: { pos: [5, 2.5, -3], target: [0, 1, 0], overlay: null },
+            about: { pos: [2, 2.5, -2], target: [0, 3, 4.9], overlay: 'about-info' },
+            shop: { pos: [-3, 2, -5], target: [0, 0.9, -4], overlay: 'shop-menu' },
+            checkout: { pos: [5, 1.5, -1], target: [4, 0.8, -2], overlay: 'shipping-form' }
+        };
+
+        // View Switch Function
+        function switchView(view) {
+            const { pos, target, overlay } = cameraPositions[view];
+            camera.position.set(...pos);
+            controls.target.set(...target);
+            controls.update();
+            document.getElementById('shop-menu').style.display = overlay === 'shop-menu' ? 'block' : 'none';
+            document.getElementById('shipping-form').style.display = overlay === 'shipping-form' ? 'block' : 'none';
+            document.getElementById('about-info').style.display = overlay === 'about-info' ? 'block' : 'none';
+        }
+
+        // Initial View
+        switchView('home');
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
