@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stealth Gaming Tech</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: linear-gradient(180deg, #2a2a2a, #111); color: #fff; }
+        .nav { position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; padding: 20px 5%; background: rgba(0, 0, 0, 0.8); z-index: 10; }
+        .nav a { color: #00b7eb; text-decoration: none; font-size: clamp(16px, 2.5vw, 18px); margin: 0 15px; transition: color 0.3s; }
+        .nav a:hover, .nav a.active { color: #fff; text-shadow: 0 0 5px #00b7eb; }
+        .page { min-height: 100vh; padding: 80px 5%; display: none; }
+        .page.active { display: block; }
+        .hero { text-align: center; padding: 50px 0; }
+        .hero h1 { font-size: clamp(2.5rem, 5vw, 4rem); text-transform: uppercase; letter-spacing: 2px; color: #00b7eb; text-shadow: 0 0 10px #00b7eb; }
+        .hero p { font-size: clamp(1rem, 2vw, 1.5rem); margin: 20px 0; color: #ccc; max-width: 80%; margin-left: auto; margin-right: auto; }
+        #canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
+        .product { background: #222; padding: 20px; border-radius: 10px; text-align: center; transition: transform 0.3s; }
+        .product:hover { transform: scale(1.05); }
+        .product img { width: 100%; height: 200px; object-fit: cover; border-radius: 5px; }
+        .product h3 { font-size: 1.5rem; margin: 10px 0; color: #00b7eb; }
+        .product p { font-size: 1rem; color: #ccc; }
+        .product button { padding: 10px 20px; background: #00b7eb; color: #000; border: none; cursor: pointer; transition: background 0.3s; }
+        .product button:hover { background: #fff; }
+        .cart-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .cart-table th, .cart-table td { padding: 10px; text-align: left; border-bottom: 1px solid #444; }
+        .cart-table th { background: #333; }
+        .cart-table input { width: 50px; }
+        .cart-form { background: #222; padding: 20px; border-radius: 10px; max-width: 600px; margin: 20px auto; }
+        .cart-form label { display: block; margin: 10px 0 5px; color: #00b7eb; }
+        .cart-form input, .cart-form select { width: 100%; padding: 10px; background: #333; color: #fff; border: 1px solid #00b7eb; border-radius: 5px; }
+        .cart-form button { padding: 10px 20px; background: #00b7eb; color: #000; border: none; cursor: pointer; margin-top: 20px; }
+        .cart-form button:hover { background: #fff; }
+        .about-content { max-width: 800px; margin: 0 auto; text-align: center; }
+        .about-content img { width: 100%; max-width: 400px; border-radius: 10px; margin: 20px 0; }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .nav { flex-direction: column; align-items: center; gap: 10px; }
+            .nav a { margin: 5px 0; }
+            .hero h1 { font-size: clamp(2rem, 4vw, 3rem); }
+            .hero p { font-size: clamp(0.9rem, 1.8vw, 1.2rem); }
+            .shop-grid { grid-template-columns: 1fr; }
+            .cart-table { font-size: 0.9rem; }
+            .cart-table input { width: 40px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <div>
+            <a href="#home" class="active">Home</a>
+            <a href="#shop">Shop</a>
+            <a href="#cart">Cart</a>
+            <a href="#about">About</a>
+        </div>
+        <div>
+            <a href="#support">Support</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </div>
+    <div id="home" class="page active">
+        <div class="hero">
+            <h1 id="device-title">Stealth Gaming Tech</h1>
+            <p id="device-desc">Explore our cutting-edge 4K gaming devices with advanced LED designs.</p>
+        </div>
+    </div>
+    <div id="shop" class="page">
+        <div class="hero">
+            <h1>Shop Our Collection</h1>
+            <p>Discover the ultimate gaming experience with our sleek, high-performance devices.</p>
+        </div>
+        <div class="shop-grid">
+            <div class="product">
+                <img src="https://via.placeholder.com/300x200?text=Stealth+Phantom" alt="Stealth Phantom">
+                <h3>Stealth Phantom</h3>
+                <p>24" 4K monitor with blue LED glow and ultra-thin beveled bezels.</p>
+                <p><strong>$599</strong></p>
+                <button onclick="addToCart('Stealth Phantom', 599)">Add to Cart</button>
+            </div>
+            <div class="product">
+                <img src="https://via.placeholder.com/300x200?text=Night+Wraith" alt="Night Wraith">
+                <h3>Night Wraith</h3>
+                <p>24" curved 4K monitor with red LED accents and vented back.</p>
+                <p><strong>$649</strong></p>
+                <button onclick="addToCart('Night Wraith', 649)">Add to Cart</button>
+            </div>
+            <div class="product">
+                <img src="https://via.placeholder.com/300x200?text=Dark+Pulse" alt="Dark Pulse">
+                <h3>Dark Pulse</h3>
+                <p>24" 4K monitor with green LED glow and hexagonal back design.</p>
+                <p><strong>$629</strong></p>
+                <button onclick="addToCart('Dark Pulse', 629)">Add to Cart</button>
+            </div>
+            <div class="product">
+                <img src="https://via.placeholder.com/300x200?text=Shadow+Tablet" alt="Shadow Tablet">
+                <h3>Shadow Tablet</h3>
+                <p>11" tablet with blue LED accents and slim design.</p>
+                <p><strong>$499</strong></p>
+                <button onclick="addToCart('Shadow Tablet', 499)">Add to Cart</button>
+            </div>
+            <div class="product">
+                <img src="https://via.placeholder.com/300x200?text=Blaze+Phone" alt="Blaze Phone">
+                <h3>Blaze Phone</h3>
+                <p>6.8" phone with red LED glow and curved edges.</p>
+                <p><strong>$799</strong></p>
+                <button onclick="addToCart('Blaze Phone', 799)">Add to Cart</button>
+            </div>
+            <div class="product">
+                <img src="https://via.placeholder.com/300x200?text=Neon+Laptop" alt="Neon Laptop">
+                <h3>Neon Laptop</h3>
+                <p>15" laptop with green LED keyboard and hexagonal vents.</p>
+                <p><strong>$1,999</strong></p>
+                <button onclick="addToCart('Neon Laptop', 1999)">Add to Cart</button>
+            </div>
+            <div class="product">
+                <img src="https://via.placeholder.com/300x200?text=Obsidian+Tower" alt="Obsidian Tower">
+                <h3>Obsidian Tower</h3>
+                <p>PC tower with blue LED side panel and vented front.</p>
+                <p><strong>$2,999</strong></p>
+                <button onclick="addToCart('Obsidian Tower', 2999)">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+    <div id="cart" class="page">
+        <div class="hero">
+            <h1>Your Cart</h1>
+            <p>Review your selected items and enter shipping details.</p>
+        </div>
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="cart-items"></tbody>
+        </table>
+        <div class="cart-form">
+            <h3>Shipping Information</h3>
+            <label for="name">Name</label>
+            <input type="text" id="name" required>
+            <label for="address">Address</label>
+            <input type="text" id="address" required>
+            <label for="city">City</label>
+            <input type="text" id="city" required>
+            <label for="state">State</label>
+            <input type="text" id="state" required>
+            <label for="zip">ZIP Code</label>
+            <input type="text" id="zip" required>
+            <label for="country">Country</label>
+            <select id="country" required>
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="UK">United Kingdom</option>
+            </select>
+            <button onclick="submitOrder()">Submit Order</button>
+        </div>
+    </div>
+    <div id="about" class="page">
+        <div class="hero">
+            <h1>About Stealth Tech</h1>
+            <p>Redefining gaming with cutting-edge design and performance.</p>
+        </div>
+        <div class="about-content">
+            <img src="https://via.placeholder.com/400x300?text=Stealth+Tech" alt="Stealth Tech">
+            <p>Stealth Tech is dedicated to pushing the boundaries of gaming hardware. Our jet-black, LED-infused devices are designed for gamers who demand style and performance. Inspired by futuristic aesthetics, our products blend sleek design with cutting-edge technology to elevate your gaming experience.</p>
+        </div>
+    </div>
+    <canvas id="canvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Three.js Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(-5, 5, 5);
+        scene.add(pointLight);
+        const spotLight = new THREE.SpotLight(0xffffff, 1, 10, Math.PI / 4);
+        spotLight.position.set(0, 5, 5);
+        scene.add(spotLight);
+
+        // Environment Map
+        const cubeTextureLoader = new THREE.CubeTextureLoader();
+        const envMap = cubeTextureLoader.load([
+            'https://threejs.org/examples/textures/cube/Bridge2/posx.jpg',
+            'https://threejs.org/examples/textures/cube/Bridge2/negx.jpg',
+            'https://threejs.org/examples/textures/cube/Bridge2/posy.jpg',
+            'https://threejs.org/examples/textures/cube/Bridge2/negy.jpg',
+            'https://threejs.org/examples/textures/cube/Bridge2/posz.jpg',
+            'https://threejs.org/examples/textures/cube/Bridge2/negz.jpg'
+        ]);
+        scene.background = envMap;
+
+        // Matrix Video Placeholders
+        const videoCanvases = {};
+        const videoTextures = {};
+        ['phantom', 'wraith', 'pulse', 'tablet', 'phone', 'laptop', 'tower'].forEach(model => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            videoCanvases[model] = { canvas, ctx };
+            videoTextures[model] = new THREE.CanvasTexture(canvas);
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(0);
+            function animateMatrix() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = model === 'phantom' || model === 'tablet' || model === 'tower' ? '#00b7eb' : model === 'wraith' || model === 'phone' ? '#ff3333' : '#00ff55';
+                ctx.font = `${fontSize}px monospace`;
+                drops.forEach((y, i) => {
+                    const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                    ctx.fillText(text, i * fontSize, y * fontSize);
+                    if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i] += model === 'phantom' ? 1 : model === 'wraith' ? 1.2 : 0.8;
+                });
+                videoTextures[model].needsUpdate = true;
+            }
+            setInterval(animateMatrix, 50);
+        });
+
+        // Devices
+        const devices = {};
+
+        // Stealth Phantom (Monitor)
+        const phantomGroup = new THREE.Group();
+        const phantomScreenGeo = new THREE.BoxGeometry(2.4, 1.35, 0.05);
+        const phantomScreenMat = new THREE.MeshStandardMaterial({ map: videoTextures['phantom'], emissive: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const phantomScreen = new THREE.Mesh(phantomScreenGeo, phantomScreenMat);
+        phantomGroup.add(phantomScreen);
+        const phantomBezelShape = new THREE.Shape()
+            .moveTo(-1.225, -0.7).lineTo(1.225, -0.7).lineTo(1.225, 0.7).lineTo(-1.225, 0.7).lineTo(-1.225, -0.7)
+            .holes([new THREE.Path().moveTo(-1.2, -0.675).lineTo(1.2, -0.675).lineTo(1.2, 0.675).lineTo(-1.2, 0.675).lineTo(-1.2, -0.675)]);
+        const phantomBezelGeo = new THREE.ExtrudeGeometry(phantomBezelShape, { depth: 0.06, bevelEnabled: true, bevelSize: 0.02 });
+        const phantomBezelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const phantomBezel = new THREE.Mesh(phantomBezelGeo, phantomBezelMat);
+        phantomBezel.position.z = -0.01;
+        phantomGroup.add(phantomBezel);
+        const phantomBackGeo = new THREE.BoxGeometry(2.4, 1.35, 0.1);
+        const phantomBackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, emissive: 0x00b7eb, emissiveIntensity: 0.5, envMap });
+        const phantomBack = new THREE.Mesh(phantomBackGeo, phantomBackMat);
+        phantomBack.position.z = -0.1;
+        phantomGroup.add(phantomBack);
+        const phantomLEDGeo = new THREE.BoxGeometry(0.05, 1.35, 0.02);
+        const phantomLEDMat = new THREE.MeshStandardMaterial({ color: 0x00b7eb, emissive: 0x00b7eb, emissiveIntensity: 1 });
+        const phantomLEDLeft = new THREE.Mesh(phantomLEDGeo, phantomLEDMat);
+        phantomLEDLeft.position.set(-1.25, 0, -0.05);
+        phantomGroup.add(phantomLEDLeft);
+        const phantomLEDRight = new THREE.Mesh(phantomLEDGeo, phantomLEDMat);
+        phantomLEDRight.position.set(1.25, 0, -0.05);
+        phantomGroup.add(phantomLEDRight);
+        const phantomStandGeo = new THREE.CylinderGeometry(0.15, 0.35, 0.6, 32);
+        const phantomStandMat = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0x00b7eb, emissiveIntensity: 0.5, envMap });
+        const phantomStand = new THREE.Mesh(phantomStandGeo, phantomStandMat);
+        phantomStand.position.y = -0.9;
+        phantomGroup.add(phantomStand);
+        phantomGroup.position.x = -8;
+        scene.add(phantomGroup);
+        devices['phantom'] = { group: phantomGroup, title: 'Stealth Phantom', desc: '24" 4K monitor with blue LED glow and ultra-thin beveled bezels.', price: 599 };
+
+        // Night Wraith (Monitor)
+        const wraithGroup = new THREE.Group();
+        const wraithScreenGeo = new THREE.SphereGeometry(2.4, 32, 32, 0, Math.PI * 0.5);
+        const wraithScreenMat = new THREE.MeshStandardMaterial({ map: videoTextures['wraith'], emissive: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const wraithScreen = new THREE.Mesh(wraithScreenGeo, wraithScreenMat);
+        wraithGroup.add(wraithScreen);
+        const wraithBezelShape = new THREE.Shape()
+            .moveTo(-1.225, -0.7).lineTo(1.225, -0.7).lineTo(1.225, 0.7).lineTo(-1.225, 0.7).lineTo(-1.225, -0.7)
+            .holes([new THREE.Path().moveTo(-1.2, -0.675).lineTo(1.2, -0.675).lineTo(1.2, 0.675).lineTo(-1.2, 0.675).lineTo(-1.2, -0.675)]);
+        const wraithBezelGeo = new THREE.ExtrudeGeometry(wraithBezelShape, { depth: 0.06, bevelEnabled: true, bevelSize: 0.02 });
+        const wraithBezelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const wraithBezel = new THREE.Mesh(wraithBezelGeo, wraithBezelMat);
+        wraithBezel.position.z = -0.01;
+        wraithGroup.add(wraithBezel);
+        const wraithBackGeo = new THREE.BoxGeometry(2.4, 1.35, 0.1);
+        const wraithBackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, emissive: 0xff3333, emissiveIntensity: 0.5, envMap });
+        const wraithBack = new THREE.Mesh(wraithBackGeo, wraithBackMat);
+        wraithBack.position.z = -0.1;
+        wraithGroup.add(wraithBack);
+        const wraithVentGeo = new THREE.BoxGeometry(0.4, 0.1, 0.02);
+        const wraithVentMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, envMap });
+        for (let i = -2; i <= 2; i++) {
+            const vent = new THREE.Mesh(wraithVentGeo, wraithVentMat);
+            vent.position.set(i * 0.5, 0.4, -0.05);
+            wraithGroup.add(vent);
+        }
+        const wraithLEDGeo = new THREE.BoxGeometry(2.4, 0.05, 0.02);
+        const wraithLEDMat = new THREE.MeshStandardMaterial({ color: 0xff3333, emissive: 0xff3333, emissiveIntensity: 1 });
+        const wraithLEDTop = new THREE.Mesh(wraithLEDGeo, wraithLEDMat);
+        wraithLEDTop.position.set(0, 0.7, -0.05);
+        wraithGroup.add(wraithLEDTop);
+        const wraithStandGeo = new THREE.BoxGeometry(0.5, 0.3, 0.5);
+        const wraithStandMat = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0xff3333, emissiveIntensity: 0.5, envMap });
+        const wraithStand = new THREE.Mesh(wraithStandGeo, wraithStandMat);
+        wraithStand.position.y = -0.9;
+        wraithGroup.add(wraithStand);
+        wraithGroup.position.x = -4;
+        scene.add(wraithGroup);
+        devices['wraith'] = { group: wraithGroup, title: 'Night Wraith', desc: '24" curved 4K monitor with red LED accents and vented back.', price: 649 };
+
+        // Dark Pulse (Monitor)
+        const pulseGroup = new THREE.Group();
+        const pulseScreenGeo = new THREE.BoxGeometry(2.4, 1.35, 0.05);
+        const pulseScreenMat = new THREE.MeshStandardMaterial({ map: videoTextures['pulse'], emissive: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const pulseScreen = new THREE.Mesh(pulseScreenGeo, pulseScreenMat);
+        pulseGroup.add(pulseScreen);
+        const pulseBezelShape = new THREE.Shape()
+            .moveTo(-1.225, -0.7).lineTo(1.225, -0.7).lineTo(1.225, 0.7).lineTo(-1.225, 0.7).lineTo(-1.225, -0.7)
+            .holes([new THREE.Path().moveTo(-1.2, -0.675).lineTo(1.2, -0.675).lineTo(1.2, 0.675).lineTo(-1.2, 0.675).lineTo(-1.2, -0.675)]);
+        const pulseBezelGeo = new THREE.ExtrudeGeometry(pulseBezelShape, { depth: 0.06, bevelEnabled: true, bevelSize: 0.02 });
+        const pulseBezelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const pulseBezel = new THREE.Mesh(pulseBezelGeo, pulseBezelMat);
+        pulseBezel.position.z = -0.01;
+        pulseGroup.add(pulseBezel);
+        const pulseBackGeo = new THREE.BoxGeometry(2.4, 1.35, 0.1);
+        const pulseBackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, emissive: 0x00ff55, emissiveIntensity: 0.5, envMap });
+        const pulseBack = new THREE.Mesh(pulseBackGeo, pulseBackMat);
+        pulseBack.position.z = -0.1;
+        pulseGroup.add(pulseBack);
+        const pulseHexGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.02, 6);
+        const pulseHexMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, envMap });
+        for (let i = -2; i <= 2; i++) {
+            for (let j = -2; j <= 2; j++) {
+                const hex = new THREE.Mesh(pulseHexGeo, pulseHexMat);
+                hex.position.set(i * 0.2, j * 0.2, -0.05);
+                pulseGroup.add(hex);
+            }
+        }
+        const pulseLEDGeo = new THREE.BoxGeometry(0.05, 1.35, 0.02);
+        const pulseLEDMat = new THREE.MeshStandardMaterial({ color: 0x00ff55, emissive: 0x00ff55, emissiveIntensity: 1 });
+        const pulseLEDLeft = new THREE.Mesh(pulseLEDGeo, pulseLEDMat);
+        pulseLEDLeft.position.set(-1.25, 0, -0.05);
+        pulseGroup.add(pulseLEDLeft);
+        const pulseLEDRight = new THREE.Mesh(pulseLEDGeo, pulseLEDMat);
+        pulseLEDRight.position.set(1.25, 0, -0.05);
+        pulseGroup.add(pulseLEDRight);
+        const pulseStandGeo = new THREE.BoxGeometry(0.6, 0.4, 0.6);
+        const pulseStandMat = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0x00ff55, emissiveIntensity: 0.5, envMap });
+        const pulseStand = new THREE.Mesh(pulseStandGeo, pulseStandMat);
+        pulseStand.position.y = -0.9;
+        pulseGroup.add(pulseStand);
+        pulseGroup.position.x = 0;
+        scene.add(pulseGroup);
+        devices['pulse'] = { group: pulseGroup, title: 'Dark Pulse', desc: '24" 4K monitor with green LED glow and hexagonal back design.', price: 629 };
+
+        // Shadow Tablet
+        const tabletGroup = new THREE.Group();
+        const tabletScreenGeo = new THREE.BoxGeometry(1.1, 0.825, 0.02); // 11" 4:3
+        const tabletScreenMat = new THREE.MeshStandardMaterial({ map: videoTextures['tablet'], emissive: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const tabletScreen = new THREE.Mesh(tabletScreenGeo, tabletScreenMat);
+        tabletGroup.add(tabletScreen);
+        const tabletBezelShape = new THREE.Shape()
+            .moveTo(-0.56, -0.425).lineTo(0.56, -0.425).lineTo(0.56, 0.425).lineTo(-0.56, 0.425).lineTo(-0.56, -0.425)
+            .holes([new THREE.Path().moveTo(-0.55, -0.4125).lineTo(0.55, -0.4125).lineTo(0.55, 0.4125).lineTo(-0.55, 0.4125).lineTo(-0.55, -0.4125)]);
+        const tabletBezelGeo = new THREE.ExtrudeGeometry(tabletBezelShape, { depth: 0.03, bevelEnabled: true, bevelSize: 0.01 });
+        const tabletBezelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const tabletBezel = new THREE.Mesh(tabletBezelGeo, tabletBezelMat);
+        tabletBezel.position.z = -0.01;
+        tabletGroup.add(tabletBezel);
+        const tabletBackGeo = new THREE.BoxGeometry(1.1, 0.825, 0.05);
+        const tabletBackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, emissive: 0x00b7eb, emissiveIntensity: 0.5, envMap });
+        const tabletBack = new THREE.Mesh(tabletBackGeo, tabletBackMat);
+        tabletBack.position.z = -0.03;
+        tabletGroup.add(tabletBack);
+        const tabletLEDGeo = new THREE.BoxGeometry(0.03, 0.825, 0.01);
+        const tabletLEDMat = new THREE.MeshStandardMaterial({ color: 0x00b7eb, emissive: 0x00b7eb, emissiveIntensity: 1 });
+        const tabletLEDLeft = new THREE.Mesh(tabletLEDGeo, tabletLEDMat);
+        tabletLEDLeft.position.set(-0.57, 0, -0.02);
+        tabletGroup.add(tabletLEDLeft);
+        const tabletKickstandGeo = new THREE.BoxGeometry(0.8, 0.05, 0.1);
+        const tabletKickstandMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, envMap });
+        const tabletKickstand = new THREE.Mesh(tabletKickstandGeo, tabletKickstandMat);
+        tabletKickstand.position.set(0, 0, -0.05);
+        tabletKickstand.rotation.x = Math.PI / 4;
+        tabletGroup.add(tabletKickstand);
+        tabletGroup.position.x = 4;
+        tabletGroup.rotation.y = Math.PI / 4; // Slight angle for visibility
+        scene.add(tabletGroup);
+        devices['tablet'] = { group: tabletGroup, title: 'Shadow Tablet', desc: '11" tablet with blue LED accents and slim design.', price: 499 };
+
+        // Blaze Phone
+        const phoneGroup = new THREE.Group();
+        const phoneScreenGeo = new THREE.BoxGeometry(0.68, 1.36, 0.02); // 6.8" 20:9
+        const phoneScreenMat = new THREE.MeshStandardMaterial({ map: videoTextures['phone'], emissive: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const phoneScreen = new THREE.Mesh(phoneScreenGeo, phoneScreenMat);
+        phoneGroup.add(phoneScreen);
+        const phoneBezelShape = new THREE.Shape()
+            .moveTo(-0.35, -0.69).lineTo(0.35, -0.69).lineTo(0.35, 0.69).lineTo(-0.35, 0.69).lineTo(-0.35, -0.69)
+            .holes([new THREE.Path().moveTo(-0.34, -0.68).lineTo(0.34, -0.68).lineTo(0.34, 0.68).lineTo(-0.34, 0.68).lineTo(-0.34, -0.68)]);
+        const phoneBezelGeo = new THREE.ExtrudeGeometry(phoneBezelShape, { depth: 0.03, bevelEnabled: true, bevelSize: 0.01 });
+        const phoneBezelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const phoneBezel = new THREE.Mesh(phoneBezelGeo, phoneBezelMat);
+        phoneBezel.position.z = -0.01;
+        phoneGroup.add(phoneBezel);
+        const phoneBackGeo = new THREE.BoxGeometry(0.68, 1.36, 0.05);
+        const phoneBackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, emissive: 0xff3333, emissiveIntensity: 0.5, envMap });
+        const phoneBack = new THREE.Mesh(phoneBackGeo, phoneBackMat);
+        phoneBack.position.z = -0.03;
+        phoneGroup.add(phoneBack);
+        const phoneLEDGeo = new THREE.BoxGeometry(0.03, 1.36, 0.01);
+        const phoneLEDMat = new THREE.MeshStandardMaterial({ color: 0xff3333, emissive: 0xff3333, emissiveIntensity: 1 });
+        const phoneLEDRight = new THREE.Mesh(phoneLEDGeo, phoneLEDMat);
+        phoneLEDRight.position.set(0.36, 0, -0.02);
+        phoneGroup.add(phoneLEDRight);
+        phoneGroup.position.x = 8;
+        phoneGroup.rotation.y = -Math.PI / 4;
+        scene.add(phoneGroup);
+        devices['phone'] = { group: phoneGroup, title: 'Blaze Phone', desc: '6.8" phone with red LED glow and curved edges.', price: 799 };
+
+        // Neon Laptop
+        const laptopGroup = new THREE.Group();
+        const laptopScreenGeo = new THREE.BoxGeometry(1.5, 0.844, 0.02); // 15" 16:9
+        const laptopScreenMat = new THREE.MeshStandardMaterial({ map: videoTextures['laptop'], emissive: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const laptopScreen = new THREE.Mesh(laptopScreenGeo, laptopScreenMat);
+        laptopScreen.position.set(0, 0.422, 0.01);
+        laptopScreen.rotation.x = -Math.PI / 6;
+        laptopGroup.add(laptopScreen);
+        const laptopBezelShape = new THREE.Shape()
+            .moveTo(-0.76, -0.432).lineTo(0.76, -0.432).lineTo(0.76, 0.432).lineTo(-0.76, 0.432).lineTo(-0.76, -0.432)
+            .holes([new THREE.Path().moveTo(-0.75, -0.422).lineTo(0.75, -0.422).lineTo(0.75, 0.422).lineTo(-0.75, 0.422).lineTo(-0.75, -0.422)]);
+        const laptopBezelGeo = new THREE.ExtrudeGeometry(laptopBezelShape, { depth: 0.03, bevelEnabled: true, bevelSize: 0.01 });
+        const laptopBezelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const laptopBezel = new THREE.Mesh(laptopBezelGeo, laptopBezelMat);
+        laptopBezel.position.set(0, 0.422, 0);
+        laptopBezel.rotation.x = -Math.PI / 6;
+        laptopGroup.add(laptopBezel);
+        const laptopBodyGeo = new THREE.BoxGeometry(1.5, 0.3, 0.1);
+        const laptopBodyMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, emissive: 0x00ff55, emissiveIntensity: 0.5, envMap });
+        const laptopBody = new THREE.Mesh(laptopBodyGeo, laptopBodyMat);
+        laptopGroup.add(laptopBody);
+        const laptopVentGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.02, 6);
+        const laptopVentMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, envMap });
+        for (let i = -2; i <= 2; i++) {
+            const vent = new THREE.Mesh(laptopVentGeo, laptopVentMat);
+            vent.position.set(i * 0.2, -0.1, 0.06);
+            laptopGroup.add(vent);
+        }
+        const laptopLEDGeo = new THREE.BoxGeometry(1.5, 0.05, 0.02);
+        const laptopLEDMat = new THREE.MeshStandardMaterial({ color: 0x00ff55, emissive: 0x00ff55, emissiveIntensity: 1 });
+        const laptopLED = new THREE.Mesh(laptopLEDGeo, laptopLEDMat);
+        laptopLED.position.set(0, -0.1, 0.05);
+        laptopGroup.add(laptopLED);
+        laptopGroup.position.x = 12;
+        scene.add(laptopGroup);
+        devices['laptop'] = { group: laptopGroup, title: 'Neon Laptop', desc: '15" laptop with green LED keyboard and hexagonal vents.', price: 1999 };
+
+        // Obsidian Tower
+        const towerGroup = new THREE.Group();
+        const towerBodyGeo = new THREE.BoxGeometry(0.8, 2.0, 0.8);
+        const towerBodyMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, emissive: 0x00b7eb, emissiveIntensity: 0.5, envMap });
+        const towerBody = new THREE.Mesh(towerBodyGeo, towerBodyMat);
+        towerGroup.add(towerBody);
+        const towerWindowGeo = new THREE.BoxGeometry(0.6, 1.8, 0.02);
+        const towerWindowMat = new THREE.MeshStandardMaterial({ map: videoTextures['tower'], emissive: 0x111111, roughness: 0.1, metalness: 0.9, envMap });
+        const towerWindow = new THREE.Mesh(towerWindowGeo, towerWindowMat);
+        towerWindow.position.set(-0.41, 0, 0);
+        towerGroup.add(towerWindow);
+        const towerVentGeo = new THREE.BoxGeometry(0.6, 0.1, 0.02);
+        const towerVentMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, envMap });
+        for (let i = -2; i <= 2; i++) {
+            const vent = new THREE.Mesh(towerVentGeo, towerVentMat);
+            vent.position.set(0, i * 0.2 + 0.7, 0.41);
+            towerGroup.add(vent);
+        }
+        const towerLEDGeo = new THREE.BoxGeometry(0.05, 1.8, 0.02);
+        const towerLEDMat = new THREE.MeshStandardMaterial({ color: 0x00b7eb, emissive: 0x00b7eb, emissiveIntensity: 1 });
+        const towerLED = new THREE.Mesh(towerLEDGeo, towerLEDMat);
+        towerLED.position.set(-0.41, 0, 0.01);
+        towerGroup.add(towerLED);
+        towerGroup.position.x = 16;
+        scene.add(towerGroup);
+        devices['tower'] = { group: towerGroup, title: 'Obsidian Tower', desc: 'PC tower with blue LED side panel and vented front.', price: 2999 };
+
+        camera.position.set(0, 0, 12); // Wide view for all devices
+
+        // Controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.minDistance = 2;
+        controls.maxDistance = 15;
+        controls.enabled = false;
+
+        // Raycaster for Clicking
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let selectedDevice = null;
+
+        function onClick(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(Object.values(devices).map(d => d.group), true);
+            if (intersects.length > 0) {
+                const clickedGroup = intersects[0].object.parent;
+                const device = Object.keys(devices).find(key => devices[key].group === clickedGroup);
+                if (device && device !== selectedDevice) {
+                    selectedDevice = device;
+                    controls.enabled = true;
+                    controls.target.copy(devices[device].group.position);
+                    document.getElementById('device-title').textContent = devices[device].title;
+                    document.getElementById('device-desc').textContent = devices[device].desc;
+                    const targetPos = new THREE.Vector3(devices[device].group.position.x, 0, 3.5);
+                    const startPos = camera.position.clone();
+                    let t = 0;
+                    function transitionCamera() {
+                        if (t < 1) {
+                            t += 0.05;
+                            camera.position.lerpVectors(startPos, targetPos, t);
+                            requestAnimationFrame(transitionCamera);
+                        }
+                    }
+                    transitionCamera();
+                }
+            }
+        }
+
+        function onDoubleClick() {
+            selectedDevice = null;
+            controls.enabled = false;
+            controls.target.set(0, 0, 0);
+            const startPos = camera.position.clone();
+            const targetPos = new THREE.Vector3(0, 0, 12);
+            let t = 0;
+            function transitionCamera() {
+                if (t < 1) {
+                    t += 0.05;
+                    camera.position.lerpVectors(startPos, targetPos, t);
+                    requestAnimationFrame(transitionCamera);
+                }
+            }
+            transitionCamera();
+            document.getElementById('device-title').textContent = 'Stealth Gaming Tech';
+            document.getElementById('device-desc').textContent = 'Explore our cutting-edge 4K gaming devices with advanced LED designs.';
+        }
+
+        window.addEventListener('click', onClick);
+        window.addEventListener('dblclick', onDoubleClick);
+
+        // Page Navigation
+        const pages = document.querySelectorAll('.page');
+        const navLinks = document.querySelectorAll('.nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetPage = link.getAttribute('href').substring(1);
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(targetPage).classList.add('active');
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                if (targetPage !== 'home') {
+                    document.getElementById('canvas').style.display = 'none';
+                    camera.position.set(0, 0, 12);
+                    controls.enabled = false;
+                    selectedDevice = null;
+                    document.getElementById('device-title').textContent = 'Stealth Gaming Tech';
+                    document.getElementById('device-desc').textContent = 'Explore our cutting-edge 4K gaming devices with advanced LED designs.';
+                } else {
+                    document.getElementById('canvas').style.display = 'block';
+                }
+            });
+        });
+
+        // Cart Functionality
+        let cart = [];
+        function addToCart(name, price) {
+            const existingItem = cart.find(item => item.name === name);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ name, price, quantity: 1 });
+            }
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>$${item.price}</td>
+                    <td><input type="number" value="${item.quantity}" min="1" onchange="updateQuantity('${item.name}', this.value)"></td>
+                    <td>$${item.price * item.quantity}</td>
+                    <td><button onclick="removeFromCart('${item.name}')">Remove</button></td>
+                `;
+                cartItems.appendChild(row);
+                total += item.price * item.quantity;
+            });
+            cartItems.innerHTML += `
+                <tr>
+                    <td colspan="3"><strong>Total</strong></td>
+                    <td><strong>$${total}</strong></td>
+                    <td></td>
+                </tr>
+            `;
+        }
+
+        function updateQuantity(name, quantity) {
+            const item = cart.find(item => item.name === name);
+            if (item) {
+                item.quantity = parseInt(quantity);
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.name !== name);
+                }
+                updateCart();
+            }
+        }
+
+        function removeFromCart(name) {
+            cart = cart.filter(item => item.name !== name);
+            updateCart();
+        }
+
+        function submitOrder() {
+            const name = document.getElementById('name').value;
+            const address = document.getElementById('address').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const zip = document.getElementById('zip').value;
+            const country = document.getElementById('country').value;
+            if (name && address && city && state && zip && country) {
+                alert('Order submitted! Thank you for your purchase.');
+                cart = [];
+                updateCart();
+                document.querySelectorAll('.cart-form input, .cart-form select').forEach(input => input.value = '');
+            } else {
+                alert('Please fill out all shipping information.');
+            }
+        }
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            Object.values(devices).forEach(device => {
+                device.group.rotation.y += 0.005;
+            });
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize Handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
