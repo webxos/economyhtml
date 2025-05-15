@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stealth Gaming Monitors</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: #000; color: #fff; overflow: hidden; }
+        .hero { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; }
+        .nav { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 5%; }
+        .nav a { color: #00b7eb; text-decoration: none; font-size: clamp(18px, 3vw, 20px); margin: 0 15px; transition: color 0.3s; }
+        .nav a:hover { color: #fff; }
+        .hero h1 { font-size: clamp(3rem, 6vw, 5rem); text-transform: uppercase; letter-spacing: 3px; color: #00b7eb; text-shadow: 0 0 12px #00b7eb; }
+        .hero p { font-size: clamp(1.2rem, 2.5vw, 1.8rem); margin: 25px 0; color: #ccc; max-width: 90%; }
+        .cta { padding: 18px 40px; background: #00b7eb; color: #000; border: none; font-size: clamp(1.2rem, 2.5vw, 1.5rem); cursor: pointer; transition: background 0.3s; border-radius: 5px; }
+        .cta:hover { background: #fff; color: #000; }
+        .model-selector { margin-top: 25px; display: flex; gap: 15px; }
+        .model-btn { padding: 12px 30px; background: #333; color: #00b7eb; border: 1px solid #00b7eb; cursor: pointer; transition: all 0.3s; font-size: clamp(1rem, 2vw, 1.2rem); border-radius: 5px; }
+        .model-btn:hover, .model-btn.active { background: #00b7eb; color: #000; }
+        #canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .nav { flex-direction: column; align-items: center; gap: 15px; padding: 10px 0; }
+            .nav a { font-size: clamp(16px, 4vw, 18px); margin: 8px 0; }
+            .hero h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); }
+            .hero p { font-size: clamp(1rem, 2.2vw, 1.4rem); max-width: 95%; }
+            .cta { padding: 15px 30px; font-size: clamp(1rem, 2.2vw, 1.3rem); }
+            .model-selector { flex-direction: column; align-items: center; gap: 10px; }
+            .model-btn { width: 90%; max-width: 300px; padding: 15px; font-size: clamp(1rem, 2.2vw, 1.2rem); }
+            #canvas { transform: scale(0.9); } /* Slight scale-down for mobile performance */
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <div>
+            <a href="#home">Home</a>
+            <a href="#specs">Specs</a>
+            <a href="#buy">Buy Now</a>
+        </div>
+        <div>
+            <a href="#support">Support</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </div>
+    <div class="hero">
+        <h1 id="monitor-title">Stealth Gaming Series</h1>
+        <p id="monitor-desc">Sleek 24" 4K gaming monitors with neon green Matrix displays and vibrant LED accents.</p>
+        <button class="cta" onclick="window.open('https://example.com/specs', '_blank')">Discover Now</button>
+        <div class="model-selector">
+            <button class="model-btn active" data-model="phantom">Stealth Phantom</button>
+            <button class="model-btn" data-model="wraith">Night Wraith</button>
+            <button class="model-btn" data-model="pulse">Dark Pulse</button>
+        </div>
+    </div>
+    <canvas id="canvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(-5, 5, 5);
+        scene.add(pointLight);
+
+        // Solid Black Background
+        scene.background = new THREE.Color(0x000000);
+
+        // Matrix Text Video for Each Monitor
+        function createMatrixCanvas() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 288; // 16:9 aspect ratio to match monitor
+            const ctx = canvas.getContext('2d');
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%';
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(0);
+
+            function animateMatrix() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00ff55';
+                ctx.font = `${fontSize}px monospace`;
+
+                drops.forEach((y, i) => {
+                    const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                    const x = i * fontSize;
+                    ctx.fillText(text, x, y * fontSize);
+                    if (y * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                });
+
+                return canvas;
+            }
+
+            animateMatrix();
+            setInterval(animateMatrix, 50);
+            return canvas;
+        }
+
+        const phantomCanvas = createMatrixCanvas();
+        const wraithCanvas = createMatrixCanvas();
+        const pulseCanvas = createMatrixCanvas();
+
+        const phantomTexture = new THREE.CanvasTexture(phantomCanvas);
+        const wraithTexture = new THREE.CanvasTexture(wraithCanvas);
+        const pulseTexture = new THREE.CanvasTexture(pulseCanvas);
+
+        // Monitor Models
+        const monitors = {};
+
+        // Trapezoidal Stand Shape
+        const standShape = new THREE.Shape();
+        standShape.moveTo(-0.4, 0);
+        standShape.lineTo(0.4, 0);
+        standShape.lineTo(0.2, 0.5);
+        standShape.lineTo(-0.2, 0.5);
+        standShape.lineTo(-0.4, 0);
+        const extrudeSettings = { depth: 0.2, bevelEnabled: false };
+        const standGeo = new THREE.ExtrudeGeometry(standShape, extrudeSettings);
+
+        // Stealth Phantom (Blue LED)
+        const phantomGroup = new THREE.Group();
+        const phantomScreenGeo = new THREE.BoxGeometry(2.4, 1.35, 0.05);
+        const phantomScreenMat = new THREE.MeshStandardMaterial({ map: phantomTexture, emissive: 0x00ff55, emissiveIntensity: 0.2, roughness: 0.2, metalness: 0.9 });
+        const phantomScreen = new THREE.Mesh(phantomScreenGeo, phantomScreenMat);
+        phantomGroup.add(phantomScreen);
+
+        const phantomBezelGeo = new THREE.BoxGeometry(2.41, 1.36, 0.04);
+        const phantomBezelMat = new THREE.MeshStandardMaterial({ color: 0x101010, roughness: 0.05, metalness: 0.9 });
+        const phantomBezel = new THREE.Mesh(phantomBezelGeo, phantomBezelMat);
+        phantomBezel.position.z = -0.01;
+        phantomGroup.add(phantomBezel);
+
+        const phantomLEDGeo = new THREE.BoxGeometry(2.41, 0.04, 0.01);
+        const phantomLEDMat = new THREE.MeshStandardMaterial({ color: 0x00b7eb, emissive: 0x00b7eb, emissiveIntensity: 1.0 });
+        const phantomLED = new THREE.Mesh(phantomLEDGeo, phantomLEDMat);
+        phantomLED.position.set(0, 0.68, 0.03);
+        phantomGroup.add(phantomLED);
+
+        const phantomStandMat = new THREE.MeshStandardMaterial({ color: 0x101010, roughness: 0.05, metalness: 0.9 });
+        const phantomStand = new THREE.Mesh(standGeo, phantomStandMat);
+        phantomStand.position.y = -0.9;
+        phantomGroup.add(phantomStand);
+        phantomGroup.position.set(-3, 0, 0);
+        scene.add(phantomGroup);
+        monitors['phantom'] = { group: phantomGroup, title: 'Stealth Phantom', desc: '24" 4K gaming monitor with blue LED accents and Matrix display.' };
+
+        // Night Wraith (Red LED, Flat Screen)
+        const wraithGroup = new THREE.Group();
+        const wraithScreenGeo = new THREE.BoxGeometry(2.4, 1.35, 0.05);
+        const wraithScreenMat = new THREE.MeshStandardMaterial({ map: wraithTexture, emissive: 0x00ff55, emissiveIntensity: 0.2, roughness: 0.2, metalness: 0.9 });
+        const wraithScreen = new THREE.Mesh(wraithScreenGeo, wraithScreenMat);
+        wraithGroup.add(wraithScreen);
+
+        const wraithBezelGeo = new THREE.BoxGeometry(2.41, 1.36, 0.04);
+        const wraithBezelMat = new THREE.MeshStandardMaterial({ color: 0x101010, roughness: 0.05, metalness: 0.9 });
+        const wraithBezel = new THREE.Mesh(wraithBezelGeo, wraithBezelMat);
+        wraithBezel.position.z = -0.01;
+        wraithGroup.add(wraithBezel);
+
+        const wraithLEDGeo = new THREE.BoxGeometry(2.41, 0.04, 0.01);
+        const wraithLEDMat = new THREE.MeshStandardMaterial({ color: 0xff3333, emissive: 0xff3333, emissiveIntensity: 1.0 });
+        const wraithLED = new THREE.Mesh(wraithLEDGeo, wraithLEDMat);
+        wraithLED.position.set(0, 0.68, 0.03);
+        wraithGroup.add(wraithLED);
+
+        const wraithStandMat = new THREE.MeshStandardMaterial({ color: 0x101010, roughness: 0.05, metalness: 0.9 });
+        const wraithStand = new THREE.Mesh(standGeo, wraithStandMat);
+        wraithStand.position.y = -0.9;
+        wraithGroup.add(wraithStand);
+        wraithGroup.position.set(0, 0, 0);
+        scene.add(wraithGroup);
+        monitors['wraith'] = { group: wraithGroup, title: 'Night Wraith', desc: '24" 4K monitor with red LED accents and Matrix display.' };
+
+        // Dark Pulse (Green LED)
+        const pulseGroup = new THREE.Group();
+        const pulseScreenGeo = new THREE.BoxGeometry(2.4, 1.35, 0.05);
+        const pulseScreenMat = new THREE.MeshStandardMaterial({ map: pulseTexture, emissive: 0x00ff55, emissiveIntensity: 0.2, roughness: 0.2, metalness: 0.9 });
+        const pulseScreen = new THREE.Mesh(pulseScreenGeo, pulseScreenMat);
+        pulseGroup.add(pulseScreen);
+
+        const pulseBezelGeo = new THREE.BoxGeometry(2.41, 1.36, 0.04);
+        const pulseBezelMat = new THREE.MeshStandardMaterial({ color: 0x101010, roughness: 0.05, metalness: 0.9 });
+        const pulseBezel = new THREE.Mesh(pulseBezelGeo, pulseBezelMat);
+        pulseBezel.position.z = -0.01;
+        pulseGroup.add(pulseBezel);
+
+        const pulseLEDGeo = new THREE.BoxGeometry(2.41, 0.04, 0.01);
+        const pulseLEDMat = new THREE.MeshStandardMaterial({ color: 0x00ff55, emissive: 0x00ff55, emissiveIntensity: 1.0 });
+        const pulseLED = new THREE.Mesh(pulseLEDGeo, pulseLEDMat);
+        pulseLED.position.set(0, 0.68, 0.03);
+        pulseGroup.add(pulseLED);
+
+        const pulseStandMat = new THREE.MeshStandardMaterial({ color: 0x101010, roughness: 0.05, metalness: 0.9 });
+        const pulseStand = new THREE.Mesh(standGeo, pulseStandMat);
+        pulseStand.position.y = -0.9;
+        pulseGroup.add(pulseStand);
+        pulseGroup.position.set(3, 0, 0);
+        scene.add(pulseGroup);
+        monitors['pulse'] = { group: pulseGroup, title: 'Dark Pulse', desc: '24" 4K monitor with green LED accents and Matrix display.' };
+
+        // Fixed Camera Position
+        camera.position.set(0, 0.5, 6);
+        camera.lookAt(0, 0, 0);
+
+        // Model Switching
+        const buttons = document.querySelectorAll('.model-btn');
+        let currentModel = null;
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const model = button.getAttribute('data-model');
+                if (model === currentModel) return;
+
+                // Update UI
+                document.getElementById('monitor-title').textContent = monitors[model].title;
+                document.getElementById('monitor-desc').textContent = monitors[model].desc;
+
+                // Update button states
+                buttons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                currentModel = model;
+            });
+        });
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            Object.values(monitors).forEach(monitor => {
+                monitor.group.rotation.y += 0.003;
+            });
+            phantomTexture.needsUpdate = true;
+            wraithTexture.needsUpdate = true;
+            pulseTexture.needsUpdate = true;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize Handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
