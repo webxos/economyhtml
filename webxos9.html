@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>webXOS Studio</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            display: block;
+            width: 100vw !important;
+            height: 100vh !important;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -200px;
+            width: 200px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            z-index: 10;
+        }
+        .sidebar.open {
+            left: 0;
+        }
+        .sidebar h1 {
+            font-size: 1.8rem;
+            color: #00ff00;
+            margin-bottom: 15px;
+            margin-top: 50px;
+        }
+        .sidebar ul {
+            list-style: none;
+        }
+        .sidebar li {
+            margin: 10px 0;
+        }
+        .sidebar a {
+            color: #aaa6c3;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            padding: 5px;
+        }
+        .menu-toggle {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 8px;
+            background: #00ff00;
+            color: #000000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 11;
+            touch-action: manipulation;
+        }
+        .text-overlay {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            color: #ffffff;
+            font-size: 1rem;
+            z-index: 10;
+            max-width: 80%;
+        }
+        .center-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            color: #00ff00;
+            font-size: 1.5rem;
+            text-align: center;
+            z-index: 10;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .center-overlay button {
+            margin: 5px;
+            padding: 5px 10px;
+            background: #00ff00;
+            color: #000000;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .center-overlay button.remove {
+            background: #ff5555;
+            color: #ffffff;
+        }
+        .center-overlay ul {
+            list-style: none;
+            margin: 10px 0;
+            padding: 0;
+        }
+        .center-overlay li {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .shop-item {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            width: 300px;
+            text-align: left;
+        }
+        .shop-item h3 {
+            color: #00ff00;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        .shop-item p {
+            color: #aaa6c3;
+            font-size: 0.9rem;
+            margin: 5px 0;
+        }
+        .shop-item button {
+            width: 100%;
+            margin-top: 10px;
+        }
+        @media (max-width: 768px) {
+            canvas {
+                width: 100vw !important;
+                height: 100vh !important;
+            }
+            .sidebar {
+                width: 150px;
+                left: -150px;
+            }
+            .sidebar h1 {
+                font-size: 1.3rem;
+                margin-top: 40px;
+            }
+            .sidebar a {
+                font-size: 0.9rem;
+                padding: 8px;
+            }
+            .menu-toggle {
+                padding: 6px;
+                font-size: 0.8rem;
+            }
+            .text-overlay {
+                font-size: 0.9rem;
+                padding: 8px;
+                bottom: 10px;
+                left: 10px;
+            }
+            .center-overlay {
+                font-size: 1.2rem;
+                padding: 10px;
+            }
+            .center-overlay button {
+                font-size: 0.8rem;
+                padding: 4px 8px;
+            }
+            .shop-item {
+                width: 200px;
+            }
+            .shop-item h3 {
+                font-size: 1rem;
+            }
+            .shop-item p {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    <div class="sidebar" id="sidebar">
+        <h1>webXOS Studio</h1>
+        <ul>
+            <li><a href="#" onclick="navigateTo('about')">About</a></li>
+            <li><a href="#" onclick="navigateTo('tools')">Tools</a></li>
+            <li><a href="#" onclick="navigateTo('aiAgents')">AI Agents</a></li>
+            <li><a href="#" onclick="navigateTo('games')">Games</a></li>
+            <li><a href="#" onclick="navigateTo('copyright')">Copyright</a></li>
+        </ul>
+    </div>
+    <div class="text-overlay" id="textOverlay"></div>
+    <div class="center-overlay" id="centerOverlay"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // Optimize for mobile
+        renderer.setAnimationLoop(animate);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x00ff00, 0.4);
+        scene.add(ambientLight);
+        const naturalAmbientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(naturalAmbientLight);
+        const spotlight1 = new THREE.SpotLight(0x00ff00, 2);
+        spotlight1.position.set(0, 5, 4);
+        spotlight1.angle = Math.PI / 6;
+        spotlight1.penumbra = 0.5;
+        spotlight1.castShadow = true;
+        spotlight1.target.position.set(0, 0, 4);
+        scene.add(spotlight1);
+        scene.add(spotlight1.target);
+
+        // Base wall neon lights
+        const baseLightPositions = [
+            [-4, 0.1, -4.5], [0, 0.1, -4.5], [4, 0.1, -4.5],
+            [-4, 0.1, 4.5], [0, 0.1, 4.5], [4, 0.1, 4.5],
+            [-4.5, 0.1, -2], [-4.5, 0.1, 2],
+            [4.5, 0.1, -2], [4.5, 0.1, 2]
+        ];
+        baseLightPositions.forEach(pos => {
+            const pointLight = new THREE.PointLight(0x00ff00, 1, 3);
+            pointLight.position.set(...pos);
+            scene.add(pointLight);
+            const lightGlow = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.8 })
+            );
+            lightGlow.position.set(...pos);
+            scene.add(lightGlow);
+        });
+
+        // Neural network ceiling effect
+        const neuralMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            emissive: 0x00ff00,
+            emissiveIntensity: 2,
+            transparent: true,
+            opacity: 0.9
+        });
+        const neuralNodeGeometry = new THREE.SphereGeometry(0.03, 16, 16);
+        const neuralLineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const nodes = [];
+        const numNodes = 50;
+        for (let i = 0; i < numNodes; i++) {
+            const node = new THREE.Mesh(neuralNodeGeometry, neuralMaterial);
+            node.position.set(Math.random() * 8 - 4, 4.8, Math.random() * 8 - 4);
+            scene.add(node);
+            nodes.push(node.position);
+        }
+        const neuralLinesGeometry = new THREE.BufferGeometry();
+        const lineVertices = [];
+        for (let i = 0; i < numNodes; i++) {
+            for (let j = i + 1; j < numNodes; j++) {
+                if (Math.random() < 0.1) {
+                    lineVertices.push(nodes[i].x, nodes[i].y, nodes[i].z);
+                    lineVertices.push(nodes[j].x, nodes[j].y, nodes[j].z);
+                }
+            }
+        }
+        neuralLinesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(lineVertices, 3));
+        const neuralLines = new THREE.LineSegments(neuralLinesGeometry, neuralLineMaterial);
+        scene.add(neuralLines);
+
+        const ceilingLight = new THREE.PointLight(0x00ff00, 1.5, 10);
+        ceilingLight.position.set(0, 4.8, 0);
+        scene.add(ceilingLight);
+
+        // Floor
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1c1c1c,
+            roughness: 0.7,
+            metalness: 0.5
+        });
+        const floorGeometry = new THREE.PlaneGeometry(10, 10);
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Walls
+        const wallMaterial = new THREE.MeshStandardMaterial({
+            color: 0x000000,
+            roughness: 0.8,
+            metalness: 0.2
+        });
+        const wall1 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMaterial);
+        wall1.position.set(0, 2.5, -5);
+        scene.add(wall1);
+        const wall2 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMaterial);
+        wall2.position.set(-5, 2.5, 0);
+        wall2.rotation.y = Math.PI / 2;
+        scene.add(wall2);
+        const wall3 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMaterial);
+        wall3.position.set(0, 2.5, 5);
+        scene.add(wall3);
+
+        // Desk
+        const deskGeometry = new THREE.BoxGeometry(8, 0.3, 4);
+        const deskMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.4,
+            metalness: 0.8
+        });
+        const desk = new THREE.Mesh(deskGeometry, deskMaterial);
+        desk.position.set(0, 1, 3);
+        desk.rotation.y = Math.PI; // Face couch
+        desk.receiveShadow = true;
+        desk.castShadow = true;
+        scene.add(desk);
+
+        // Desk legs
+        const legGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 32);
+        const legMaterial = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4, metalness: 0.8 });
+        const legs = [];
+        for (let i = 0; i < 4; i++) {
+            const x = (i % 2 === 0 ? -3.5 : 3.5);
+            const z = 3 + (i < 2 ? -1.5 : 1.5);
+            const leg = new THREE.Mesh(legGeometry, legMaterial);
+            leg.position.set(x, 0.5, z);
+            leg.rotation.y = Math.PI;
+            leg.position.z = 6 - (z - 3);
+            leg.position.x = -x;
+            leg.castShadow = true;
+            scene.add(leg);
+            legs.push(leg);
+        }
+
+        // Desk detail
+        const deskDetailGeometry = new THREE.BoxGeometry(7.8, 0.05, 3.8);
+        const deskDetailMaterial = new THREE.MeshStandardMaterial({
+            color: 0x222222,
+            roughness: 0.5,
+            metalness: 0.7
+        });
+        const deskDetail = new THREE.Mesh(deskDetailGeometry, deskDetailMaterial);
+        deskDetail.position.set(0, 1.18, 3);
+        deskDetail.rotation.y = Math.PI;
+        deskDetail.position.z = 6 - (deskDetail.position.z - 3);
+        scene.add(deskDetail);
+
+        // Neon glow around desk
+        const deskEdgeGeometry = new THREE.EdgesGeometry(deskGeometry);
+        const deskEdgeMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.3 });
+        const deskEdge = new THREE.LineSegments(deskEdgeGeometry, deskEdgeMaterial);
+        deskEdge.position.set(0, 1, 3);
+        deskEdge.rotation.y = Math.PI;
+        deskEdge.position.z = 6 - (deskEdge.position.z - 3);
+        scene.add(deskEdge);
+
+        // Monitor Rack
+        const rackBaseGeometry = new THREE.BoxGeometry(7, 0.1, 0.5);
+        const rackMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.3,
+            metalness: 0.7
+        });
+        const rackBase = new THREE.Mesh(rackBaseGeometry, rackMaterial);
+        rackBase.position.set(0, 1.6, 1.1); // Adjusted z = -1.9 + 3
+        rackBase.rotation.y = Math.PI;
+        rackBase.position.z = 6 - (rackBase.position.z - 3);
+        rackBase.castShadow = true;
+        scene.add(rackBase);
+
+        const rackSupportGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.6, 32);
+        const rackSupports = [];
+        for (let i = 0; i < 3; i++) {
+            const x = -2 + i * 2;
+            const rackSupport = new THREE.Mesh(rackSupportGeometry, rackMaterial);
+            rackSupport.position.set(x, 1.85, 1.1);
+            rackSupport.rotation.x = Math.PI / 2;
+            rackSupport.rotation.y = Math.PI;
+            rackSupport.position.z = 6 - (rackSupport.position.z - 3);
+            rackSupport.position.x = -x;
+            scene.add(rackSupport);
+            rackSupports.push(rackSupport);
+        }
+
+        // Rack back panel
+        const rackPanelGeometry = new THREE.BoxGeometry(7, 0.5, 0.1);
+        const rackPanel = new THREE.Mesh(rackPanelGeometry, rackMaterial);
+        rackPanel.position.set(0, 1.85, 1);
+        rackPanel.rotation.y = Math.PI;
+        rackPanel.position.z = 6 - (rackPanel.position.z - 3);
+        scene.add(rackPanel);
+
+        // Three Monitors
+        const monitorFrameGeometry = new THREE.BoxGeometry(1.8, 1.2, 0.1);
+        const monitorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.3,
+            metalness: 0.7
+        });
+        const monitors = [];
+        for (let i = 0; i < 3; i++) {
+            const x = -2 + i * 2;
+            const monitorFrame = new THREE.Mesh(monitorFrameGeometry, monitorMaterial);
+            monitorFrame.position.set(x, 1.8, 1.5); // Adjusted z = -1.5 + 3
+            monitorFrame.rotation.y = Math.PI;
+            monitorFrame.position.z = 6 - (monitorFrame.position.z - 3);
+            monitorFrame.position.x = -x;
+            monitorFrame.castShadow = true;
+            scene.add(monitorFrame);
+
+            // Monitor screen
+            const monitorScreenGeometry = new THREE.PlaneGeometry(1.7, 1.1);
+            const monitorScreenMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ff00,
+                transparent: true,
+                opacity: 0.6,
+                side: THREE.DoubleSide
+            });
+            const monitorScreen = new THREE.Mesh(monitorScreenGeometry, monitorScreenMaterial);
+            monitorScreen.position.set(x, 1.8, 1.45);
+            monitorScreen.rotation.y = Math.PI;
+            monitorScreen.position.z = 6 - (monitorScreen.position.z - 3);
+            monitorScreen.position.x = -x;
+            scene.add(monitorScreen);
+
+            // Monitor stand
+            const monitorStandGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.5, 32);
+            const monitorStand = new THREE.Mesh(monitorStandGeometry, monitorMaterial);
+            monitorStand.position.set(x, 1.3, 1.5);
+            monitorStand.rotation.y = Math.PI;
+            monitorStand.position.z = 6 - (monitorStand.position.z - 3);
+            monitorStand.position.x = -x;
+            scene.add(monitorStand);
+
+            // Monitor base
+            const monitorBaseGeometry = new THREE.BoxGeometry(0.8, 0.1, 0.5);
+            const monitorBase = new THREE.Mesh(monitorBaseGeometry, monitorMaterial);
+            monitorBase.position.set(x, 1.05, 1.5);
+            monitorBase.rotation.y = Math.PI;
+            monitorBase.position.z = 6 - (monitorBase.position.z - 3);
+            monitorBase.position.x = -x;
+            monitorBase.castShadow = true;
+            scene.add(monitorBase);
+
+            // Monitor details
+            const monitorDetailGeometry = new THREE.BoxGeometry(1.6, 0.05, 0.05);
+            const monitorDetail = new THREE.Mesh(monitorDetailGeometry, deskDetailMaterial);
+            monitorDetail.position.set(x, 2.35, 1.48);
+            monitorDetail.rotation.y = Math.PI;
+            monitorDetail.position.z = 6 - (monitorDetail.position.z - 3);
+            monitorDetail.position.x = -x;
+            scene.add(monitorDetail);
+
+            // Subtle neon glow on monitor edges
+            const monitorEdgeGeometry = new THREE.EdgesGeometry(monitorFrameGeometry);
+            const monitorEdge = new THREE.LineSegments(monitorEdgeGeometry, deskEdgeMaterial);
+            monitorEdge.position.set(x, 1.8, 1.5);
+            monitorEdge.rotation.y = Math.PI;
+            monitorEdge.position.z = 6 - (monitorEdge.position.z - 3);
+            monitorEdge.position.x = -x;
+            scene.add(monitorEdge);
+
+            monitors.push(monitorFrame);
+        }
+
+        // Keyboard
+        const keyboardGeometry = new THREE.BoxGeometry(2, 0.05, 0.6);
+        const keyboardMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const keyboard = new THREE.Mesh(keyboardGeometry, keyboardMaterial);
+        keyboard.position.set(0, 1.18, 3.5); // Adjusted z = 0.5 + 3
+        keyboard.rotation.y = Math.PI;
+        keyboard.position.z = 6 - (keyboard.position.z - 3);
+        keyboard.castShadow = true;
+        scene.add(keyboard);
+
+        // Keyboard details
+        const keyboardDetailGeometry = new THREE.BoxGeometry(1.8, 0.01, 0.5);
+        const keyboardDetail = new THREE.Mesh(keyboardDetailGeometry, deskDetailMaterial);
+        keyboardDetail.position.set(0, 1.21, 3.5);
+        keyboardDetail.rotation.y = Math.PI;
+        keyboardDetail.position.z = 6 - (keyboardDetail.position.z - 3);
+        scene.add(keyboardDetail);
+
+        // Glowing keys
+        const keyGeometry = new THREE.BoxGeometry(0.08, 0.01, 0.08);
+        const keyMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const keys = [];
+        for (let i = -0.9; i <= 0.9; i += 0.12) {
+            for (let j = -0.25; j <= 0.25; j += 0.12) {
+                const key = new THREE.Mesh(keyGeometry, keyMaterial);
+                key.position.set(i, 1.23, 3.5 + j);
+                key.rotation.y = Math.PI;
+                key.position.z = 6 - (key.position.z - 3);
+                key.position.x = -i;
+                scene.add(key);
+                keys.push(key);
+            }
+        }
+
+        // Mouse
+        const mouseBodyGeometry = new THREE.BoxGeometry(0.25, 0.15, 0.35);
+        const mouseMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const mouse = new THREE.Mesh(mouseBodyGeometry, mouseMaterial);
+        mouse.position.set(1.2, 1.18, 3.6); // Adjusted z = 0.6 + 3
+        mouse.rotation.y = Math.PI;
+        mouse.position.z = 6 - (mouse.position.z - 3);
+        mouse.position.x = -1.2;
+        mouse.castShadow = true;
+        scene.add(mouse);
+
+        // Mouse details
+        const mouseDetailGeometry = new THREE.BoxGeometry(0.2, 0.01, 0.3);
+        const mouseDetail = new THREE.Mesh(mouseDetailGeometry, deskDetailMaterial);
+        mouseDetail.position.set(1.2, 1.25, 3.6);
+        mouseDetail.rotation.y = Math.PI;
+        mouseDetail.position.z = 6 - (mouseDetail.position.z - 3);
+        mouseDetail.position.x = -1.2;
+        scene.add(mouseDetail);
+
+        // Mouse buttons and scroll wheel
+        const mouseButtonGeometry = new THREE.BoxGeometry(0.08, 0.01, 0.1);
+        const mouseButtonMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.5 });
+        const leftButton = new THREE.Mesh(mouseButtonGeometry, mouseButtonMaterial);
+        leftButton.position.set(1.2 - 0.05, 1.16, 3.65);
+        leftButton.rotation.y = Math.PI;
+        leftButton.position.z = 6 - (leftButton.position.z - 3);
+        leftButton.position.x = -(1.2 - 0.05);
+        scene.add(leftButton);
+        const rightButton = new THREE.Mesh(mouseButtonGeometry, mouseButtonMaterial);
+        rightButton.position.set(1.2 + 0.05, 1.16, 3.65);
+        rightButton.rotation.y = Math.PI;
+        rightButton.position.z = 6 - (rightButton.position.z - 3);
+        rightButton.position.x = -(1.2 + 0.05);
+        scene.add(rightButton);
+
+        const scrollWheelGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.05, 32);
+        const scrollWheelMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const scrollWheel = new THREE.Mesh(scrollWheelGeometry, scrollWheelMaterial);
+        scrollWheel.rotation.x = Math.PI / 2;
+        scrollWheel.position.set(1.2, 1.18, 3.6);
+        scrollWheel.rotation.y = Math.PI;
+        scrollWheel.position.z = 6 - (scrollWheel.position.z - 3);
+        scrollWheel.position.x = -1.2;
+        scene.add(scrollWheel);
+
+        // Subtle mouse neon glow
+        const mouseEdgeGeometry = new THREE.EdgesGeometry(mouseBodyGeometry);
+        const mouseEdge = new THREE.LineSegments(mouseEdgeGeometry, deskEdgeMaterial);
+        mouseEdge.position.set(1.2, 1.18, 3.6);
+        mouseEdge.rotation.y = Math.PI;
+        mouseEdge.position.z = 6 - (mouseEdge.position.z - 3);
+        mouseEdge.position.x = -1.2;
+        scene.add(mouseEdge);
+
+        // Speakers
+        const speakerGeometry = new THREE.BoxGeometry(0.6, 1, 0.4);
+        const speakerMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const speaker1 = new THREE.Mesh(speakerGeometry, speakerMaterial);
+        speaker1.position.set(-3.5, 1.5, 3.5); // Adjusted z = -0.5 + 3
+        speaker1.rotation.y = Math.PI;
+        speaker1.position.z = 6 - (speaker1.position.z - 3);
+        speaker1.position.x = 3.5;
+        speaker1.castShadow = true;
+        scene.add(speaker1);
+
+        const speaker2 = new THREE.Mesh(speakerGeometry, speakerMaterial);
+        speaker2.position.set(3.5, 1.5, 3.5);
+        speaker2.rotation.y = Math.PI;
+        speaker2.position.z = 6 - (speaker2.position.z - 3);
+        speaker2.position.x = -3.5;
+        speaker2.castShadow = true;
+        scene.add(speaker2);
+
+        // Speaker details
+        const speakerDetailGeometry = new THREE.BoxGeometry(0.5, 0.8, 0.05);
+        const speakerDetailMaterial = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5, metalness: 0.7 });
+        const speakerDetail1 = new THREE.Mesh(speakerDetailGeometry, speakerDetailMaterial);
+        speakerDetail1.position.set(-3.5, 1.5, 3.3); // Adjusted z = -0.3 + 3
+        speakerDetail1.rotation.y = Math.PI;
+        speakerDetail1.position.z = 6 - (speakerDetail1.position.z - 3);
+        speakerDetail1.position.x = 3.5;
+        scene.add(speakerDetail1);
+
+        const speakerDetail2 = new THREE.Mesh(speakerDetailGeometry, speakerDetailMaterial);
+        speakerDetail2.position.set(3.5, 1.5, 3.3);
+        speakerDetail2.rotation.y = Math.PI;
+        speakerDetail2.position.z = 6 - (speakerDetail2.position.z - 3);
+        speakerDetail2.position.x = -3.5;
+        scene.add(speakerDetail2);
+
+        // White cones
+        const coneGeometry = new THREE.ConeGeometry(0.15, 0.1, 32);
+        const coneMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0 });
+        const cone1 = new THREE.Mesh(coneGeometry, coneMaterial);
+        cone1.position.set(-3.5, 1.5, 3.25); // Adjusted z = -0.25 + 3
+        cone1.rotation.x = Math.PI / 2; // Adjusted rotation to face couch
+        cone1.rotation.y = Math.PI;
+        cone1.position.z = 6 - (cone1.position.z - 3);
+        cone1.position.x = 3.5;
+        scene.add(cone1);
+
+        const cone2 = new THREE.Mesh(coneGeometry, coneMaterial);
+        cone2.position.set(3.5, 1.5, 3.25);
+        cone2.rotation.x = Math.PI / 2;
+        cone2.rotation.y = Math.PI;
+        cone2.position.z = 6 - (cone2.position.z - 3);
+        cone2.position.x = -3.5;
+        scene.add(cone2);
+
+        // Subtle speaker neon glow
+        const speakerEdgeGeometry = new THREE.EdgesGeometry(speakerGeometry);
+        const speakerEdge1 = new THREE.LineSegments(speakerEdgeGeometry, deskEdgeMaterial);
+        speakerEdge1.position.set(-3.5, 1.5, 3.5);
+        speakerEdge1.rotation.y = Math.PI;
+        speakerEdge1.position.z = 6 - (speakerEdge1.position.z - 3);
+        speakerEdge1.position.x = 3.5;
+        scene.add(speakerEdge1);
+
+        const speakerEdge2 = new THREE.LineSegments(speakerEdgeGeometry, deskEdgeMaterial);
+        speakerEdge2.position.set(3.5, 1.5, 3.5);
+        speakerEdge2.rotation.y = Math.PI;
+        speakerEdge2.position.z = 6 - (speakerEdge2.position.z - 3);
+        speakerEdge2.position.x = -3.5;
+        scene.add(speakerEdge2);
+
+        // EQ Console
+        const eqConsoleGeometry = new THREE.BoxGeometry(1.5, 0.1, 1);
+        const eqConsoleMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const eqConsole = new THREE.Mesh(eqConsoleGeometry, eqConsoleMaterial);
+        eqConsole.position.set(-2, 1.23, 3.5); // Adjusted z = 0.5 + 3
+        eqConsole.rotation.y = Math.PI;
+        eqConsole.position.z = 6 - (eqConsole.position.z - 3);
+        eqConsole.position.x = 2;
+        eqConsole.castShadow = true;
+        scene.add(eqConsole);
+
+        // EQ Console details - Sliders, knobs, and lights
+        const sliderGeometry = new THREE.BoxGeometry(0.05, 0.1, 0.2);
+        const sliderMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.5 });
+        const sliders = [];
+        for (let i = 0; i < 5; i++) {
+            const x = -2.4 + i * 0.2;
+            const slider = new THREE.Mesh(sliderGeometry, sliderMaterial);
+            slider.position.set(x, 1.28 + Math.sin(i) * 0.02, 3.6);
+            slider.rotation.y = Math.PI;
+            slider.position.z = 6 - (slider.position.z - 3);
+            slider.position.x = -x;
+            scene.add(slider);
+            sliders.push(slider);
+        }
+
+        const knobGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.02, 32);
+        const knobMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.5 });
+        const knobs = [];
+        for (let i = 0; i < 4; i++) {
+            const x = -2.4 + i * 0.15;
+            const knob = new THREE.Mesh(knobGeometry, knobMaterial);
+            knob.position.set(x, 1.28, 3.4);
+            knob.rotation.x = Math.PI / 2;
+            knob.rotation.y = Math.PI;
+            knob.position.z = 6 - (knob.position.z - 3);
+            knob.position.x = -x;
+            scene.add(knob);
+            knobs.push(knob);
+        }
+
+        const eqLightGeometry = new THREE.SphereGeometry(0.02, 16, 16);
+        const eqLightMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const eqLights = [];
+        for (let i = 0; i < 5; i++) {
+            const x = -2.4 + i * 0.2;
+            const eqLight = new THREE.Mesh(eqLightGeometry, eqLightMaterial);
+            eqLight.position.set(x, 1.28, 3.5);
+            eqLight.rotation.y = Math.PI;
+            eqLight.position.z = 6 - (eqLight.position.z - 3);
+            eqLight.position.x = -x;
+            scene.add(eqLight);
+            eqLights.push(eqLight);
+        }
+
+        // Subtle EQ console neon glow
+        const eqEdgeGeometry = new THREE.EdgesGeometry(eqConsoleGeometry);
+        const eqEdge = new THREE.LineSegments(eqEdgeGeometry, deskEdgeMaterial);
+        eqEdge.position.set(-2, 1.23, 3.5);
+        eqEdge.rotation.y = Math.PI;
+        eqEdge.position.z = 6 - (eqEdge.position.z - 3);
+        eqEdge.position.x = 2;
+        scene.add(eqEdge);
+
+        // Server Rack
+        const serverRackGeometry = new THREE.BoxGeometry(2, 0.8, 1);
+        const serverRackMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.5,
+            metalness: 0.5
+        });
+        const serverRack = new THREE.Mesh(serverRackGeometry, serverRackMaterial);
+        serverRack.position.set(2, 0.4, 3); // Adjusted z = 0 + 3
+        serverRack.rotation.y = Math.PI;
+        serverRack.position.z = 6 - (serverRack.position.z - 3);
+        serverRack.position.x = -2;
+        serverRack.castShadow = true;
+        scene.add(serverRack);
+
+        // Server rack details
+        const serverDetailGeometry = new THREE.BoxGeometry(1.8, 0.6, 0.05);
+        const serverDetail = new THREE.Mesh(serverDetailGeometry, deskDetailMaterial);
+        serverDetail.position.set(2, 0.4, 3.5);
+        serverDetail.rotation.y = Math.PI;
+        serverDetail.position.z = 6 - (serverDetail.position.z - 3);
+        serverDetail.position.x = -2;
+        scene.add(serverDetail);
+
+        // Server rack levels
+        const levelGeometry = new THREE.BoxGeometry(0.3, 0.05, 0.05);
+        const levelMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const levels = [];
+        for (let i = 0; i < 4; i++) {
+            const level = new THREE.Mesh(levelGeometry, levelMaterial);
+            level.position.set(2, 0.2 + i * 0.1, 3.5);
+            level.rotation.y = Math.PI;
+            level.position.z = 6 - (level.position.z - 3);
+            level.position.x = -2;
+            scene.add(level);
+            levels.push(level);
+        }
+
+        // Server rack blinkers and knobs
+        const blinkerGeometry = new THREE.SphereGeometry(0.03, 16, 16);
+        const blinkerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+        const blinkers = [];
+        for (let i = 0; i < 5; i++) {
+            const x = 1.5 + i * 0.2;
+            const blinker = new THREE.Mesh(blinkerGeometry, blinkerMaterial);
+            blinker.position.set(x, 0.6, 3.5);
+            blinker.rotation.y = Math.PI;
+            blinker.position.z = 6 - (blinker.position.z - 3);
+            blinker.position.x = -x;
+            scene.add(blinker);
+            blinkers.push(blinker);
+        }
+
+        const knobGeometry2 = new THREE.CylinderGeometry(0.05, 0.05, 0.02, 32);
+        const knobMaterial2 = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.5 });
+        for (let i = 0; i < 3; i++) {
+            const x = 1.5 + i * 0.3;
+            const knob = new THREE.Mesh(knobGeometry2, knobMaterial2);
+            knob.position.set(x, 0.3, 3.5);
+            knob.rotation.x = Math.PI / 2;
+            knob.rotation.y = Math.PI;
+            knob.position.z = 6 - (knob.position.z - 3);
+            knob.position.x = -x;
+            scene.add(knob);
+        }
+
+        // Server rack neon glow
+        const serverEdgeGeometry = new THREE.EdgesGeometry(serverRackGeometry);
+        const serverEdge = new THREE.LineSegments(serverEdgeGeometry, deskEdgeMaterial);
+        serverEdge.position.set(2, 0.4, 3);
+        serverEdge.rotation.y = Math.PI;
+        serverEdge.position.z = 6 - (serverEdge.position.z - 3);
+        serverEdge.position.x = -2;
+        scene.add(serverEdge);
+
+        // Sofa with Neon Green Base Glow
+        const sofaMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            roughness: 0.4,
+            metalness: 0.3
+        });
+        const sofaBaseGeometry = new THREE.BoxGeometry(4.5, 0.5, 1);
+        const sofaBackGeometry = new THREE.BoxGeometry(4.5, 1, 0.3);
+        const sofaArmGeometry = new THREE.BoxGeometry(0.5, 0.5, 1);
+        const sofaCushionGeometry = new THREE.BoxGeometry(1.4, 0.2, 0.8);
+
+        const sofaBase = new THREE.Mesh(sofaBaseGeometry, sofaMaterial);
+        sofaBase.position.set(0, 0.25, -4.2);
+        sofaBase.castShadow = true;
+        scene.add(sofaBase);
+
+        const sofaGlowMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.5
+        });
+        const sofaGlowGeometry = new THREE.BoxGeometry(4.6, 0.05, 1.1);
+        const sofaGlow = new THREE.Mesh(sofaGlowGeometry, sofaGlowMaterial);
+        sofaGlow.position.set(0, 0.025, -4.2);
+        scene.add(sofaGlow);
+
+        const sofaBack = new THREE.Mesh(sofaBackGeometry, sofaMaterial);
+        sofaBack.position.set(0, 0.75, -4.45);
+        scene.add(sofaBack);
+
+        const sofaArmLeft = new THREE.Mesh(sofaArmGeometry, sofaMaterial);
+        sofaArmLeft.position.set(-2.25, 0.5, -4.2);
+        scene.add(sofaArmLeft);
+
+        const sofaArmRight = new THREE.Mesh(sofaArmGeometry, sofaMaterial);
+        sofaArmRight.position.set(2.25, 0.5, -4.2);
+        scene.add(sofaArmRight);
+
+        for (let x = -1.5; x <= 1.5; x += 1.5) {
+            const cushion = new THREE.Mesh(sofaCushionGeometry, sofaMaterial);
+            cushion.position.set(x, 0.45, -4.2);
+            scene.add(cushion);
+        }
+
+        // Neon sign
+        const signCanvas = document.createElement('canvas');
+        signCanvas.width = 1024;
+        signCanvas.height = 256;
+        const signContext = signCanvas.getContext('2d');
+        signContext.fillStyle = '#000000';
+        signContext.fillRect(0, 0, signCanvas.width, signCanvas.height);
+        signContext.font = '200px Arial';
+        signContext.fillStyle = '#00ff00';
+        signContext.textAlign = 'center';
+        signContext.textBaseline = 'middle';
+        signContext.fillText('webXOS', signCanvas.width / 2, signCanvas.height / 2);
+        const signTexture = new THREE.CanvasTexture(signCanvas);
+
+        const neonSignGeometry = new THREE.PlaneGeometry(3, 0.75);
+        const neonSignMaterial = new THREE.MeshBasicMaterial({
+            map: signTexture,
+            transparent: true,
+            emissive: 0x00ff00,
+            emissiveIntensity: 2
+        });
+        const neonSign = new THREE.Mesh(neonSignGeometry, neonSignMaterial);
+        neonSign.position.set(0, 3, -4.9);
+        scene.add(neonSign);
+
+        const signGlowLight = new THREE.PointLight(0x00ff00, 2, 5);
+        signGlowLight.position.set(0, 3, -4.8);
+        scene.add(signGlowLight);
+
+        // Page navigation and camera positions
+        const pages = {
+            about: {
+                cameraPos: new THREE.Vector3(4.8, 2.4, 0),
+                lookAt: new THREE.Vector3(0, 3, -4.9),
+                text: "About: Learn more about webXOS Studio\nOur mission and vision.",
+                centerText: "About webXOS Studio"
+            },
+            tools: {
+                cameraPos: new THREE.Vector3(3.6, 2.4, -0.6),
+                lookAt: new THREE.Vector3(-0.6, 0.85, 2.4),
+                text: "Tools: Explore our suite of development tools\nDesigned for efficiency.",
+                centerText: "Our Tools"
+            },
+            aiAgents: {
+                cameraPos: new THREE.Vector3(5, 7, 5),
+                lookAt: new THREE.Vector3(0, 0, 0),
+                text: "AI Agents: Discover our intelligent agents\nPowering the future.",
+                centerText: "AI Agents"
+            },
+            games: {
+                cameraPos: new THREE.Vector3(-3.6, 2.4, 0),
+                lookAt: new THREE.Vector3(0, 0.5, 2.5),
+                text: "Games: Dive into our gaming experiences\nFun and immersive.",
+                centerText: "Games by webXOS"
+            },
+            copyright: {
+                cameraPos: new THREE.Vector3(2.4, 3, -2.4),
+                lookAt: new THREE.Vector3(0, 3, -4.9),
+                text: "Copyright: View our licensing information\nProtecting our work.",
+                centerText: "Copyright Information"
+            }
+        };
+
+        let currentPage = 'about';
+
+        function navigateTo(page) {
+            currentPage = page;
+            const pageData = pages[page];
+            camera.position.copy(pageData.cameraPos);
+            camera.lookAt(pageData.lookAt);
+            document.getElementById('textOverlay').innerText = pageData.text;
+            document.getElementById('centerOverlay').innerHTML = pageData.centerText;
+            toggleMenu();
+        }
+
+        // Initial page load
+        navigateTo('about');
+
+        // Animation loop
+        let time = 0;
+        function animate() {
+            time += 0.05;
+
+            // Animate neural ceiling
+            neuralLinesGeometry.attributes.position.array.forEach((_, i) => {
+                if (i % 3 === 1) {
+                    neuralLinesGeometry.attributes.position.array[i] = 4.8 + Math.sin(time + i) * 0.05;
+                }
+            });
+            neuralLinesGeometry.attributes.position.needsUpdate = true;
+
+            // Animate server rack LEDs, EQ console lights, and levels
+            blinkers.forEach((blinker, index) => {
+                blinker.material.opacity = 0.3 + 0.2 * Math.sin(time + index);
+            });
+            eqLights.forEach((light, index) => {
+                light.material.opacity = 0.3 + 0.2 * Math.sin(time + index * 0.5);
+            });
+            levels.forEach((level, index) => {
+                level.scale.y = 1 + Math.sin(time + index) * 0.5;
+            });
+
+            // Animate desk and sofa glow
+            deskEdge.material.opacity = 0.3 + 0.1 * Math.sin(time * 1.5);
+            sofaGlow.material.emissiveIntensity = 0.5 + 0.2 * Math.sin(time * 1.5);
+
+            renderer.render(scene, camera);
+        }
+
+        // Responsive handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Menu toggle
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
