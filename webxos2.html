@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Room with Matrix Monitors</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Orbit controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        camera.position.set(0, 2, 5);
+        controls.update();
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Room geometry (unchanged)
+        const roomGeometry = new THREE.BoxGeometry(10, 5, 10);
+        const roomMaterial = new THREE.MeshStandardMaterial({ color: 0x808080, side: THREE.BackSide });
+        const room = new THREE.Mesh(roomGeometry, roomMaterial);
+        scene.add(room);
+
+        // Canvas for Matrix text
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const context = canvas.getContext('2d');
+        const texture = new THREE.CanvasTexture(canvas);
+
+        // Matrix effect variables
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(0);
+        let frameCount = 0;
+
+        function updateMatrix() {
+            // Fade effect
+            context.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Neon green text with glow
+            context.fillStyle = '#00ff00';
+            context.font = `${fontSize}px monospace`;
+            context.shadowColor = '#00ff00';
+            context.shadowBlur = 10;
+
+            for (let i = 0; i < drops.length; i++) {
+                const char = String.fromCharCode(33 + Math.random() * 94); // Random printable ASCII
+                context.fillText(char, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0; // Reset drop
+                }
+                drops[i]++;
+            }
+
+            texture.needsUpdate = true;
+        }
+
+        // Monitor material with Matrix texture
+        const monitorMaterial = new THREE.MeshBasicMaterial({ map: texture, side: THREE.FrontSide });
+
+        // Monitor geometries (adjusted to prevent clipping)
+        const monitorGeometry = new THREE.PlaneGeometry(2, 1.5); // Standard size
+        const monitors = [
+            new THREE.Mesh(monitorGeometry, monitorMaterial), // Left
+            new THREE.Mesh(monitorGeometry, monitorMaterial), // Center
+            new THREE.Mesh(monitorGeometry, monitorMaterial)  // Right
+        ];
+
+        // Position monitors with slight offset to prevent z-fighting
+        monitors[0].position.set(-2.5, 1.5, -4.99);
+        monitors[1].position.set(0, 1.5, -4.99);
+        monitors[2].position.set(2.5, 1.5, -4.99);
+
+        // Rotate monitors slightly for better viewing
+        monitors.forEach(monitor => {
+            monitor.rotation.y = Math.PI / 8; // Slight tilt
+            scene.add(monitor);
+        });
+
+        // Ensure texture fits properly
+        texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture.minFilter = THREE.LinearFilter;
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            frameCount++;
+            if (frameCount % 2 === 0) { // Update every other frame for performance
+                updateMatrix();
+            }
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
