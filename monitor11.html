@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stealth Gaming Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #1a1a1a; }
+        .glassmorphism { 
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+        .neumorphic { 
+            background: #1a1a1a; 
+            box-shadow: 8px 8px 16px #0f0f0f, -8px -8px 16px #252525; 
+            border-radius: 10px; 
+        }
+        .hover-scale { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .hover-scale:hover { transform: translateY(-10px); box-shadow: 0 0 20px rgba(0, 183, 235, 0.5); }
+        .canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        .product-canvas { width: 100%; height: 200px; border-radius: 8px; }
+    </style>
+</head>
+<body class="antialiased text-white">
+    <nav class="fixed top-0 w-full flex justify-between items-center p-6 glassmorphism z-50">
+        <div class="flex space-x-6">
+            <a href="#" onclick="showPage('home')" class="text-cyan-400 hover:text-white transition-transform hover:scale-110">Home</a>
+            <a href="#" onclick="showPage('shop')" class="text-cyan-400 hover:text-white transition-transform hover:scale-110">Shop</a>
+            <a href="#" onclick="showPage('cart')" class="text-cyan-400 hover:text-white transition-transform hover:scale-110 relative">
+                Cart <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">0</span>
+            </a>
+        </div>
+        <div class="flex space-x-6">
+            <a href="#support" class="text-cyan-400 hover:text-white transition-transform hover:scale-110">Support</a>
+            <a href="#contact" class="text-cyan-400 hover:text-white transition-transform hover:scale-110">Contact</a>
+        </div>
+    </nav>
+    <div class="hero flex flex-col justify-center items-center text-center min-h-screen relative" id="home">
+        <h1 id="product-title" class="text-5xl md:text-7xl font-bold uppercase text-cyan-400 drop-shadow-[0_0_15px_rgba(0,183,235,0.5)] mb-6">Stealth Gaming Series</h1>
+        <p id="product-desc" class="text-lg md:text-xl text-gray-300 max-w-3xl mb-8">Explore our full range of gaming gear with neon Matrix displays and vibrant LED accents.</p>
+        <button class="cta bg-cyan-400 text-black px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:scale-105 transition-all" onclick="enterInteractiveMode()">Discover Now</button>
+        <div class="model-selector mt-6 flex flex-wrap justify-center gap-4"></div>
+    </div>
+    <div class="camera-controls fixed bottom-4 right-4 glassmorphism p-4 rounded-xl flex flex-col md:flex-row gap-2 hidden z-10">
+        <button class="camera-btn bg-gray-700 text-cyan-400 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-black transition-all" onclick="setCameraView('front')">Front View</button>
+        <button class="camera-btn bg-gray-700 text-cyan-400 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-black transition-all" onclick="setCameraView('side')">Side View</button>
+        <button class="camera-btn bg-gray-700 text-cyan-400 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-black transition-all" onclick="setCameraView('top')">Top View</button>
+        <button class="camera-btn bg-gray-700 text-cyan-400 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-black transition-all" onclick="setCameraView('free')">Free Roam</button>
+    </div>
+    <div class="shop hidden p-24 relative z-10 glassmorphism" id="shop">
+        <h2 class="text-4xl font-bold text-center mb-8 text-cyan-400">Shop Gaming Gear</h2>
+        <div class="shop-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="shop-grid"></div>
+    </div>
+    <div class="cart hidden p-24 relative z-10 glassmorphism" id="cart">
+        <h2 class="text-4xl font-bold text-center mb-8 text-cyan-400">Your Cart</h2>
+        <table class="w-full border-collapse bg-gray-800/50 rounded-lg">
+            <thead>
+                <tr class="bg-gray-700">
+                    <th class="p-4 text-left">Product</th>
+                    <th class="p-4 text-left">Price</th>
+                    <th class="p-4 text-left">Quantity</th>
+                    <th class="p-4 text-left">Total</th>
+                </tr>
+            </thead>
+            <tbody id="cart-body"></tbody>
+        </table>
+        <p class="mt-4 text-xl">Total: $<span id="cart-total">0</span></p>
+        <button class="cta bg-cyan-400 text-black px-8 py-4 rounded-lg mt-4 hover:bg-white hover:scale-105 transition-all" onclick="showPage('checkout')">Proceed to Checkout</button>
+    </div>
+    <div class="checkout hidden p-24 relative z-10 glassmorphism" id="checkout">
+        <h2 class="text-4xl font-bold text-center mb-8 text-cyan-400">Checkout</h2>
+        <form id="checkout-form" class="max-w-lg mx-auto neumorphic p-6">
+            <label for="name" class="block mb-2 text-lg">Name</label>
+            <input type="text" id="name" class="w-full p-3 bg-gray-700 rounded-lg text-white" required>
+            <label for="email" class="block mb-2 text-lg mt-4">Email</label>
+            <input type="email" id="email" class="w-full p-3 bg-gray-700 rounded-lg text-white" required>
+            <label for="address" class="block mb-2 text-lg mt-4">Address</label>
+            <input type="text" id="address" class="w-full p-3 bg-gray-700 rounded-lg text-white" required>
+            <button type="submit" class="w-full bg-cyan-400 text-black p-3 rounded-lg mt-4 hover:bg-white hover:scale-105 transition-all">Confirm Order</button>
+        </form>
+    </div>
+    <button class="back-btn fixed top-4 left-4 bg-gray-700 text-cyan-400 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-black transition-all hidden z-10" onclick="exitInteractiveMode()">Back</button>
+    <div class="canvas-container">
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+        const pointLight = new THREE.PointLight(0x00b7eb, 1.5, 10);
+        pointLight.position.set(-5, 3, 5);
+        scene.add(pointLight);
+
+        // Gray Background
+        scene.background = new THREE.Color(0x1a1a1a);
+
+        // Matrix Texture
+        function createMatrixCanvas() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 288;
+            const ctx = canvas.getContext('2d');
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%';
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(0);
+
+            function animateMatrix() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00ff55';
+                ctx.font = `${fontSize}px monospace`;
+                drops.forEach((y, i) => {
+                    const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                    const x = i * fontSize;
+                    ctx.fillText(text, x, y * fontSize);
+                    if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                });
+                return canvas;
+            }
+            animateMatrix();
+            setInterval(animateMatrix, 50);
+            return canvas;
+        }
+
+        const phantomCanvas = createMatrixCanvas();
+        const wraithCanvas = createMatrixCanvas();
+        const pulseCanvas = createMatrixCanvas();
+        const phantomTexture = new THREE.CanvasTexture(phantomCanvas);
+        const wraithTexture = new THREE.CanvasTexture(wraithCanvas);
+        const pulseTexture = new THREE.CanvasTexture(pulseCanvas);
+
+        // Normal Map
+        const normalMap = new THREE.TextureLoader().load('https://threejs.org/examples/textures/normal_map.jpg');
+
+        // Geometries
+        const bezelShape = new THREE.Shape();
+        bezelShape.moveTo(-1.21, -0.69);
+        bezelShape.lineTo(1.21, -0.69);
+        bezelShape.lineTo(1.21, 0.69);
+        bezelShape.lineTo(-1.21, 0.69);
+        bezelShape.lineTo(-1.21, -0.69);
+        const bezelExtrudeSettings = { depth: 0.04, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 8 };
+        const bezelGeo = new THREE.ExtrudeGeometry(bezelShape, bezelExtrudeSettings);
+
+        const standShape = new THREE.Shape();
+        standShape.moveTo(-0.5, 0);
+        standShape.lineTo(0.5, 0);
+        standShape.quadraticCurveTo(0.3, 0.6, 0.25, 0.7);
+        standShape.lineTo(-0.25, 0.7);
+        standShape.quadraticCurveTo(-0.3, 0.6, -0.5, 0);
+        const standGeo = new THREE.ExtrudeGeometry(standShape, { depth: 0.25, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02 });
+
+        const mouseShape = new THREE.Shape();
+        mouseShape.moveTo(-0.25, -0.35);
+        mouseShape.lineTo(0.25, -0.35);
+        mouseShape.quadraticCurveTo(0.35, 0, 0.25, 0.35);
+        mouseShape.lineTo(-0.25, 0.35);
+        mouseShape.quadraticCurveTo(-0.35, 0, -0.25, -0.35);
+        const mouseGeo = new THREE.ExtrudeGeometry(mouseShape, { depth: 0.12, bevelEnabled: true, bevelThickness: 0.025, bevelSize: 0.025 });
+
+        const keyboardGeo = new THREE.BoxGeometry(1.6, 0.12, 0.45);
+        const chairGeo = new THREE.BoxGeometry(1.2, 1.8, 1.2);
+        const towerGeo = new THREE.BoxGeometry(0.9, 2.2, 0.9);
+        const tabletGeo = new THREE.BoxGeometry(0.85, 0.55, 0.06);
+        const phoneGeo = new THREE.BoxGeometry(0.45, 0.75, 0.04);
+
+        // Product Definitions
+        const products = [
+            { id: 'phantom-monitor', name: 'Stealth Phantom Monitor', desc: '24" 4K monitor with neon blue accents.', price: 599.99, color: 0x00b7eb, texture: phantomTexture, type: 'monitor' },
+            { id: 'wraith-monitor', name: 'Night Wraith Monitor', desc: '24" 4K monitor with neon red accents.', price: 599.99, color: 0xff3333, texture: wraithTexture, type: 'monitor' },
+            { id: 'pulse-monitor', name: 'Dark Pulse Monitor', desc: '24" 4K monitor with neon green accents.', price: 599.99, color: 0x00ff55, texture: pulseTexture, type: 'monitor' },
+            { id: 'phantom-mouse', name: 'Phantom Mouse', desc: 'Lightweight gaming mouse with blue neon.', price: 89.99, color: 0x00b7eb, type: 'mouse' },
+            { id: 'wraith-mouse', name: 'Wraith Mouse', desc: 'Lightweight gaming mouse with red neon.', price: 89.99, color: 0xff3333, type: 'mouse' },
+            { id: 'pulse-mouse', name: 'Pulse Mouse', desc: 'Lightweight gaming mouse with green neon.', price: 89.99, color: 0x00ff55, type: 'mouse' },
+            { id: 'phantom-keyboard', name: 'Phantom Keyboard', desc: 'Mechanical keyboard with blue RGB.', price: 149.99, color: 0x00b7eb, type: 'keyboard' },
+            { id: 'wraith-keyboard', name: 'Wraith Keyboard', desc: 'Mechanical keyboard with red RGB.', price: 149.99, color: 0xff3333, type: 'keyboard' },
+            { id: 'pulse-keyboard', name: 'Pulse Keyboard', desc: 'Mechanical keyboard with green RGB.', price: 149.99, color: 0x00ff55, type: 'keyboard' },
+            { id: 'phantom-chair', name: 'Phantom Chair', desc: 'Ergonomic chair with blue neon piping.', price: 399.99, color: 0x00b7eb, type: 'chair' },
+            { id: 'wraith-chair', name: 'Wraith Chair', desc: 'Ergonomic chair with red neon piping.', price: 399.99, color: 0xff3333, type: 'chair' },
+            { id: 'pulse-chair', name: 'Pulse Chair', desc: 'Ergonomic chair with green neon piping.', price: 399.99, color: 0x00ff55, type: 'chair' },
+            { id: 'phantom-tower', name: 'Phantom Tower PC', desc: 'High-performance PC with blue neon.', price: 1999.99, color: 0x00b7eb, type: 'tower' },
+            { id: 'wraith-tower', name: 'Wraith Tower PC', desc: 'High-performance PC with red neon.', price: 1999.99, color: 0xff3333, type: 'tower' },
+            { id: 'pulse-tower', name: 'Pulse Tower PC', desc: 'High-performance PC with green neon.', price: 1999.99, color: 0x00ff55, type: 'tower' },
+            { id: 'phantom-tablet', name: 'Phantom Tablet', desc: 'Sleek tablet with blue neon and Matrix display.', price: 499.99, color: 0x00b7eb, texture: phantomTexture, type: 'tablet' },
+            { id: 'wraith-tablet', name: 'Wraith Tablet', desc: 'Sleek tablet with red neon and Matrix display.', price: 499.99, color: 0xff3333, texture: wraithTexture, type: 'tablet' },
+            { id: 'pulse-tablet', name: 'Pulse Tablet', desc: 'Sleek tablet with green neon and Matrix display.', price: 499.99, color: 0x00ff55, texture: pulseTexture, type: 'tablet' },
+            { id: 'phantom-phone', name: 'Phantom Phone', desc: 'Sleek phone with blue neon and Matrix display.', price: 799.99, color: 0x00b7eb, texture: phantomTexture, type: 'phone' },
+            { id: 'wraith-phone', name: 'Wraith Phone', desc: 'Sleek phone with red neon and Matrix display.', price: 799.99, color: 0xff3333, texture: wraithTexture, type: 'phone' },
+            { id: 'pulse-phone', name: 'Pulse Phone', desc: 'Sleek phone with green neon and Matrix display.', price: 799.99, color: 0x00ff55, texture: pulseTexture, type: 'phone' }
+        ];
+
+        // 3D Models for Products
+        const productGroups = {};
+        const productRenderers = {};
+        function createProduct(product, index, isShop = false) {
+            const group = new THREE.Group();
+            let geo, mat, scale = 1, yOffset = 0;
+
+            if (product.type === 'monitor') {
+                const screenGeo = new THREE.BoxGeometry(2.4, 1.35, 0.05);
+                mat = new THREE.MeshStandardMaterial({ 
+                    map: product.texture, 
+                    emissive: 0x00ff55, 
+                    emissiveIntensity: 0.4, 
+                    roughness: 0.2, 
+                    metalness: 0.8 
+                });
+                const screen = new THREE.Mesh(screenGeo, mat);
+                group.add(screen);
+
+                const bezelMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x101010, 
+                    roughness: 0.2, 
+                    metalness: 0.8 
+                });
+                const bezel = new THREE.Mesh(bezelGeo, bezelMat);
+                bezel.position.z = -0.03;
+                group.add(bezel);
+
+                const ledGeo = new THREE.BoxGeometry(2.41, 0.03, 0.01);
+                const ledMat = new THREE.MeshBasicMaterial({ 
+                    color: product.color, 
+                    emissive: product.color, 
+                    emissiveIntensity: 2.0 
+                });
+                const ledTop = new THREE.Mesh(ledGeo, ledMat);
+                ledTop.position.set(0, 0.7, 0.04);
+                group.add(ledTop);
+                const ledBottom = new THREE.Mesh(ledGeo, ledMat);
+                ledBottom.position.set(0, -0.7, 0.04);
+                group.add(ledBottom);
+
+                const standMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x101010, 
+                    roughness: 0.2, 
+                    metalness: 0.8 
+                });
+                const stand = new THREE.Mesh(standGeo, standMat);
+                stand.position.y = -0.95;
+                group.add(stand);
+                scale = isShop ? 0.6 : 0.8;
+                yOffset = 0.5;
+            } else if (product.type === 'mouse') {
+                geo = mouseGeo;
+                mat = new THREE.MeshStandardMaterial({ 
+                    color: 0x101010, 
+                    roughness: 0.2, 
+                    metalness: 0.8, 
+                    normalMap 
+                });
+                const ledGeo = new THREE.BoxGeometry(0.3, 0.02, 0.01);
+                const ledMat = new THREE.MeshBasicMaterial({ 
+                    color: product.color, 
+                    emissive: product.color, 
+                    emissiveIntensity: 2.0 
+                });
+                const led = new THREE.Mesh(ledGeo, ledMat);
+                led.position.set(0, 0, 0.07);
+                group.add(led);
+                scale = isShop ? 1.2 : 1.5;
+                yOffset = -0.5;
+            } else if (product.type === 'keyboard') {
+                geo = keyboardGeo;
+                mat = new THREE.MeshStandardMaterial({ 
+                    color: 0x101010, 
+                    roughness: 0.2, 
+                    metalness: 0.8, 
+                    emissive: product.color, 
+                    emissiveIntensity: 0.3 
+                });
+                const keyGeo = new THREE.BoxGeometry(1.5, 0.02, 0.4);
+                const keyMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x000000, 
+                    roughness: 0.3, 
+                    metalness: 0.7 
+                });
+                const keys = new THREE.Mesh(keyGeo, keyMat);
+                keys.position.set(0, 0.06, 0);
+                group.add(keys);
+                scale = isShop ? 0.6 : 0.8;
+                yOffset = -0.3;
+            } else if (product.type === 'chair') {
+                geo = chairGeo;
+                mat = new THREE.MeshStandardMaterial({ 
+                    color: 0x101010, 
+                    roughness: 0.2, 
+                    metalness: 0.8, 
+                    emissive: product.color, 
+                    emissiveIntensity: 0.3 
+                });
+                const backGeo = new THREE.BoxGeometry(1.0, 0.8, 0.1);
+                const backMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x101010, 
+                    roughness: 0.3, 
+                    metalness: 0.7 
+                });
+                const back = new THREE.Mesh(backGeo, backMat);
+                back.position.set(0, 0.5, 0.5);
+                group.add(back);
+                scale = isShop ? 0.5 : 0.6;
+                yOffset = 0.8;
+            } else if (product.type === 'tower') {
+                geo = towerGeo;
+                mat = new THREE.MeshStandardMaterial({ 
+                    color: 0x101010, 
+                    roughness: 0.2, 
+                    metalness: 0.8 
+                });
+                const ledGeo = new THREE.BoxGeometry(0.8, 0.05, 0.05);
+                const ledMat = new THREE.MeshBasicMaterial({ 
+                    color: product.color, 
+                    emissive: product.color, 
+                    emissiveIntensity: 2.0 
+                });
+                const led = new THREE.Mesh(ledGeo, ledMat);
+                led.position.set(0, 1.0, 0.46);
+                group.add(led);
+                scale = isShop ? 0.5 : 0.7;
+                yOffset = 0.7;
+            } else if (product.type === 'tablet' || product.type === 'phone') {
+                geo = product.type === 'tablet' ? tabletGeo : phoneGeo;
+                mat = new THREE.MeshStandardMaterial({ 
+                    map: product.texture, 
+                    emissive: 0x00ff55, 
+                    emissiveIntensity: 0.4, 
+                    roughness: 0.2, 
+                    metalness: 0.8 
+                });
+                const bezelGeo = product.type === 'tablet' ? new THREE.BoxGeometry(0.86, 0.56, 0.02) : new THREE.BoxGeometry(0.46, 0.76, 0.02);
+                const bezelMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x101010, 
+                    roughness: 0.2, 
+                    metalness: 0.8 
+                });
+                const bezel = new THREE.Mesh(bezelGeo, bezelMat);
+                bezel.position.z = -0.01;
+                group.add(bezel);
+                const ledGeo = new THREE.BoxGeometry(product.type === 'tablet' ? 0.86 : 0.46, 0.02, 0.01);
+                const ledMat = new THREE.MeshBasicMaterial({ 
+                    color: product.color, 
+                    emissive: product.color, 
+                    emissiveIntensity: 2.0 
+                });
+                const led = new THREE.Mesh(ledGeo, ledMat);
+                led.position.set(0, product.type === 'tablet' ? 0.28 : 0.38, 0.03);
+                group.add(led);
+                scale = product.type === 'tablet' ? 1.0 : 1.2;
+                yOffset = -0.4;
+            }
+
+            const mesh = new THREE.Mesh(geo, mat);
+            group.add(mesh);
+
+            if (!isShop) {
+                const cols = 5;
+                const spacing = 2.5;
+                const row = Math.floor(index / cols);
+                const col = index % cols;
+                group.position.set(
+                    (col - (cols - 1) / 2) * spacing,
+                    row * -spacing + yOffset,
+                    0
+                );
+                group.scale.set(scale, scale, scale);
+                group.visible = true;
+                scene.add(group);
+            } else {
+                group.scale.set(scale, scale, scale);
+            }
+
+            return group;
+        }
+
+        // Create Product Groups and Model Selector
+        products.forEach((product, index) => {
+            productGroups[product.id] = {
+                group: createProduct(product, index),
+                title: product.name,
+                desc: product.desc,
+                price: product.price
+            };
+
+            const btn = document.createElement('button');
+            btn.className = 'model-btn bg-gray-700 text-cyan-400 px-4 py-2 rounded-lg hover:bg-cyan-400 hover:text-black transition-all' + (index === 0 ? ' active' : '');
+            btn.dataset.model = product.id;
+            btn.textContent = product.name;
+            btn.onclick = () => selectProduct(product.id);
+            document.getElementById('model-selector').appendChild(btn);
+        });
+
+        // Camera and Controls
+        camera.position.set(0, 0, 12);
+        camera.lookAt(0, 0, 0);
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enabled = false;
+        controls.enableDamping = true;
+        controls.minDistance = 4;
+        controls.maxDistance = 15;
+        controls.enablePan = false;
+
+        // Camera Views
+        function setCameraView(view) {
+            if (selectedProduct) {
+                const targetPos = productGroups[selectedProduct].group.position;
+                let newPos, targetLookAt;
+                switch (view) {
+                    case 'front':
+                        newPos = new THREE.Vector3(targetPos.x, targetPos.y + 0.5, targetPos.z + 3);
+                        targetLookAt = targetPos;
+                        controls.enabled = false;
+                        break;
+                    case 'side':
+                        newPos = new THREE.Vector3(targetPos.x + 3, targetPos.y + 0.5, targetPos.z);
+                        targetLookAt = targetPos;
+                        controls.enabled = false;
+                        break;
+                    case 'top':
+                        newPos = new THREE.Vector3(targetPos.x, targetPos.y + 3, targetPos.z + 0.1);
+                        targetLookAt = targetPos;
+                        controls.enabled = false;
+                        break;
+                    case 'free':
+                        newPos = new THREE.Vector3(targetPos.x, targetPos.y + 0.5, targetPos.z + 3);
+                        targetLookAt = targetPos;
+                        controls.enabled = true;
+                        break;
+                }
+                gsap.to(camera.position, {
+                    duration: 1,
+                    x: newPos.x,
+                    y: newPos.y,
+                    z: newPos.z,
+                    onUpdate: () => camera.lookAt(targetLookAt)
+                });
+                controls.target.copy(targetLookAt);
+                controls.update();
+            }
+        }
+
+        // Raycaster for Interaction
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let selectedProduct = null;
+
+        function selectProduct(id) {
+            selectedProduct = id;
+            document.getElementById('product-title').textContent = productGroups[id].title;
+            document.getElementById('product-desc').textContent = productGroups[id].desc;
+            document.querySelectorAll('.model-btn').forEach(btn => btn.classList.remove('active', 'bg-cyan-400', 'text-black'));
+            document.querySelector(`.model-btn[data-model="${id}"]`).classList.add('active', 'bg-cyan-400', 'text-black');
+            document.querySelector('.camera-controls').classList.remove('hidden');
+            setCameraView('front');
+        }
+
+        function onClick(event) {
+            event.preventDefault();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(Object.values(productGroups).map(p => p.group), true);
+            if (intersects.length > 0) {
+                const intersected = intersects[0].object.parent;
+                const model = Object.keys(productGroups).find(key => productGroups[key].group === intersected || productGroups[key].group.children.includes(intersects[0].object));
+                if (model) {
+                    selectProduct(model);
+                }
+            }
+        }
+
+        function enterInteractiveMode() {
+            document.querySelector('.nav').classList.add('hidden');
+            document.querySelector('.hero').classList.add('hidden');
+            document.querySelector('.back-btn').classList.remove('hidden');
+            document.querySelector('.camera-controls').classList.remove('hidden');
+            Object.values(productGroups).forEach(p => p.group.visible = true);
+            window.addEventListener('click', onClick);
+        }
+
+        function exitInteractiveMode() {
+            document.querySelector('.nav').classList.remove('hidden');
+            document.querySelector('.hero').classList.remove('hidden');
+            document.querySelector('.back-btn').classList.add('hidden');
+            document.querySelector('.camera-controls').classList.add('hidden');
+            window.removeEventListener('click', onClick);
+            controls.enabled = false;
+            selectedProduct = null;
+            camera.position.set(0, 0, 12);
+            camera.lookAt(0, 0, 0);
+            document.getElementById('product-title').textContent = 'Stealth Gaming Series';
+            document.getElementById('product-desc').textContent = 'Explore our full range of gaming gear with neon Matrix displays and vibrant LED accents.';
+            document.querySelectorAll('.model-btn').forEach(btn => btn.classList.remove('active', 'bg-cyan-400', 'text-black'));
+            document.querySelector('.model-btn[data-model="phantom-monitor"]').classList.add('active', 'bg-cyan-400', 'text-black');
+        }
+
+        // Shop and Cart Logic
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        function updateCartCount() {
+            document.getElementById('cart-count').textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+        }
+        updateCartCount();
+
+        function populateShop() {
+            const shopGrid = document.getElementById('shop-grid');
+            shopGrid.innerHTML = '';
+            products.forEach(product => {
+                const div = document.createElement('div');
+                div.className = 'product neumorphic p-6 hover-scale';
+                const canvas = document.createElement('canvas');
+                canvas.id = `product-canvas-${product.id}`;
+                canvas.className = 'product-canvas';
+                div.appendChild(canvas);
+                div.innerHTML += `
+                    <h3 class="text-xl font-semibold mt-4">${product.name}</h3>
+                    <p class="text-gray-300">${product.desc}</p>
+                    <p class="text-lg font-bold">$${product.price.toFixed(2)}</p>
+                    <button onclick="addToCart('${product.id}')" class="bg-cyan-400 text-black px-4 py-2 rounded-lg mt-4 hover:bg-white hover:scale-105 transition-all">Add to Cart</button>
+                `;
+                shopGrid.appendChild(div);
+
+                // Product 3D Preview
+                const productScene = new THREE.Scene();
+                const productCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+                const productRenderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+                productRenderer.setSize(280, 200);
+                productCamera.position.set(0, 0.5, 2);
+                productCamera.lookAt(0, 0, 0);
+
+                const productLight = new THREE.PointLight(0xffffff, 1.5, 10);
+                productLight.position.set(2, 2, 2);
+                productScene.add(productLight);
+                productScene.add(new THREE.AmbientLight(0x404040, 0.5));
+                productScene.background = new THREE.Color(0x1a1a1a);
+
+                const productGroup = createProduct(product, 0, true);
+                productScene.add(productGroup);
+                productRenderers[product.id] = { renderer: productRenderer, scene: productScene, camera: productCamera, group: productGroup };
+
+                function animateProduct() {
+                    productGroup.rotation.y += 0.01;
+                    productRenderer.render(productScene, productCamera);
+                    requestAnimationFrame(animateProduct);
+                }
+                animateProduct();
+            });
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            const cartItem = cart.find(item => item.id === id);
+            if (cartItem) {
+                cartItem.quantity++;
+            } else {
+                cart.push({ id, name: product.name, price: product.price, quantity: 1 });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            if (document.getElementById('cart').style.display !== 'none') updateCart();
+        }
+
+        function updateCart() {
+            const cartBody = document.getElementById('cart-body');
+            cartBody.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="p-4">${item.name}</td>
+                    <td class="p-4">$${item.price.toFixed(2)}</td>
+                    <td class="p-4"><input type="number" value="${item.quantity}" min="1" class="w-16 p-2 bg-gray-700 rounded-lg text-white" onchange="updateQuantity('${item.id}', this.value)"></td>
+                    <td class="p-4">$${(item.price * item.quantity).toFixed(2)}</td>
+                `;
+                cartBody.appendChild(row);
+                total += item.price * item.quantity;
+            });
+            document.getElementById('cart-total').textContent = total.toFixed(2);
+        }
+
+        function updateQuantity(id, quantity) {
+            const cartItem = cart.find(item => item.id === id);
+            cartItem.quantity = parseInt(quantity);
+            if (cartItem.quantity <= 0) cart.splice(cart.indexOf(cartItem), 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            updateCart();
+        }
+
+        function showPage(page) {
+            document.querySelectorAll('.hero, .shop, .cart, .checkout').forEach(el => el.classList.add('hidden'));
+            document.getElementById(page).classList.remove('hidden');
+            if (page === 'shop') {
+                populateShop();
+                Object.values(productGroups).forEach(p => p.group.visible = false);
+            } else if (page === 'cart') {
+                updateCart();
+                Object.values(productGroups).forEach(p => p.group.visible = false);
+            } else if (page === 'checkout') {
+                Object.values(productGroups).forEach(p => p.group.visible = false);
+            } else {
+                Object.values(productGroups).forEach(p => p.group.visible = true);
+            }
+            document.querySelector('.back-btn').classList.add('hidden');
+            document.querySelector('.camera-controls').classList.add('hidden');
+            window.removeEventListener('click', onClick);
+            controls.enabled = false;
+            selectedProduct = null;
+            camera.position.set(0, 0, 12);
+            camera.lookAt(0, 0, 0);
+        }
+
+        document.getElementById('checkout-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Order confirmed! Thank you for your purchase.');
+            cart.length = 0;
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            showPage('home');
+        });
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            Object.values(productGroups).forEach(product => {
+                if (!selectedProduct || selectedProduct === Object.keys(productGroups).find(key => productGroups[key].group === product.group)) {
+                    product.group.rotation.y += 0.002;
+                }
+            });
+            phantomTexture.needsUpdate = true;
+            wraithTexture.needsUpdate = true;
+            pulseTexture.needsUpdate = true;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize Handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            Object.values(productRenderers).forEach(pr => {
+                pr.renderer.setSize(280, 200);
+                pr.camera.aspect = 1;
+                pr.camera.updateProjectionMatrix();
+            });
+        });
+
+        // Initial Setup
+        showPage('home');
+    </script>
+</body>
+</html>
