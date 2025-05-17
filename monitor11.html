@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stealth Gaming Store</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: #333333; color: #fff; overflow-x: hidden; }
+        
+        /* Navigation */
+        .nav { 
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 15px 5%; 
+            background: rgba(0, 0, 0, 0.95); 
+            backdrop-filter: blur(12px); 
+            z-index: 100; 
+        }
+        .nav a { 
+            color: #00b7eb; 
+            text-decoration: none; 
+            font-size: clamp(14px, 2.5vw, 16px); 
+            margin: 0 12px; 
+            transition: color 0.3s, transform 0.3s; 
+        }
+        .nav a:hover { 
+            color: #fff; 
+            transform: scale(1.1); 
+        }
+        .cart-icon { position: relative; }
+        .cart-icon span { 
+            position: absolute; 
+            top: -8px; 
+            right: -8px; 
+            background: #ff3333; 
+            border-radius: 50%; 
+            padding: 4px 8px; 
+            font-size: 10px; 
+        }
+
+        /* Hero Section */
+        .hero { 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            position: relative; 
+        }
+        .hero h1 { 
+            font-size: clamp(2.5rem, 5vw, 4rem); 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            color: #00b7eb; 
+            text-shadow: 0 0 20px #00b7eb; 
+            margin-bottom: 15px; 
+        }
+        .hero p { 
+            font-size: clamp(0.9rem, 2vw, 1.3rem); 
+            margin: 15px 0; 
+            color: #ccc; 
+            max-width: 85%; 
+        }
+        .cta { 
+            padding: 12px 30px; 
+            background: #00b7eb; 
+            color: #000; 
+            border: none; 
+            font-size: clamp(0.9rem, 2vw, 1.1rem); 
+            cursor: pointer; 
+            transition: background 0.3s, transform 0.3s; 
+            border-radius: 8px; 
+        }
+        .cta:hover { 
+            background: #fff; 
+            transform: scale(1.05); 
+        }
+
+        /* Model Selector */
+        .model-selector { 
+            margin-top: 15px; 
+            display: flex; 
+            gap: 8px; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            max-width: 90%; 
+        }
+        .model-btn { 
+            padding: 8px 20px; 
+            background: #1a1a1a; 
+            color: #00b7eb; 
+            border: 1px solid #00b7eb; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            font-size: clamp(0.8rem, 1.8vw, 1rem); 
+            border-radius: 8px; 
+        }
+        .model-btn:hover, .model-btn.active { 
+            background: #00b7eb; 
+            color: #000; 
+            transform: scale(1.05); 
+        }
+
+        /* Camera Controls */
+        .camera-controls { 
+            position: fixed; 
+            bottom: 15px; 
+            right: 15px; 
+            background: rgba(0, 0, 0, 0.85); 
+            padding: 8px; 
+            border-radius: 8px; 
+            z-index: 10; 
+            display: none; 
+            gap: 8px; 
+        }
+        .camera-btn { 
+            padding: 6px 12px; 
+            background: #1a1a1a; 
+            color: #00b7eb; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 0.8rem; 
+            border-radius: 5px; 
+            transition: all 0.3s; 
+        }
+        .camera-btn:hover { 
+            background: #00b7eb; 
+            color: #000; 
+        }
+
+        /* Back Button */
+        .back-btn { 
+            position: fixed; 
+            top: 15px; 
+            left: 15px; 
+            padding: 8px 15px; 
+            background: #1a1a1a; 
+            color: #00b7eb; 
+            border: 1px solid #00b7eb; 
+            cursor: pointer; 
+            font-size: clamp(0.8rem, 1.8vw, 0.9rem); 
+            border-radius: 8px; 
+            display: none; 
+            z-index: 10; 
+        }
+        .back-btn:hover { 
+            background: #00b7eb; 
+            color: #000; 
+        }
+
+        /* Canvas */
+        #canvas { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 0; 
+        }
+
+        /* Shop Section */
+        .shop, .cart, .checkout { 
+            padding: 80px 5%; 
+            display: none; 
+            position: relative; 
+            z-index: 5; 
+            background: rgba(0, 0, 0, 0.75); 
+            backdrop-filter: blur(8px); 
+        }
+        .shop-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            padding: 15px; 
+        }
+        .product { 
+            background: #1a1a1a; 
+            padding: 15px; 
+            border-radius: 12px; 
+            text-align: center; 
+            transition: transform 0.3s, box-shadow 0.3s; 
+            will-change: transform; 
+        }
+        .product:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 0 25px rgba(0, 183, 235, 0.6); 
+        }
+        .product img { 
+            width: 100%; 
+            height: 180px; 
+            object-fit: contain; 
+            border-radius: 8px; 
+            margin-bottom: 8px; 
+            background: #333333; 
+        }
+        .product h3 { 
+            font-size: 1.3rem; 
+            margin: 8px 0; 
+        }
+        .product p { 
+            font-size: 0.85rem; 
+            color: #ccc; 
+            margin-bottom: 8px; 
+        }
+        .product button { 
+            padding: 8px 15px; 
+            background: #00b7eb; 
+            color: #000; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            transition: background 0.3s; 
+        }
+        .product button:hover { 
+            background: #fff; 
+        }
+
+        /* Cart and Checkout */
+        .cart table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 15px; 
+            background: #1a1a1a; 
+        }
+        .cart th, .cart td { 
+            padding: 10px; 
+            border: 1px solid #333; 
+            text-align: left; 
+        }
+        .cart th { 
+            background: #222; 
+        }
+        .cart input { 
+            width: 50px; 
+            padding: 4px; 
+            border-radius: 5px; 
+            background: #333; 
+            color: #fff; 
+            border: none; 
+        }
+        .checkout form { 
+            max-width: 550px; 
+            margin: 0 auto; 
+            background: #1a1a1a; 
+            padding: 15px; 
+            border-radius: 12px; 
+        }
+        .checkout label { 
+            display: block; 
+            margin: 8px 0 4px; 
+            font-size: 0.9rem; 
+        }
+        .checkout input, .checkout button { 
+            width: 100%; 
+            padding: 8px; 
+            margin-bottom: 8px; 
+            border: 1px solid #333; 
+            border-radius: 8px; 
+            background: #333; 
+            color: #fff; 
+        }
+        .checkout button { 
+            background: #00b7eb; 
+            color: #000; 
+            cursor: pointer; 
+        }
+        .checkout button:hover { 
+            background: #fff; 
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .nav { 
+                flex-direction: column; 
+                align-items: center; 
+                gap: 8px; 
+                padding: 12px 0; 
+            }
+            .nav a { 
+                font-size: clamp(12px, 3.5vw, 14px); 
+                margin: 4px 0; 
+            }
+            .hero h1 { 
+                font-size: clamp(1.8rem, 4.5vw, 2.5rem); 
+            }
+            .hero p { 
+                font-size: clamp(0.8rem, 2vw, 1rem); 
+                max-width: 95%; 
+            }
+            .cta { 
+                padding: 10px 20px; 
+                font-size: clamp(0.8rem, 2vw, 1rem); 
+            }
+            .model-selector { 
+                flex-direction: column; 
+                gap: 6px; 
+            }
+            .model-btn { 
+                width: 90%; 
+                max-width: 220px; 
+                padding: 10px; 
+            }
+            .camera-controls { 
+                bottom: 8px; 
+                right: 8px; 
+                flex-direction: column; 
+            }
+            .camera-btn { 
+                font-size: 0.7rem; 
+                padding: 5px 10px; 
+            }
+            .back-btn { 
+                font-size: clamp(0.7rem, 1.8vw, 0.8rem); 
+                padding: 6px 12px; 
+            }
+            .shop-grid { 
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+                gap: 12px; 
+            }
+            .product img { 
+                height: 140px; 
+            }
+            .cart table { 
+                font-size: 0.75rem; 
+            }
+            .cart input { 
+                width: 45px; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <div>
+            <a href="#" onclick="showPage('home')">Home</a>
+            <a href="#" onclick="showPage('shop')">Shop</a>
+            <a href="#" onclick="showPage('cart')">Cart <span id="cart-count">0</span></a>
+        </div>
+        <div>
+            <a href="#support">Support</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </div>
+    <div class="hero" id="home">
+        <h1 id="product-title">Stealth Gaming Series</h1>
+        <p id="product-desc">Discover cutting-edge gaming gear with sleek jet black designs and vibrant neon accents.</p>
+        <button class="cta" onclick="enterInteractiveMode()">Discover Now</button>
+        <div class="model-selector" id="model-selector"></div>
+    </div>
+    <div class="camera-controls">
+        <button class="camera-btn" onclick="setCameraView('front')">Front View</button>
+        <button class="camera-btn" onclick="setCameraView('side')">Side View</button>
+        <button class="camera-btn" onclick="setCameraView('top')">Top View</button>
+        <button class="camera-btn" onclick="setCameraView('free')">Free Roam</button>
+    </div>
+    <div class="shop" id="shop">
+        <h2>Shop Gaming Gear</h2>
+        <div class="shop-grid" id="shop-grid"></div>
+    </div>
+    <div class="cart" id="cart">
+        <h2>Your Cart</h2>
+        <table id="cart-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="cart-body"></tbody>
+        </table>
+        <p>Total: $<span id="cart-total">0</span></p>
+        <button class="cta" onclick="showPage('checkout')">Proceed to Checkout</button>
+    </div>
+    <div class="checkout" id="checkout">
+        <h2>Checkout</h2>
+        <form id="checkout-form">
+            <label for="name">Name</label>
+            <input type="text" id="name" required>
+            <label for="email">Email</label>
+            <input type="email" id="email" required>
+            <label for="address">Address</label>
+            <input type="text" id="address" required>
+            <button type="submit">Confirm Order</button>
+        </form>
+    </div>
+    <button class="back-btn" onclick="exitInteractiveMode()">Back</button>
+    <canvas id="canvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Offscreen Renderer for Shop Images
+        const offscreenCanvas = document.createElement('canvas');
+        offscreenCanvas.width = 250;
+        offscreenCanvas.height = 180;
+        const offscreenRenderer = new THREE.WebGLRenderer({ canvas: offscreenCanvas, antialias: true });
+        offscreenRenderer.setSize(250, 180);
+        const offscreenCamera = new THREE.PerspectiveCamera(75, 250 / 180, 0.1, 1000);
+
+        // Enhanced Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+        const spotLight = new THREE.SpotLight(0xffffff, 2.5, 15, Math.PI / 4);
+        spotLight.position.set(0, 8, 8);
+        scene.add(spotLight);
+        const pointLight = new THREE.PointLight(0x00b7eb, 2.0, 10);
+        pointLight.position.set(-5, 3, 5);
+        scene.add(pointLight);
+
+        // Gray Background
+        scene.background = new THREE.Color(0x333333);
+
+        // Matrix Text Video
+        function createMatrixCanvas() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 288;
+            const ctx = canvas.getContext('2d');
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%';
+            const fontSize = 12;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(0);
+
+            function animateMatrix() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00ff55';
+                ctx.font = `${fontSize}px monospace`;
+                drops.forEach((y, i) => {
+                    const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                    const x = i * fontSize;
+                    ctx.fillText(text, x, y * fontSize);
+                    if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                });
+                return canvas;
+            }
+            animateMatrix();
+            setInterval(animateMatrix, 60);
+            return canvas;
+        }
+
+        const phantomCanvas = createMatrixCanvas();
+        const wraithCanvas = createMatrixCanvas();
+        const pulseCanvas = createMatrixCanvas();
+        const phantomTexture = new THREE.CanvasTexture(phantomCanvas);
+        const wraithTexture = new THREE.CanvasTexture(wraithCanvas);
+        const pulseTexture = new THREE.CanvasTexture(pulseCanvas);
+
+        // Jet Black Material
+        const jetBlackMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x101010,
+            roughness: 0.1,
+            metalness: 0.95,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.05,
+            reflectivity: 0.9,
+            envMapIntensity: 1.5
+        });
+
+        const neonMaterial = (color) => new THREE.MeshBasicMaterial({
+            color: color,
+            emissive: color,
+            emissiveIntensity: 3.0
+        });
+
+        // Enhanced Geometries
+        function createMonitorGeo() {
+            const path = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(-1.2, -0.7, 0),
+                new THREE.Vector3(0, -0.75, 0.02),
+                new THREE.Vector3(1.2, -0.7, 0),
+                new THREE.Vector3(1.2, 0.7, 0),
+                new THREE.Vector3(0, 0.75, 0.02),
+                new THREE.Vector3(-1.2, 0.7, 0),
+                new THREE.Vector3(-1.2, -0.7, 0)
+            ], true);
+            const shape = new THREE.Shape();
+            shape.moveTo(-0.05, -0.05);
+            shape.lineTo(0.05, -0.05);
+            shape.lineTo(0.05, 0.05);
+            shape.lineTo(-0.05, 0.05);
+            shape.lineTo(-0.05, -0.05);
+            return new THREE.ExtrudeGeometry(shape, {
+                extrudePath: path,
+                steps: 20,
+                bevelEnabled: true,
+                bevelThickness: 0.02,
+                bevelSize: 0.02
+            });
+        }
+
+        function createMouseGeo() {
+            const points = [];
+            for (let i = 0; i < 30; i++) {
+                const t = i / 29;
+                const x = 0.25 * Math.sin(t * Math.PI * 2) * (1 + 0.2 * Math.cos(t * Math.PI * 4));
+                const y = 0.35 * (1 - t) + 0.1 * Math.sin(t * Math.PI);
+                points.push(new THREE.Vector2(x, y));
+            }
+            const geo = new THREE.LatheGeometry(points, 20, 0, Math.PI * 2);
+            const detailGeo = new THREE.SphereGeometry(0.05, 16, 16);
+            return { main: geo, detail: detailGeo };
+        }
+
+        function createKeyboardGeo() {
+            const shape = new THREE.Shape();
+            shape.moveTo(-0.8, -0.25);
+            shape.quadraticCurveTo(0, -0.3, 0.8, -0.25);
+            shape.lineTo(0.8, 0.25);
+            shape.quadraticCurveTo(0, 0.3, -0.8, 0.25);
+            shape.lineTo(-0.8, -0.25);
+            const mainGeo = new THREE.ExtrudeGeometry(shape, { depth: 0.1, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015 });
+            const keyGeo = new THREE.BoxGeometry(0.1, 0.02, 0.1);
+            const keys = [];
+            for (let x = -0.7; x <= 0.7; x += 0.12) {
+                for (let z = -0.15; z <= 0.15; z += 0.12) {
+                    const key = new THREE.Mesh(keyGeo, jetBlackMaterial);
+                    key.position.set(x, 0.06, z);
+                    keys.push(key);
+                }
+            }
+            return { main: mainGeo, keys };
+        }
+
+        function createChairGeo() {
+            const seatShape = new THREE.Shape();
+            seatShape.moveTo(-0.5, -0.5);
+            seatShape.quadraticCurveTo(0, -0.55, 0.5, -0.5);
+            seatShape.lineTo(0.5, 0.5);
+            seatShape.quadraticCurveTo(0, 0.55, -0.5, 0.5);
+            seatShape.lineTo(-0.5, -0.5);
+            const seatGeo = new THREE.ExtrudeGeometry(seatShape, { depth: 0.2, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02 });
+
+            const backGeo = new THREE.BoxGeometry(1.0, 0.9, 0.1);
+            const armGeo = new THREE.BoxGeometry(0.15, 0.6, 0.7);
+            const wheelGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.1, 12);
+            const wheels = [];
+            for (let i = 0; i < 5; i++) {
+                const wheel = new THREE.Mesh(wheelGeo, jetBlackMaterial);
+                const angle = (i / 5) * Math.PI * 2;
+                wheel.position.set(0.4 * Math.cos(angle), -0.6, 0.4 * Math.sin(angle));
+                wheel.rotation.x = Math.PI / 2;
+                wheels.push(wheel);
+            }
+            return { seat: seatGeo, back: backGeo, arms: [armGeo, armGeo], wheels };
+        }
+
+        function createTowerGeo() {
+            const shape = new THREE.Shape();
+            shape.moveTo(-0.45, -1.1);
+            shape.quadraticCurveTo(0, -1.15, 0.45, -1.1);
+            shape.lineTo(0.45, 1.1);
+            shape.quadraticCurveTo(0, 1.15, -0.45, 1.1);
+            shape.lineTo(-0.45, -1.1);
+            const mainGeo = new THREE.ExtrudeGeometry(shape, { depth: 0.45, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02 });
+            const ventGeo = new THREE.BoxGeometry(0.8, 0.05, 0.01);
+            const vents = [];
+            for (let y = -0.8; y <= 0.8; y += 0.1) {
+                const vent = new THREE.Mesh(ventGeo, jetBlackMaterial);
+                vent.position.set(0, y, 0.23);
+                vents.push(vent);
+            }
+            return { main: mainGeo, vents };
+        }
+
+        function createTabletGeo() {
+            const path = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(-0.43, -0.28, 0),
+                new THREE.Vector3(0, -0.29, 0.01),
+                new THREE.Vector3(0.43, -0.28, 0),
+                new THREE.Vector3(0.43, 0.28, 0),
+                new THREE.Vector3(0, 0.29, 0.01),
+                new THREE.Vector3(-0.43, 0.28, 0),
+                new THREE.Vector3(-0.43, -0.28, 0)
+            ], true);
+            const shape = new THREE.Shape();
+            shape.moveTo(-0.03, -0.03);
+            shape.lineTo(0.03, -0.03);
+            shape.lineTo(0.03, 0.03);
+            shape.lineTo(-0.03, 0.03);
+            shape.lineTo(-0.03, -0.03);
+            return new THREE.ExtrudeGeometry(shape, {
+                extrudePath: path,
+                steps: 16,
+                bevelEnabled: true,
+                bevelThickness: 0.01,
+                bevelSize: 0.01
+            });
+        }
+
+        function createPhoneGeo() {
+            const path = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(-0.23, -0.38, 0),
+                new THREE.Vector3(0, -0.39, 0.01),
+                new THREE.Vector3(0.23, -0.38, 0),
+                new THREE.Vector3(0.23, 0.38, 0),
+                new THREE.Vector3(0, 0.39, 0.01),
+                new THREE.Vector3(-0.23, 0.38, 0),
+                new THREE.Vector3(-0.23, -0.38, 0)
+            ], true);
+            const shape = new THREE.Shape();
+            shape.moveTo(-0.02, -0.02);
+            shape.lineTo(0.02, -0.02);
+            shape.lineTo(0.02, 0.02);
+            shape.lineTo(-0.02, 0.02);
+            shape.lineTo(-0.02, -0.02);
+            return new THREE.ExtrudeGeometry(shape, {
+                extrudePath: path,
+                steps: 16,
+                bevelEnabled: true,
+                bevelThickness: 0.01,
+                bevelSize: 0.01
+            });
+        }
+
+        // Product Definitions
+        const products = [
+            { id: 'phantom-monitor', name: 'Stealth Phantom Monitor', desc: '24" 4K monitor with neon blue accents.', price: 599.99, color: 0x00b7eb, texture: phantomTexture, type: 'monitor' },
+            { id: 'wraith-monitor', name: 'Night Wraith Monitor', desc: '24" 4K monitor with neon red accents.', price: 599.99, color: 0xff3333, texture: wraithTexture, type: 'monitor' },
+            { id: 'pulse-monitor', name: 'Dark Pulse Monitor', desc: '24" 4K monitor with neon green accents.', price: 599.99, color: 0x00ff55, texture: pulseTexture, type: 'monitor' },
+            { id: 'phantom-mouse', name: 'Phantom Mouse', desc: 'Ergonomic mouse with blue neon.', price: 89.99, color: 0x00b7eb, type: 'mouse' },
+            { id: 'wraith-mouse', name: 'Wraith Mouse', desc: 'Ergonomic mouse with red neon.', price: 89.99, color: 0xff3333, type: 'mouse' },
+            { id: 'pulse-mouse', name: 'Pulse Mouse', desc: 'Ergonomic mouse with green neon.', price: 89.99, color: 0x00ff55, type: 'mouse' },
+            { id: 'phantom-keyboard', name: 'Phantom Keyboard', desc: 'Mechanical keyboard with blue RGB.', price: 149.99, color: 0x00b7eb, type: 'keyboard' },
+            { id: 'wraith-keyboard', name: 'Wraith Keyboard', desc: 'Mechanical keyboard with red RGB.', price: 149.99, color: 0xff3333, type: 'keyboard' },
+            { id: 'pulse-keyboard', name: 'Pulse Keyboard', desc: 'Mechanical keyboard with green RGB.', price: 149.99, color: 0x00ff55, type: 'keyboard' },
+            { id: 'phantom-chair', name: 'Phantom Chair', desc: 'Ergonomic chair with blue neon.', price: 399.99, color: 0x00b7eb, type: 'chair' },
+            { id: 'wraith-chair', name: 'Wraith Chair', desc: 'Ergonomic chair with red neon.', price: 399.99, color: 0xff3333, type: 'chair' },
+            { id: 'pulse-chair', name: 'Pulse Chair', desc: 'Ergonomic chair with green neon.', price: 399.99, color: 0x00ff55, type: 'chair' },
+            { id: 'phantom-tower', name: 'Phantom Tower PC', desc: 'High-performance PC with blue neon.', price: 1999.99, color: 0x00b7eb, type: 'tower' },
+            { id: 'wraith-tower', name: 'Wraith Tower PC', desc: 'High-performance PC with red neon.', price: 1999.99, color: 0xff3333, type: 'tower' },
+            { id: 'pulse-tower', name: 'Pulse Tower PC', desc: 'High-performance PC with green neon.', price: 1999.99, color: 0x00ff55, type: 'tower' },
+            { id: 'phantom-tablet', name: 'Phantom Tablet', desc: 'Sleek tablet with blue neon.', price: 499.99, color: 0x00b7eb, texture: phantomTexture, type: 'tablet' },
+            { id: 'wraith-tablet', name: 'Wraith Tablet', desc: 'Sleek tablet with red neon.', price: 499.99, color: 0xff3333, texture: wraithTexture, type: 'tablet' },
+            { id: 'pulse-tablet', name: 'Pulse Tablet', desc: 'Sleek tablet with green neon.', price: 499.99, color: 0x00ff55, texture: pulseTexture, type: 'tablet' },
+            { id: 'phantom-phone', name: 'Phantom Phone', desc: 'Sleek phone with blue neon.', price: 799.99, color: 0x00b7eb, texture: phantomTexture, type: 'phone' },
+            { id: 'wraith-phone', name: 'Wraith Phone', desc: 'Sleek phone with red neon.', price: 799.99, color: 0xff3333, texture: wraithTexture, type: 'phone' },
+            { id: 'pulse-phone', name: 'Pulse Phone', desc: 'Sleek phone with green neon.', price: 799.99, color: 0x00ff55, texture: pulseTexture, type: 'phone' }
+        ];
+
+        // 3D Models and Shop Images
+        const productGroups = {};
+        const productImages = {};
+        function createProduct(product, index) {
+            const group = new THREE.Group();
+            let scale = 1, yOffset = 0;
+
+            if (product.type === 'monitor') {
+                const screenGeo = new THREE.PlaneGeometry(2.4, 1.35);
+                const screenMat = new THREE.MeshBasicMaterial({ map: product.texture, emissive: 0x00ff55, emissiveIntensity: 0.5 });
+                const screen = new THREE.Mesh(screenGeo, screenMat);
+                group.add(screen);
+
+                const bezelGeo = createMonitorGeo();
+                const bezel = new THREE.Mesh(bezelGeo, jetBlackMaterial);
+                bezel.position.z = -0.03;
+                group.add(bezel);
+
+                const ledGeo = new THREE.BoxGeometry(2.41, 0.02, 0.01);
+                const ledMat = neonMaterial(product.color);
+                const ledTop = new THREE.Mesh(ledGeo, ledMat);
+                ledTop.position.set(0, 0.71, 0.05);
+                group.add(ledTop);
+                const ledBottom = new THREE.Mesh(ledGeo, ledMat);
+                ledBottom.position.set(0, -0.71, 0.05);
+                group.add(ledBottom);
+
+                const standGeo = new THREE.CylinderGeometry(0.3, 0.4, 0.5, 16);
+                const standMat = jetBlackMaterial.clone();
+                standMat.emissive = new THREE.Color(product.color);
+                standMat.emissiveIntensity = 0.2;
+                const stand = new THREE.Mesh(standGeo, standMat);
+                stand.position.y = -0.95;
+                group.add(stand);
+                scale = 0.9;
+                yOffset = 0.6;
+            } else if (product.type === 'mouse') {
+                const { main, detail } = createMouseGeo();
+                const mat = jetBlackMaterial.clone();
+                const mesh = new THREE.Mesh(main, mat);
+                group.add(mesh);
+
+                const detailMesh = new THREE.Mesh(detail, neonMaterial(product.color));
+                detailMesh.position.set(0, 0.2, 0.1);
+                group.add(detailMesh);
+
+                const ledGeo = new THREE.SphereGeometry(0.05, 16, 16);
+                const ledMat = neonMaterial(product.color);
+                const led = new THREE.Mesh(ledGeo, ledMat);
+                led.position.set(0, 0.25, 0.12);
+                group.add(led);
+                scale = 1.8;
+                yOffset = -0.4;
+            } else if (product.type === 'keyboard') {
+                const { main, keys } = createKeyboardGeo();
+                const mat = jetBlackMaterial.clone();
+                mat.emissive = new THREE.Color(product.color);
+                mat.emissiveIntensity = 0.2;
+                const mesh = new THREE.Mesh(main, mat);
+                group.add(mesh);
+                keys.forEach(key => group.add(key));
+
+                const ledGeo = new THREE.BoxGeometry(1.5, 0.01, 0.01);
+                const ledMat = neonMaterial(product.color);
+                const led = new THREE.Mesh(ledGeo, ledMat);
+                led.position.set(0, 0.07, 0.2);
+                group.add(led);
+                scale = 0.9;
+                yOffset = -0.2;
+            } else if (product.type === 'chair') {
+                const { seat, back, arms, wheels } = createChairGeo();
+                const seatMesh = new THREE.Mesh(seat, jetBlackMaterial);
+                seatMesh.position.y = -0.5;
+                group.add(seatMesh);
+
+                const backMesh = new THREE.Mesh(back, jetBlackMaterial);
+                backMesh.position.set(0, 0.3, 0.5);
+                group.add(backMesh);
+
+                const armMat = jetBlackMaterial.clone();
+                armMat.emissive = new THREE.Color(product.color);
+                armMat.emissiveIntensity = 0.2;
+                const arm1 = new THREE.Mesh(arms[0], armMat);
+                arm1.position.set(-0.6, -0.2, 0);
+                group.add(arm1);
+                const arm2 = new THREE.Mesh(arms[1], armMat);
+                arm2.position.set(0.6, -0.2, 0);
+                group.add(arm2);
+
+                wheels.forEach(wheel => group.add(wheel));
+                scale = 0.7;
+                yOffset = 0.9;
+            } else if (product.type === 'tower') {
+                const { main, vents } = createTowerGeo();
+                const mat = jetBlackMaterial.clone();
+                const mesh = new THREE.Mesh(main, mat);
+                group.add(mesh);
+
+                vents.forEach(vent => group.add(vent));
+
+                const ledGeo = new THREE.BoxGeometry(0.8, 0.04, 0.04);
+                const ledMat = neonMaterial(product.color);
+                const led = new THREE.Mesh(ledGeo, ledMat);
+                led.position.set(0, 0.8, 0.46);
+                group.add(led);
+                scale = 0.8;
+                yOffset = 0.8;
+            } else if (product.type === 'tablet' || product.type === 'phone') {
+                const geo = product.type === 'tablet' ? createTabletGeo() : createPhoneGeo();
+                const mat = new THREE.MeshBasicMaterial({ map: product.texture, emissive: 0x00ff55, emissiveIntensity: 0.5 });
+                const mesh = new THREE.Mesh(geo, mat);
+                group.add(mesh);
+
+                const bezelGeo = product.type === 'tablet' ? new THREE.BoxGeometry(0.87, 0.57, 0.01) : new THREE.BoxGeometry(0.47, 0.77, 0.01);
+                const bezel = new THREE.Mesh(bezelGeo, jetBlackMaterial);
+                bezel.position.z = -0.015;
+                group.add(bezel);
+
+                const ledGeo = new THREE.BoxGeometry(product.type === 'tablet' ? 0.87 : 0.47, 0.015, 0.01);
+                const ledMat = neonMaterial(product.color);
+                const led = new THREE.Mesh(ledGeo, ledMat);
+                led.position.set(0, product.type === 'tablet' ? 0.29 : 0.39, 0.02);
+                group.add(led);
+                scale = product.type === 'tablet' ? 1.3 : 1.6;
+                yOffset = -0.3;
+            }
+
+            // Capture Front View for Shop
+            const tempScene = new THREE.Scene();
+            tempScene.background = new THREE.Color(0x333333);
+            tempScene.add(ambientLight.clone());
+            tempScene.add(directionalLight.clone());
+            tempScene.add(spotLight.clone());
+            tempScene.add(pointLight.clone());
+            const tempGroup = group.clone();
+            tempGroup.position.set(0, 0, 0);
+            tempScene.add(tempGroup);
+            offscreenCamera.position.set(0, 0, 2.5);
+            offscreenCamera.lookAt(0, 0, 0);
+            offscreenRenderer.render(tempScene, offscreenCamera);
+            productImages[product.id] = offscreenCanvas.toDataURL('image/png');
+
+            // Grid Positioning
+            const cols = Math.floor(window.innerWidth / 300) || 4;
+            const spacing = 2.8;
+            const row = Math.floor(index / cols);
+            const col = index % cols;
+            group.position.set(
+                (col - (cols - 1) / 2) * spacing,
+                row * -spacing + yOffset,
+                0
+            );
+            group.scale.set(scale, scale, scale);
+            group.visible = true;
+            scene.add(group);
+            return group;
+        }
+
+        // Create Product Groups and Model Selector
+        products.forEach((product, index) => {
+            productGroups[product.id] = {
+                group: createProduct(product, index),
+                title: product.name,
+                desc: product.desc,
+                price: product.price
+            };
+
+            const btn = document.createElement('button');
+            btn.className = 'model-btn' + (index === 0 ? ' active' : '');
+            btn.dataset.model = product.id;
+            btn.textContent = product.name;
+            btn.onclick = () => selectProduct(product.id);
+            document.getElementById('model-selector').appendChild(btn);
+        });
+
+        // Camera and Controls
+        camera.position.set(0, 1, 8); // Adjusted for better framing
+        camera.lookAt(0, 0, 0);
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enabled = false;
+        controls.enableDamping = true;
+        controls.minDistance = 2;
+        controls.maxDistance = 10;
+        controls.enablePan = false;
+        controls.maxPolarAngle = Math.PI / 2; // Limit vertical rotation
+
+        // Camera Views
+        function setCameraView(view) {
+            if (selectedProduct) {
+                const targetPos = productGroups[selectedProduct].group.position;
+                let newPos, targetLookAt;
+                switch (view) {
+                    case 'front':
+                        newPos = new THREE.Vector3(targetPos.x, targetPos.y + 0.5, targetPos.z + 2);
+                        targetLookAt = targetPos;
+                        controls.enabled = false;
+                        break;
+                    case 'side':
+                        newPos = new THREE.Vector3(targetPos.x + 2, targetPos.y + 0.5, targetPos.z);
+                        targetLookAt = targetPos;
+                        controls.enabled = false;
+                        break;
+                    case 'top':
+                        newPos = new THREE.Vector3(targetPos.x, targetPos.y + 2, targetPos.z + 0.1);
+                        targetLookAt = targetPos;
+                        controls.enabled = false;
+                        break;
+                    case 'free':
+                        newPos = new THREE.Vector3(targetPos.x, targetPos.y + 0.5, targetPos.z + 2);
+                        targetLookAt = targetPos;
+                        controls.enabled = true;
+                        break;
+                }
+                gsap.to(camera.position, {
+                    duration: 0.8,
+                    x: newPos.x,
+                    y: newPos.y,
+                    z: newPos.z,
+                    onUpdate: () => camera.lookAt(targetLookAt)
+                });
+                controls.target.copy(targetLookAt);
+                controls.update();
+            }
+        }
+
+        // Raycaster for Interaction
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let selectedProduct = null;
+
+        function selectProduct(id) {
+            selectedProduct = id;
+            document.getElementById('product-title').textContent = productGroups[id].title;
+            document.getElementById('product-desc').textContent = productGroups[id].desc;
+            document.querySelectorAll('.model-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.model-btn[data-model="${id}"]`).classList.add('active');
+            document.querySelector('.camera-controls').style.display = 'flex';
+            setCameraView('front');
+        }
+
+        function onClick(event) {
+            event.preventDefault();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(Object.values(productGroups).map(p => p.group));
+            if (intersects.length > 0) {
+                const intersected = intersects[0].object.parent;
+                const model = Object.keys(productGroups).find(key => productGroups[key].group === intersected);
+                if (model) {
+                    selectProduct(model);
+                }
+            }
+        }
+
+        function enterInteractiveMode() {
+            document.querySelector('.nav').style.display = 'none';
+            document.querySelector('.hero').style.display = 'none';
+            document.querySelector('.back-btn').style.display = 'block';
+            document.querySelector('.camera-controls').style.display = 'flex';
+            Object.values(productGroups).forEach(p => p.group.visible = true);
+            window.addEventListener('click', onClick);
+        }
+
+        function exitInteractiveMode() {
+            document.querySelector('.nav').style.display = 'flex';
+            document.querySelector('.hero').style.display = 'flex';
+            document.querySelector('.back-btn').style.display = 'none';
+            document.querySelector('.camera-controls').style.display = 'none';
+            window.removeEventListener('click', onClick);
+            controls.enabled = false;
+            selectedProduct = null;
+            camera.position.set(0, 1, 8);
+            camera.lookAt(0, 0, 0);
+            document.getElementById('product-title').textContent = 'Stealth Gaming Series';
+            document.getElementById('product-desc').textContent = 'Discover cutting-edge gaming gear with sleek jet black designs and vibrant neon accents.';
+            document.querySelectorAll('.model-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.model-btn[data-model="phantom-monitor"]').classList.add('active');
+        }
+
+        // Shop and Cart Logic
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        function updateCartCount() {
+            document.getElementById('cart-count').textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+        }
+        updateCartCount();
+
+        function populateShop() {
+            const shopGrid = document.getElementById('shop-grid');
+            shopGrid.innerHTML = '';
+            products.forEach(product => {
+                const div = document.createElement('div');
+                div.className = 'product';
+                div.innerHTML = `
+                    <img src="${productImages[product.id]}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p>${product.desc}</p>
+                    <p>$${product.price.toFixed(2)}</p>
+                    <button onclick="addToCart('${product.id}')">Add to Cart</button>
+                `;
+                shopGrid.appendChild(div);
+            });
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            const cartItem = cart.find(item => item.id === id);
+            if (cartItem) {
+                cartItem.quantity++;
+            } else {
+                cart.push({ id, name: product.name, price: product.price, quantity: 1 });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            if (document.getElementById('cart').style.display === 'block') updateCart();
+        }
+
+        function updateCart() {
+            const cartBody = document.getElementById('cart-body');
+            cartBody.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>$${item.price.toFixed(2)}</td>
+                    <td><input type="number" value="${item.quantity}" min="1" onchange="updateQuantity('${item.id}', this.value)"></td>
+                    <td>$${(item.price * item.quantity).toFixed(2)}</td>
+                `;
+                cartBody.appendChild(row);
+                total += item.price * item.quantity;
+            });
+            document.getElementById('cart-total').textContent = total.toFixed(2);
+        }
+
+        function updateQuantity(id, quantity) {
+            const cartItem = cart.find(item => item.id === id);
+            cartItem.quantity = parseInt(quantity);
+            if (cartItem.quantity <= 0) cart.splice(cart.indexOf(cartItem), 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            updateCart();
+        }
+
+        function showPage(page) {
+            document.querySelectorAll('.hero, .shop, .cart, .checkout').forEach(el => el.style.display = 'none');
+            document.getElementById(page).style.display = page === 'home' ? 'flex' : 'block';
+            if (page === 'shop') {
+                populateShop();
+                Object.values(productGroups).forEach(p => p.group.visible = false);
+            } else if (page === 'cart') {
+                updateCart();
+                Object.values(productGroups).forEach(p => p.group.visible = false);
+            } else if (page === 'checkout') {
+                Object.values(productGroups).forEach(p => p.group.visible = false);
+            } else {
+                Object.values(productGroups).forEach(p => p.group.visible = true);
+            }
+            document.querySelector('.back-btn').style.display = 'none';
+            document.querySelector('.camera-controls').style.display = 'none';
+            window.removeEventListener('click', onClick);
+            controls.enabled = false;
+            selectedProduct = null;
+            camera.position.set(0, 1, 8);
+            camera.lookAt(0, 0, 0);
+        }
+
+        document.getElementById('checkout-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Order confirmed! Thank you for your purchase.');
+            cart.length = 0;
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            showPage('home');
+        });
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            Object.values(productGroups).forEach(product => {
+                if (!selectedProduct || selectedProduct === Object.keys(productGroups).find(key => productGroups[key].group === product.group)) {
+                    product.group.rotation.y += 0.003;
+                }
+            });
+            phantomTexture.needsUpdate = true;
+            wraithTexture.needsUpdate = true;
+            pulseTexture.needsUpdate = true;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize Handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            Object.values(productGroups).forEach((p, index) => {
+                const cols = Math.floor(window.innerWidth / 300) || 4;
+                const spacing = 2.8;
+                const row = Math.floor(index / cols);
+                const col = index % cols;
+                p.group.position.x = (col - (cols - 1) / 2) * spacing;
+                p.group.position.y = row * -spacing + p.group.position.y % spacing;
+            });
+        });
+
+        // Initial Setup
+        showPage('home');
+    </script>
+</body>
+</html>
