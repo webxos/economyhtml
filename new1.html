@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Solutions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Navigation Bar */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(0, 0, 0, 0.3);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left img {
+            height: 30px;
+            margin-right: 20px;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 16px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-right input {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            margin-right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .nav-right button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 20px;
+            background: #fff;
+            color: #1a2a6c;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            line-height: 1.2;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .hero-buttons button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .hero-buttons button:first-child {
+            background: #fff;
+            color: #1a2a6c;
+        }
+
+        .hero-buttons button:last-child {
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+        }
+
+        #three-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Features Section */
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 50px 20px;
+            flex-wrap: wrap;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #3b5998, #00c4cc);
+            border-radius: 20px;
+            padding: 30px;
+            width: 300px;
+            text-align: left;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-card h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-card img {
+            height: 60px;
+            margin: 20px 0;
+        }
+
+        .feature-card a {
+            color: #fff;
+            text-decoration: underline;
+            font-size: 14px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        footer img {
+            height: 40px;
+            filter: grayscale(100%);
+            opacity: 0.8;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links a {
+                margin: 0 10px;
+                font-size: 14px;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .feature-card {
+                width: 100%;
+                max-width: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-left">
+            <img src="logo.png" alt="Logo">
+            <div class="nav-links">
+                <a href="#">Product</a>
+                <a href="#">Solutions</a>
+                <a href="#">Resources</a>
+                <a href="#">Open Source</a>
+                <a href="#">Enterprise</a>
+                <a href="#">Pricing</a>
+            </div>
+        </div>
+        <div class="nav-right">
+            <input type="text" placeholder="Search or jump to...">
+            <button>Sign in</button>
+            <button>Sign up</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Three.js -->
+    <section class="hero">
+        <canvas id="three-canvas"></canvas>
+        <h1>Security that moves at the speed of development</h1>
+        <div class="hero-buttons">
+            <button>Request a demo</button>
+            <button>See plans & pricing</button>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="feature-card">
+            <h2>Stop leaks before they start</h2>
+            <img src="icon1.png" alt="Shield Icon">
+            <a href="#">Explore Secret Protection →</a>
+        </div>
+        <div class="feature-card">
+            <h2>Fix vulnerabilities in your code</h2>
+            <img src="icon2.png" alt="Code Icon">
+            <a href="#">Explore Code Security →</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <img src="logo1.png" alt="Logo 1">
+        <img src="logo2.png" alt="Logo 2">
+        <img src="logo3.png" alt="Logo 3">
+        <img src="logo4.png" alt="Logo 4">
+        <img src="logo5.png" alt="Logo 5">
+    </footer>
+
+    <!-- Three.js Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script>
+        // Three.js Setup
+        const canvas = document.getElementById('three-canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Create a 3D Cube
+        const geometry = new THREE.BoxGeometry(2, 2, 2);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00c4cc, wireframe: true });
+        const cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+
+        camera.position.z = 5;
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle Window Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
