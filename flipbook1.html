@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Flipbook Bookstore</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D PDF Flipbook Bookstore</title>
     <style>
         body {
             margin: 0;
@@ -12,21 +12,33 @@
             background-size: cover;
             font-family: 'Georgia', serif;
             color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
         #canvas {
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            max-width: 800px;
+            height: 80vh;
+            max-height: 600px;
             display: block;
+            border: 2px solid #8B4513;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
         .controls {
-            position: absolute;
+            position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            z-index: 10;
         }
-        button {
+        button, input[type="file"] {
             padding: 10px 20px;
             font-size: 16px;
             background-color: #8B4513;
@@ -36,117 +48,138 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        button:hover {
+        button:hover, input[type="file"]:hover {
             background-color: #A0522D;
         }
         button:disabled {
             background-color: #ccc;
             cursor: not-allowed;
         }
-        .page-content {
+        #status {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
             display: none;
+            z-index: 10;
+        }
+        @media (max-width: 600px) {
+            #canvas {
+                width: 90%;
+                height: 70vh;
+            }
+            button, input[type="file"] {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
+    <div id="status"></div>
     <canvas id="canvas"></canvas>
     <div class="controls">
+        <input type="file" id="pdfInput" accept=".pdf">
         <button id="prevBtn" disabled>Previous</button>
-        <button id="nextBtn">Next</button>
-    </div>
-
-    <!-- Page content for textures -->
-    <div id="home" class="page-content">
-        <h1>Welcome to Our Bookstore</h1>
-        <p>Discover a world of stories, knowledge, and adventure. Browse our curated collection of books for all ages.</p>
-        <p>Visit our Shop or Store pages to explore our latest arrivals!</p>
-    </div>
-    <div id="contact" class="page-content">
-        <h1>Contact Us</h1>
-        <p>Email: info@bookstore.com</p>
-        <p>Phone: (123) 456-7890</p>
-        <p>Address: 123 Book Lane, Storyville</p>
-    </div>
-    <div id="shop" class="page-content">
-        <h1>Shop</h1>
-        <p>Explore our latest books, bestsellers, and exclusive editions.</p>
-        <ul>
-            <li>Fiction</li>
-            <li>Non-Fiction</li>
-            <li>Children's Books</li>
-        </ul>
-    </div>
-    <div id="store" class="page-content">
-        <h1>Store</h1>
-        <p>Visit our physical store or shop online for rare books and collectibles.</p>
-        <p>Free shipping on orders over $50!</p>
+        <button id="nextBtn" disabled>Next</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <script>
+        // Setup pdf.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
         // Three.js setup
         const canvas = document.getElementById('canvas');
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
         camera.position.set(0, 0, 5);
 
         // Page data
-        const pages = [
-            { id: 'home', content: document.getElementById('home') },
-            { id: 'contact', content: document.getElementById('contact') },
-            { id: 'shop', content: document.getElementById('shop') },
-            { id: 'store', content: document.getElementById('store') }
-        ];
+        let pageTextures = [];
+        let pageMeshes = [];
         let currentPage = 0;
-
-        // Create textures from page content
-        const textures = pages.map(page => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#FFF8DC';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#333';
-            ctx.font = '20px Georgia';
-            ctx.textAlign = 'center';
-            const content = page.content.innerHTML
-                .replace(/<h1>/g, '<h1 style="font-size: 24px; margin-bottom: 10px;">')
-                .replace(/<p>/g, '<p style="font-size: 16px; margin: 5px 0;">')
-                .replace(/<ul>/g, '<ul style="font-size: 16px; text-align: left; margin-left: 20px;">');
-            const lines = content.split('\n').filter(line => line.trim());
-            lines.forEach((line, i) => {
-                ctx.fillText(line.replace(/<[^>]+>/g, ''), canvas.width / 2, 50 + i * 30);
-            });
-            return new THREE.CanvasTexture(canvas);
-        });
-
-        // Create 3D pages
-        const pageGeometries = new THREE.PlaneGeometry(3, 4);
-        const pageMaterials = textures.map(texture => new THREE.MeshBasicMaterial({ map: texture }));
-        const pageMeshes = pageMaterials.map((material, index) => {
-            const mesh = new THREE.Mesh(pageGeometries, material);
-            mesh.position.x = index * 0.01; // Slight offset to avoid z-fighting
-            mesh.rotation.y = index <= currentPage ? 0 : Math.PI;
-            scene.add(mesh);
-            return mesh;
-        });
+        const status = document.getElementById('status');
 
         // Navigation buttons
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
+        const pdfInput = document.getElementById('pdfInput');
 
-        function updateButtons() {
-            prevBtn.disabled = currentPage === 0;
-            nextBtn.disabled = currentPage === pages.length - 1;
+        function showStatus(message) {
+            status.textContent = message;
+            status.style.display = 'block';
+            setTimeout(() => status.style.display = 'none', 3000);
         }
 
+        function updateButtons() {
+            prevBtn.disabled = currentPage === 0 || pageMeshes.length === 0;
+            nextBtn.disabled = currentPage === pageMeshes.length - 1 || pageMeshes.length === 0;
+        }
+
+        // Convert PDF to images
+        async function processPDF(file) {
+            showStatus('Processing PDF...');
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                const numPages = pdf.numPages;
+                pageTextures = [];
+                pageMeshes.forEach(mesh => scene.remove(mesh));
+                pageMeshes = [];
+                currentPage = 0;
+
+                for (let i = 1; i <= numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.0 });
+                    const pageCanvas = document.createElement('canvas');
+                    pageCanvas.width = viewport.width;
+                    pageCanvas.height = viewport.height;
+                    const ctx = pageCanvas.getContext('2d');
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+                    pageTextures.push(new THREE.CanvasTexture(pageCanvas));
+                }
+
+                // Create 3D pages
+                const pageGeometry = new THREE.PlaneGeometry(3, 4);
+                pageTextures.forEach((texture, index) => {
+                    const material = new THREE.MeshBasicMaterial({ map: texture });
+                    const mesh = new THREE.Mesh(pageGeometry, material);
+                    mesh.position.x = index * 0.01;
+                    mesh.rotation.y = index <= currentPage ? 0 : Math.PI;
+                    scene.add(mesh);
+                    pageMeshes.push(mesh);
+                });
+
+                showStatus('PDF loaded successfully!');
+                updateButtons();
+            } catch (error) {
+                showStatus('Error processing PDF: ' + error.message);
+            }
+        }
+
+        // Handle file upload
+        pdfInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                processPDF(file);
+            } else {
+                showStatus('Please upload a valid PDF file.');
+            }
+        });
+
+        // Flip page animation
         function flipPage(direction) {
-            if (direction === 'next' && currentPage < pages.length - 1) {
+            if (direction === 'next' && currentPage < pageMeshes.length - 1) {
                 const mesh = pageMeshes[currentPage + 1];
                 gsap.to(mesh.rotation, {
                     y: 0,
@@ -174,6 +207,48 @@
         prevBtn.addEventListener('click', () => flipPage('prev'));
         nextBtn.addEventListener('click', () => flipPage('next'));
 
+        // Touch and mouse drag support
+        let isDragging = false;
+        let startX = 0;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                // Optional: Add visual feedback during drag
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - startX;
+                if (deltaX > 50) flipPage('prev');
+                else if (deltaX < -50) flipPage('next');
+                isDragging = false;
+            }
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (isDragging) {
+                const deltaX = e.changedTouches[0].clientX - startX;
+                if (deltaX > 50) flipPage('prev');
+                else if (deltaX < -50) flipPage('next');
+                isDragging = false;
+            }
+        });
+
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
@@ -183,9 +258,11 @@
 
         // Handle window resize
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            camera.aspect = width / height;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(width, height);
         });
 
         updateButtons();
