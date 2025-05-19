@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grok Pulse - The Future of Driving</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+        nav .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00aaff;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+        }
+
+        nav ul li {
+            margin-left: 30px;
+        }
+
+        nav ul li a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #00aaff;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 600px;
+            text-align: left;
+            z-index: 10;
+            padding: 0 50px;
+        }
+
+        .hero-content h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #00aaff;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #cccccc;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #00aaff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .cta-button:hover {
+            background: #0088cc;
+        }
+
+        /* 3D Model Viewer */
+        .model-viewer {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 5;
+        }
+
+        .sketchfab-embed-wrapper {
+            width: 100%;
+            height: 100%;
+        }
+
+        .sketchfab-embed-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Attribution */
+        .sketchfab-embed-wrapper p {
+            font-size: 12px;
+            color: #666666;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .sketchfab-embed-wrapper p a {
+            color: #00aaff;
+            text-decoration: none;
+        }
+
+        .sketchfab-embed-wrapper p a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-content {
+                max-width: 100%;
+                padding: 20px;
+                margin-top: 80px;
+            }
+
+            .model-viewer {
+                position: relative;
+                width: 100%;
+                height: 50%;
+            }
+
+            .hero-content h1 {
+                font-size: 36px;
+            }
+
+            .hero-content p {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">Grok Pulse</div>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#specs">Specs</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Meet the Grok Pulse</h1>
+            <p>Experience the future of driving with unmatched style, performance, and innovation. The Grok Pulse redefines the road with its sleek design and cutting-edge technology.</p>
+            <a href="#preorder" class="cta-button">Pre-Order Now</a>
+        </div>
+        <div class="model-viewer">
+            <div class="sketchfab-embed-wrapper">
+                <iframe title="Grok Pulse [PBR]" frameborder="0" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking execution-while-out-of-viewport execution-while-not-rendered web-share src="https://sketchfab.com/models/4d1cdb83434241a3aa030ee603edc88c/embed"></iframe>
+                <p>
+                    <a href="https://sketchfab.com/3d-models/furia-pbr-4d1cdb83434241a3aa030ee603edc88c?utm_medium=embed&utm_campaign=share-popup&utm_content=4d1cdb83434241a3aa030ee603edc88c" target="_blank" rel="nofollow">Grok Pulse [PBR]</a> 
+                    by <a href="https://sketchfab.com/Sovers?utm_medium=embed&utm_campaign=share-popup&utm_content=4d1cdb83434241a3aa030ee603edc88c" target="_blank" rel="nofollow">Sovers</a> 
+                    on <a href="https://sketchfab.com?utm_medium=embed&utm_campaign=share-popup&utm_content=4d1cdb83434241a3aa030ee603edc88c" target="_blank" rel="nofollow">Sketchfab</a>
+                </p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
