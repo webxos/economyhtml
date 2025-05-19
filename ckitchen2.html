@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberKitchen Designs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        body {
+            background-color: #0d0d1a;
+            color: #fff;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(135deg, #0d0d1a, #1a2a44);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            color: #00ffcc;
+            text-shadow: 0 0 5px #00ffcc;
+        }
+
+        .hero button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background: linear-gradient(45deg, #ff00ff, #00ffcc);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0 15px #ff00ff;
+        }
+
+        .hero button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px #00ffcc;
+        }
+
+        /* 3D Canvas */
+        #kitchenCanvas {
+            width: 100%;
+            height: 500px;
+            margin: 2rem 0;
+            border: 3px solid #00ffcc;
+            box-shadow: 0 0 20px #00ffcc, 0 0 40px #ff00ff;
+            border-radius: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .controls button {
+            padding: 0.5rem 1.5rem;
+            background: linear-gradient(45deg, #00ffcc, #ff00ff);
+            border: none;
+            border-radius: 50px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0 10px #00ffcc;
+        }
+
+        .controls button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ff00ff;
+        }
+
+        /* Shop Section */
+        .shop {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #1a1a1a, #222);
+        }
+
+        .shop h2 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 3rem;
+            color: #ff00ff;
+            text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc;
+        }
+
+        .kitchen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .kitchen-item {
+            background: #2a2a2a;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #00ffcc;
+            box-shadow: 0 0 10px #00ffcc;
+        }
+
+        .kitchen-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffcc;
+        }
+
+        .kitchen-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #ff00ff;
+            transition: filter 0.3s;
+        }
+
+        .kitchen-item img:hover {
+            filter: brightness(1.2);
+        }
+
+        .kitchen-item h3 {
+            margin: 1rem 0 0.5rem;
+            color: #00ffcc;
+            text-shadow: 0 0 5px #00ffcc;
+            font-size: 1.5rem;
+        }
+
+        .kitchen-item p {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .kitchen-item button {
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(45deg, #ff00ff, #00ffcc);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0 10px #ff00ff;
+        }
+
+        .kitchen-item button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ffcc;
+        }
+
+        /* Cart Section */
+        .cart {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #1a1a1a, #0d0d1a);
+        }
+
+        .cart h2 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 3rem;
+            color: #ff00ff;
+            text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc;
+        }
+
+        .cart-items {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 15px;
+            border: 1px solid #00ffcc;
+            box-shadow: 0 0 10px #00ffcc;
+        }
+
+        .cart-item p {
+            margin: 0;
+            color: #00ffcc;
+            font-size: 1.2rem;
+        }
+
+        .cart-item button {
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(45deg, #ff00ff, #00ffcc);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0 10px #ff00ff;
+        }
+
+        .cart-item button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ffcc;
+        }
+
+        .shipping-info {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .shipping-info p {
+            font-size: 1.2rem;
+            color: #00ffcc;
+            text-shadow: 0 0 5px #00ffcc;
+        }
+    </style>
+    <!-- Google Fonts for Cyberpunk Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>CyberKitchen Designs</h1>
+        <p>Step into the future with our neon-lit, cyberpunk kitchen designs</p>
+        <div class="controls">
+            <button onclick="resetView()">Reset View</button>
+            <button onclick="toggleAutoRotate()">Toggle Auto-Rotate</button>
+        </div>
+        <div id="kitchenCanvas"></div>
+        <button onclick="scrollToShop()">Explore Designs</button>
+    </section>
+
+    <!-- Shop Section -->
+    <section class="shop" id="shop">
+        <h2>Our Cyber Kitchens</h2>
+        <div class="kitchen-grid">
+            <div class="kitchen-item">
+                <img src="https://via.placeholder.com/300x200?text=Cyber+Neon+Elite" alt="Cyber Neon Elite Kitchen">
+                <h3>Cyber Neon Elite</h3>
+                <p>$15,999</p>
+                <button onclick="addToCart('Cyber Neon Elite', 15999)">Add to Cart</button>
+            </div>
+            <div class="kitchen-item">
+                <img src="https://via.placeholder.com/300x200?text=Midnight+Synth" alt="Midnight Synth Kitchen">
+                <h3>Midnight Synth</h3>
+                <p>$13,499</p>
+                <button onclick="addToCart('Midnight Synth', 13499)">Add to Cart</button>
+            </div>
+            <div class="kitchen-item">
+                <img src="https://via.placeholder.com/300x200?text=Neon+Compact+Pro" alt="Neon Compact Pro Kitchen">
+                <h3>Neon Compact Pro</h3>
+                <p>$9,999</p>
+                <button onclick="addToCart('Neon Compact Pro', 9999)">Add to Cart</button>
+            </div>
+            <div class="kitchen-item">
+                <img src="https://via.placeholder.com/300x200?text=Dark+Pulse+Max" alt="Dark Pulse Max Kitchen">
+                <h3>Dark Pulse Max</h3>
+                <p>$12,499</p>
+                <button onclick="addToCart('Dark Pulse Max', 12499)">Add to Cart</button>
+            </div>
+            <div class="kitchen-item">
+                <img src="https://via.placeholder.com/300x200?text=Synthwave+Ultra" alt="Synthwave Ultra Kitchen">
+                <h3>Synthwave Ultra</h3>
+                <p>$17,999</p>
+                <button onclick="addToCart('Synthwave Ultra', 17999)">Add to Cart</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Section -->
+    <section class="cart">
+        <h2>Your Cart</h2>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="shipping-info">
+            <p>Shipping: Free on orders over $10,000 | Estimated Delivery: 10-14 business days</p>
+        </div>
+    </section>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <!-- OrbitControls for 360-degree view -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Three.js Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 500, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, 500);
+        document.getElementById('kitchenCanvas').appendChild(renderer.domElement);
+
+        // OrbitControls for 360-degree view
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 5;
+        controls.maxDistance = 20;
+        controls.maxPolarAngle = Math.PI / 2;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x111111, 0.3);
+        scene.add(ambientLight);
+
+        // Neon Lights (Inspired by Modern Kitchen)
+        const neonBlueLight = new THREE.PointLight(0x00ffcc, 2, 10);
+        neonBlueLight.position.set(5, 5, 5);
+        scene.add(neonBlueLight);
+
+        const neonPinkLight = new THREE.PointLight(0xff00ff, 2, 10);
+        neonPinkLight.position.set(-5, 5, 5);
+        scene.add(neonPinkLight);
+
+        const neonPurpleLight = new THREE.PointLight(0x9900ff, 2, 10);
+        neonPurpleLight.position.set(0, 5, -5);
+        scene.add(neonPurpleLight);
+
+        // Pendant Lights (Inspired by Modern Kitchen)
+        const pendantLightMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+        const pendantLightGeometry = new THREE.SphereGeometry(0.2, 32, 32);
+        const pendantLight1 = new THREE.Mesh(pendantLightGeometry, pendantLightMaterial);
+        pendantLight1.position.set(0, 4, 0);
+        scene.add(pendantLight1);
+
+        const pendantLight2 = new THREE.Mesh(pendantLightGeometry, pendantLightMaterial);
+        pendantLight2.position.set(1, 4, 0);
+        scene.add(pendantLight2);
+
+        const pendantLight3 = new THREE.Mesh(pendantLightGeometry, pendantLightMaterial);
+        pendantLight3.position.set(-1, 4, 0);
+        scene.add(pendantLight3);
+
+        // Materials
+        const cabinetMaterial = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, shininess: 50 }); // Black cabinets
+        const counterMaterial = new THREE.MeshPhongMaterial({ color: 0x333333, shininess: 100 }); // Dark counter
+        const floorMaterial = new THREE.MeshPhongMaterial({ color: 0x222222 }); // Dark floor
+        const applianceMaterial = new THREE.MeshPhongMaterial({ color: 0x555555, shininess: 150 }); // Dark appliances
+        const chairMaterial = new THREE.MeshPhongMaterial({ color: 0x444444, shininess: 50 }); // Dark chairs
+
+        // Kitchen Model
+        const kitchenGroup = new THREE.Group();
+
+        // Floor
+        const floorGeometry = new THREE.PlaneGeometry(20, 20);
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        kitchenGroup.add(floor);
+
+        // Counter (L-shaped)
+        const counterGeometry1 = new THREE.BoxGeometry(8, 1, 2);
+        const counter1 = new THREE.Mesh(counterGeometry1, counterMaterial);
+        counter1.position.set(0, 0.5, -4);
+        kitchenGroup.add(counter1);
+
+        const counterGeometry2 = new THREE.BoxGeometry(2, 1, 6);
+        const counter2 = new THREE.Mesh(counterGeometry2, counterMaterial);
+        counter2.position.set(-3, 0.5, -1);
+        kitchenGroup.add(counter2);
+
+        // Cabinets (under counter)
+        const cabinetGeometry1 = new THREE.BoxGeometry(7.8, 1, 1.8);
+        const cabinet1 = new THREE.Mesh(cabinetGeometry1, cabinetMaterial);
+        cabinet1.position.set(0, 0, -4);
+        kitchenGroup.add(cabinet1);
+
+        const cabinetGeometry2 = new THREE.BoxGeometry(1.8, 1, 5.8);
+        const cabinet2 = new THREE.Mesh(cabinetGeometry2, cabinetMaterial);
+        cabinet2.position.set(-3, 0, -1);
+        kitchenGroup.add(cabinet2);
+
+        // Upper Cabinets
+        const upperCabinetGeometry = new THREE.BoxGeometry(8, 1, 1);
+        const upperCabinet = new THREE.Mesh(upperCabinetGeometry, cabinetMaterial);
+        upperCabinet.position.set(0, 3, -4.5);
+        kitchenGroup.add(upperCabinet);
+
+        // Sink (on counter1)
+        const sinkGeometry = new THREE.BoxGeometry(1.5, 0.3, 1);
+        const sink = new THREE.Mesh(sinkGeometry, applianceMaterial);
+        sink.position.set(2, 0.65, -4);
+        kitchenGroup.add(sink);
+
+        // Faucet
+        const faucetBaseGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.3, 32);
+        const faucetBase = new THREE.Mesh(faucetBaseGeometry, applianceMaterial);
+        faucetBase.position.set(2, 0.9, -4);
+        kitchenGroup.add(faucetBase);
+
+        const faucetArmGeometry = new THREE.BoxGeometry(0.05, 0.05, 0.3);
+        const faucetArm = new THREE.Mesh(faucetArmGeometry, applianceMaterial);
+        faucetArm.position.set(2, 0.9, -4.15);
+        faucetArm.rotation.x = Math.PI / 4;
+        kitchenGroup.add(faucetArm);
+
+        // Stove (on counter2)
+        const stoveGeometry = new THREE.BoxGeometry(1.5, 0.3, 1);
+        const stove = new THREE.Mesh(stoveGeometry, applianceMaterial);
+        stove.position.set(-3, 0.65, 0);
+        kitchenGroup.add(stove);
+
+        // Fridge
+        const fridgeGeometry = new THREE.BoxGeometry(1.5, 3, 1);
+        const fridge = new THREE.Mesh(fridgeGeometry, applianceMaterial);
+        fridge.position.set(4, 1.5, -4);
+        kitchenGroup.add(fridge);
+
+        // Chairs (Inspired by Modern Kitchen)
+        const chairSeatGeometry = new THREE.BoxGeometry(0.5, 0.1, 0.5);
+        const chairBackGeometry = new THREE.BoxGeometry(0.5, 0.8, 0.1);
+        const chairLegGeometry = new THREE.BoxGeometry(0.05, 0.8, 0.05);
+
+        for (let i = 0; i < 3; i++) {
+            const chairGroup = new THREE.Group();
+            const chairSeat = new THREE.Mesh(chairSeatGeometry, chairMaterial);
+            chairSeat.position.set(0, 0.9, 0);
+            chairGroup.add(chairSeat);
+
+            const chairBack = new THREE.Mesh(chairBackGeometry, chairMaterial);
+            chairBack.position.set(0, 1.3, 0.2);
+            chairGroup.add(chairBack);
+
+            for (let j = 0; j < 4; j++) {
+                const chairLeg = new THREE.Mesh(chairLegGeometry, chairMaterial);
+                chairLeg.position.set(
+                    (j % 2 === 0 ? -0.2 : 0.2),
+                    0.45,
+                    (j < 2 ? -0.2 : 0.2)
+                );
+                chairGroup.add(chairLeg);
+            }
+
+            chairGroup.position.set(i - 1, 0, 0);
+            kitchenGroup.add(chairGroup);
+        }
+
+        // Island (where chairs are placed)
+        const islandGeometry = new THREE.BoxGeometry(4, 1, 1);
+        const island = new THREE.Mesh(islandGeometry, counterMaterial);
+        island.position.set(0, 0.5, 0);
+        kitchenGroup.add(island);
+
+        // Neon Light Strips (on cabinets)
+        const neonStripGeometry = new THREE.BoxGeometry(8, 0.1, 0.1);
+        const neonStripMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
+        const neonStrip = new THREE.Mesh(neonStripGeometry, neonStripMaterial);
+        neonStrip.position.set(0, 3.5, -4.5);
+        kitchenGroup.add(neonStrip);
+
+        const neonStrip2Geometry = new THREE.BoxGeometry(0.1, 1, 0.1);
+        const neonStrip2 = new THREE.Mesh(neonStrip2Geometry, neonStripMaterial);
+        neonStrip2.position.set(-4, 0.5, -4);
+        kitchenGroup.add(neonStrip2);
+
+        scene.add(kitchenGroup);
+
+        camera.position.set(0, 5, 10);
+        controls.target.set(0, 1, 0);
+
+        // Animation and Auto-Rotate
+        let autoRotate = false;
+        function animate() {
+            requestAnimationFrame(animate);
+            if (autoRotate) {
+                kitchenGroup.rotation.y += 0.005;
+            }
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Control Functions
+        function resetView() {
+            camera.position.set(0, 5, 10);
+            controls.target.set(0, 1, 0);
+            controls.update();
+        }
+
+        function toggleAutoRotate() {
+            autoRotate = !autoRotate;
+        }
+
+        // Scroll to Shop
+        function scrollToShop() {
+            document.getElementById('shop').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Cart Functionality
+        let cart = [];
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            updateCart();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cartItems');
+            cartItems.innerHTML = '';
+            cart.forEach((item, index) => {
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <p>${item.name} - $${item.price.toLocaleString()}</p>
+                    <button onclick="removeFromCart(${index})">Remove</button>
+                `;
+                cartItems.appendChild(cartItem);
+            });
+        }
+    </script>
+</body>
+</html>
