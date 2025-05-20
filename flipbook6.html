@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dot PDF by WebXOS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Orbitron', sans-serif;
+            color: #00FF00;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #canvas {
+            width: 100%;
+            max-width: 900px;
+            height: 75vh;
+            max-height: 700px;
+            display: none;
+            border: 2px solid #00FF00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            background: #111;
+        }
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 30px;
+            border: 2px solid #00FF00;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.7);
+            animation: neonGlow 1.5s ease-in-out infinite alternate;
+            width: 90%;
+            max-width: 450px;
+        }
+        @keyframes neonGlow {
+            from { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+            to { box-shadow: 0 0 30px rgba(0, 255, 0, 0.8); }
+        }
+        .start-screen h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #00FF00;
+        }
+        .start-screen p {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+        }
+        .loading-bar {
+            width: 80%;
+            height: 12px;
+            background: #111;
+            border: 1px solid #00FF00;
+            border-radius: 6px;
+            overflow: hidden;
+            display: none;
+            position: relative;
+        }
+        .loading-progress {
+            height: 100%;
+            background: #00FF00;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+        .loading-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            color: #000;
+            text-shadow: none;
+        }
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid #00FF00;
+            z-index: 10;
+            display: none;
+        }
+        .page-info {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #00FF00;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 1px solid #00FF00;
+            z-index: 10;
+            text-shadow: 0 0 5px #00FF00;
+        }
+        button, input[type="file"] {
+            padding: 12px 20px;
+            font-size: 14px;
+            background: #111;
+            color: #00FF00;
+            border: 1px solid #00FF00;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif;
+        }
+        button:hover, input[type="file"]:hover {
+            background: #00FF00;
+            color: #000;
+            box-shadow: 0 0 15px #00FF00;
+        }
+        button:disabled {
+            background: #333;
+            color: #666;
+            border-color: #666;
+            cursor: not-allowed;
+        }
+        #status {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #00FF00;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 1px solid #00FF00;
+            display: none;
+            z-index: 10;
+            text-shadow: 0 0 5px #00FF00;
+        }
+        .copyright {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #00FF00;
+            text-shadow: 0 0 5px #00FF00;
+            z-index: 10;
+        }
+        @media (max-width: 600px) {
+            #canvas {
+                width: 95%;
+                height: 60vh;
+                max-height: 450px;
+            }
+            .start-screen h1 {
+                font-size: 1.8em;
+            }
+            .start-screen p {
+                font-size: 0.95em;
+            }
+            button, input[type="file"] {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+            .controls {
+                padding: 8px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="status"></div>
+    <div class="page-info" id="pageInfo"></div>
+    <div class="start-screen" id="startScreen">
+        <h1>Dot PDF by WebXOS</h1>
+        <p>Upload a PDF to experience it in an interactive 3D flipbook</p>
+        <input type="file" id="pdfInput" accept=".pdf">
+        <div class="loading-bar" id="loadingBar">
+            <div class="loading-progress" id="loadingProgress"></div>
+            <span class="loading-text" id="loadingText">0%</span>
+        </div>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div class="controls" id="controls">
+        <button id="prevBtn" disabled>Previous</button>
+        <button id="zoomInBtn">+</button>
+        <button id="zoomOutBtn">−</button>
+        <button id="fullScreenBtn">Full Screen</button>
+        <button id="saveBtn" disabled>Save Page</button>
+        <button id="nextBtn" disabled>Next</button>
+    </div>
+    <div class="copyright">© 2025 Dot PDF by WebXOS</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        // Setup pdf.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+        // Three.js setup
+        const canvas = document.getElementById('canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        camera.position.set(0, 0, 5);
+        let zoomLevel = 5;
+
+        // UI elements
+        const startScreen = document.getElementById('startScreen');
+        const controls = document.getElementById('controls');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const fullScreenBtn = document.getElementById('fullScreenBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const pdfInput = document.getElementById('pdfInput');
+        const status = document.getElementById('status');
+        const pageInfo = document.getElementById('pageInfo');
+        const loadingBar = document.getElementById('loadingBar');
+        const loadingProgress = document.getElementById('loadingProgress');
+        const loadingText = document.getElementById('loadingText');
+
+        // Page data
+        let pageTextures = [];
+        let pageMeshes = [];
+        let currentPage = 0;
+        let pageAspectRatio = 1.414; // Default A4 aspect ratio
+        let totalPages = 0;
+
+        function showStatus(message, isError = false) {
+            status.textContent = message;
+            status.style.display = 'block';
+            status.style.borderColor = isError ? '#FF0000' : '#00FF00';
+            status.style.color = isError ? '#FF0000' : '#00FF00';
+            setTimeout(() => status.style.display = 'none', 3000);
+        }
+
+        function updatePageInfo() {
+            pageInfo.textContent = `Page ${currentPage + 1} of ${totalPages}`;
+            pageInfo.style.display = totalPages > 0 ? 'block' : 'none';
+        }
+
+        function updateButtons() {
+            prevBtn.disabled = currentPage === 0 || pageMeshes.length === 0;
+            nextBtn.disabled = currentPage >= pageMeshes.length - 1 || pageMeshes.length === 0;
+            saveBtn.disabled = pageMeshes.length === 0;
+            fullScreenBtn.disabled = pageMeshes.length === 0;
+            updatePageInfo();
+        }
+
+        // Convert PDF to textures
+        async function processPDF(file) {
+            showStatus('Processing PDF...');
+            loadingBar.style.display = 'block';
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                totalPages = pdf.numPages;
+                pageTextures = [];
+                pageMeshes.forEach(mesh => scene.remove(mesh));
+                pageMeshes = [];
+                currentPage = 0;
+
+                startScreen.style.display = 'none';
+                canvas.style.display = 'block';
+                controls.style.display = 'flex';
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 2.0 });
+                    pageAspectRatio = viewport.height / viewport.width;
+                    const pageCanvas = document.createElement('canvas');
+                    pageCanvas.width = viewport.width;
+                    pageCanvas.height = viewport.height;
+                    const ctx = pageCanvas.getContext('2d');
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+                    pageTextures.push(new THREE.CanvasTexture(pageCanvas));
+
+                    // Update loading bar
+                    const progress = (i / totalPages) * 100;
+                    loadingProgress.style.width = `${progress}%`;
+                    loadingText.textContent = `${Math.round(progress)}%`;
+                }
+
+                // Create 3D pages
+                const pageWidth = 4;
+                const pageHeight = pageWidth * pageAspectRatio;
+                const pageGeometry = new THREE.PlaneGeometry(pageWidth, pageHeight);
+                pageTextures.forEach((texture, index) => {
+                    const material = new THREE.MeshBasicMaterial({
+                        map: texture,
+                        side: THREE.DoubleSide
+                    });
+                    const mesh = new THREE.Mesh(pageGeometry, material);
+                    mesh.position.z = -index * 0.01;
+                    mesh.rotation.y = index <= currentPage ? 0 : Math.PI;
+                    scene.add(mesh);
+                    pageMeshes.push(mesh);
+                });
+
+                camera.position.z = pageHeight * 0.8;
+                zoomLevel = camera.position.z;
+
+                loadingBar.style.display = 'none';
+                showStatus('PDF loaded successfully!');
+                updateButtons();
+            } catch (error) {
+                loadingBar.style.display = 'none';
+                showStatus('Error processing PDF: ' + error.message, true);
+                console.error(error);
+                startScreen.style.display = 'flex';
+                canvas.style.display = 'none';
+                controls.style.display = 'none';
+            }
+        }
+
+        // Handle file upload
+        pdfInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                processPDF(file);
+            } else {
+                showStatus('Please upload a valid PDF file.', true);
+            }
+        });
+
+        // Flip page animation
+        function flipPage(direction) {
+            if (direction === 'next' && currentPage < pageMeshes.length - 1) {
+                const mesh = pageMeshes[currentPage + 1];
+                gsap.to(mesh.rotation, {
+                    y: 0,
+                    duration: 0.8,
+                    ease: 'power2.inOut',
+                    onComplete: () => {
+                        currentPage++;
+                        updateButtons();
+                        pageMeshes.forEach((m, i) => {
+                            m.position.z = i <= currentPage ? -i * 0.01 : -(i + 1) * 0.01;
+                        });
+                    }
+                });
+            } else if (direction === 'prev' && currentPage > 0) {
+                const mesh = pageMeshes[currentPage];
+                gsap.to(mesh.rotation, {
+                    y: Math.PI,
+                    duration: 0.8,
+                    ease: 'power2.inOut',
+                    onComplete: () => {
+                        currentPage--;
+                        updateButtons();
+                        pageMeshes.forEach((m, i) => {
+                            m.position.z = i <= currentPage ? -i * 0.01 : -(i + 1) * 0.01;
+                        });
+                    }
+                });
+            }
+        }
+
+        // Zoom controls
+        zoomInBtn.addEventListener('click', () => {
+            zoomLevel = Math.max(pageAspectRatio * 2, zoomLevel - 0.5);
+            camera.position.z = zoomLevel;
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            zoomLevel = Math.min(pageAspectRatio * 5, zoomLevel + 0.5);
+            camera.position.z = zoomLevel;
+        });
+
+        // Full-screen toggle
+        fullScreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                canvas.requestFullscreen().catch(err => {
+                    showStatus(`Error entering full screen: ${err.message}`, true);
+                });
+                fullScreenBtn.textContent = 'Exit Full Screen';
+            } else {
+                document.exitFullscreen();
+                fullScreenBtn.textContent = 'Full Screen';
+            }
+        });
+
+        // Save current page as JPG
+        saveBtn.addEventListener('click', () => {
+            if (pageTextures[currentPage]) {
+                const textureCanvas = pageTextures[currentPage].image;
+                const link = document.createElement('a');
+                link.href = textureCanvas.toDataURL('image/jpeg', 0.9);
+                link.download = `DotPDF_page_${currentPage + 1}.jpg`;
+                link.click();
+                showStatus('Page saved as JPG!');
+            }
+        });
+
+        prevBtn.addEventListener('click', () => flipPage('prev'));
+        nextBtn.addEventListener('click', () => flipPage('next'));
+
+        // Touch and mouse drag support
+        let isDragging = false;
+        let startX = 0;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                // Optional: Add visual drag feedback
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - startX;
+                if (deltaX > 50) flipPage('prev');
+                else if (deltaX < -50) flipPage('next');
+                isDragging = false;
+            }
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (isDragging) {
+                const deltaX = e.changedTouches[0].clientX - startX;
+                if (deltaX > 50) flipPage('prev');
+                else if (deltaX < -50) flipPage('next');
+                isDragging = false;
+            }
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        // Handle full-screen change
+        document.addEventListener('fullscreenchange', () => {
+            fullScreenBtn.textContent = document.fullscreenElement ? 'Exit Full Screen' : 'Full Screen';
+        });
+
+        updateButtons();
+    </script>
+</body>
+</html>
