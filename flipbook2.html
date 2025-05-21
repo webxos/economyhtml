@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dot PDF - 3D Cyber Book Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000000;
+            font-family: 'Orbitron', sans-serif;
+            color: #00FF00;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-image: linear-gradient(45deg, rgba(0, 255, 0, 0.1), rgba(0, 0, 0, 1));
+        }
+        #canvas {
+            width: 90%;
+            max-width: 800px;
+            height: 70vh;
+            max-height: 600px;
+            display: block;
+            border: 2px solid #00FF00;
+            box-shadow: 0 0 20px #00FF00, inset 0 0 10px #00FF00;
+            border-radius: 10px;
+            background: #111;
+        }
+        .controls {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            z-index: 10;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 0 15px #00FF00;
+        }
+        button, input[type="file"]::file-selector-button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: linear-gradient(45deg, #00FF00, #00CC00);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px #00FF00, inset 0 0 5px #00FF00;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        button:hover, input[type="file"]::file-selector-button:hover {
+            background: linear-gradient(45deg, #00CC00, #00FF00);
+            box-shadow: 0 0 20px #00FF00, inset 0 0 10px #00FF00;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #333;
+            color: #666;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        #status {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #00FF00;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #00FF00;
+            display: none;
+            z-index: 10;
+        }
+        .footer {
+            position: fixed;
+            bottom: 10px;
+            color: #00FF00;
+            font-size: 12px;
+            text-align: center;
+            width: 100%;
+            text-shadow: 0 0 5px #00FF00;
+        }
+        @media (max-width: 600px) {
+            #canvas {
+                width: 95%;
+                height: 60vh;
+            }
+            button, input[type="file"]::file-selector-button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            .controls {
+                gap: 10px;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="status"></div>
+    <canvas id="canvas"></canvas>
+    <div class="controls">
+        <input type="file" id="pdfInput" accept=".pdf">
+        <button id="prevBtn" disabled>Previous</button>
+        <button id="nextBtn" disabled>Next</button>
+        <button id="zoomInBtn">+</button>
+        <button id="zoomOutBtn">-</button>
+    </div>
+    <div class="footer">© WebXOS 2025</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script>
+        // Setup pdf.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+        // Three.js setup
+        const canvas = document.getElementById('canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+        // Camera positioning for 3D book view
+        camera.position.set(0, 2, 5);
+        camera.lookAt(0, 0, 0);
+
+        // Lighting for 3D effect
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0x00FF00, 1, 10);
+        pointLight.position.set(2, 2, 5);
+        scene.add(pointLight);
+
+        // Page data
+        let pageTextures = [];
+        let pageMeshes = [];
+        let currentPage = 0;
+        let bookGroup = new THREE.Group();
+        scene.add(bookGroup);
+
+        // Navigation controls
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const pdfInput = document.getElementById('pdfInput');
+        const status = document.getElementById('status');
+
+        // Zoom state
+        let zoomLevel = 1;
+
+        // Book cover geometry
+        const coverGeometry = new THREE.BoxGeometry(3.2, 4.2, 0.2);
+        const coverMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00FF00,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3
+        });
+        const leftCover = new THREE.Mesh(coverGeometry, coverMaterial);
+        const rightCover = new THREE.Mesh(coverGeometry, coverMaterial);
+        leftCover.position.set(-1.6, 0, -0.1);
+        rightCover.position.set(1.6, 0, -0.1);
+        bookGroup.add(leftCover, rightCover);
+
+        // Custom shader for page curling and neon glow
+        const pageVertexShader = `
+            varying vec2 vUv;
+            uniform float curlAmount;
+            void main() {
+                vUv = uv;
+                vec3 pos = position;
+                pos.z += sin(pos.x * 3.14) * curlAmount * 0.1;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+            }
+        `;
+        const pageFragmentShader = `
+            uniform sampler2D texture;
+            varying vec2 vUv;
+            void main() {
+                vec4 texColor = texture2D(texture, vUv);
+                vec3 glow = vec3(0.0, 1.0, 0.0) * 0.3 * (1.0 - texColor.a);
+                gl_FragColor = vec4(texColor.rgb + glow, texColor.a);
+            }
+        `;
+
+        function showStatus(message) {
+            status.textContent = message;
+            status.style.display = 'block';
+            setTimeout(() => status.style.display = 'none', 3000);
+        }
+
+        function updateButtons() {
+            prevBtn.disabled = currentPage === 0 || pageMeshes.length === 0;
+            nextBtn.disabled = currentPage >= pageMeshes.length - 2 || pageMeshes.length === 0;
+        }
+
+        // Convert PDF to images
+        async function processPDF(file) {
+            showStatus('Processing Dot PDF...');
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                const numPages = pdf.numPages;
+                pageTextures = [];
+                pageMeshes.forEach(mesh => bookGroup.remove(mesh));
+                pageMeshes = [];
+                currentPage = 0;
+
+                for (let i = 1; i <= numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    const pageCanvas = document.createElement('canvas');
+                    pageCanvas.width = viewport.width;
+                    pageCanvas.height = viewport.height;
+                    const ctx = pageCanvas.getContext('2d');
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+                    pageTextures.push(new THREE.CanvasTexture(pageCanvas));
+                }
+
+                // Create 3D pages
+                const pageGeometry = new THREE.PlaneGeometry(3, 4, 32, 32);
+                pageTextures.forEach((texture, index) => {
+                    const material = new THREE.ShaderMaterial({
+                        uniforms: {
+                            texture: { value: texture },
+                            curlAmount: { value: 0 }
+                        },
+                        vertexShader: pageVertexShader,
+                        fragmentShader: pageFragmentShader,
+                        side: THREE.DoubleSide
+                    });
+                    const mesh = new THREE.Mesh(pageGeometry, material);
+                    mesh.position.x = index * 0.01 - 1.5;
+                    mesh.rotation.y = index <= currentPage ? 0 : Math.PI;
+                    bookGroup.add(mesh);
+                    pageMeshes.push(mesh);
+                });
+
+                showStatus('Dot PDF loaded successfully!');
+                updateButtons();
+            } catch (error) {
+                showStatus('Error processing Dot PDF: ' + error.message);
+            }
+        }
+
+        // Handle file upload
+        pdfInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                processPDF(file);
+            } else {
+                showStatus('Please upload a valid PDF file.');
+            }
+        });
+
+        // Page flip animation with curl
+        function flipPage(direction) {
+            if (direction === 'next' && currentPage < pageMeshes.length - 2) {
+                const leftPage = pageMeshes[currentPage];
+                const rightPage = pageMeshes[currentPage + 1];
+                gsap.to(leftPage.rotation, {
+                    y: Math.PI,
+                    duration: 1,
+                    ease: 'power2.inOut'
+                });
+                gsap.to(rightPage.rotation, {
+                    y: 0,
+                    duration: 1,
+                    ease: 'power2.inOut'
+                });
+                gsap.to(rightPage.material.uniforms.curlAmount, {
+                    value: 1,
+                    duration: 0.5,
+                    ease: 'power2.out',
+                    onComplete: () => {
+                        gsap.to(rightPage.material.uniforms.curlAmount, {
+                            value: 0,
+                            duration: 0.5,
+                            ease: 'power2.in'
+                        });
+                        currentPage += 2;
+                        updateButtons();
+                    }
+                });
+            } else if (direction === 'prev' && currentPage > 0) {
+                const leftPage = pageMeshes[currentPage - 1];
+                const rightPage = pageMeshes[currentPage];
+                gsap.to(rightPage.rotation, {
+                    y: Math.PI,
+                    duration: 1,
+                    ease: 'power2.inOut'
+                });
+                gsap.to(leftPage.rotation, {
+                    y: 0,
+                    duration: 1,
+                    ease: 'power2.inOut'
+                });
+                gsap.to(leftPage.material.uniforms.curlAmount, {
+                    value: 1,
+                    duration: 0.5,
+                    ease: 'power2.out',
+                    onComplete: () => {
+                        gsap.to(leftPage.material.uniforms.curlAmount, {
+                            value: 0,
+                            duration: 0.5,
+                            ease: 'power2.in'
+                        });
+                        currentPage -= 2;
+                        updateButtons();
+                    }
+                });
+            }
+        }
+
+        // Zoom functionality
+        zoomInBtn.addEventListener('click', () => {
+            zoomLevel = Math.min(zoomLevel + 0.2, 2);
+            gsap.to(camera, {
+                fov: 75 / zoomLevel,
+                duration: 0.5,
+                onUpdate: () => camera.updateProjectionMatrix()
+            });
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            zoomLevel = Math.max(zoomLevel - 0.2, 0.5);
+            gsap.to(camera, {
+                fov: 75 / zoomLevel,
+                duration: 0.5,
+                onUpdate: () => camera.updateProjectionMatrix()
+            });
+        });
+
+        // Navigation buttons
+        prevBtn.addEventListener('click', () => flipPage('prev'));
+        nextBtn.addEventListener('click', () => flipPage('next'));
+
+        // Touch and mouse drag support
+        let isDragging = false;
+        let startX = 0;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                // Optional: Add visual feedback during drag
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - startX;
+                if (deltaX > 50) flipPage('prev');
+                else if (deltaX < -50) flipPage('next');
+                isDragging = false;
+            }
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (isDragging) {
+                const deltaX = e.changedTouches[0].clientX - startX;
+                if (deltaX > 50) flipPage('prev');
+                else if (deltaX < -50) flipPage('next');
+                isDragging = false;
+            }
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        updateButtons();
+    </script>
+</body>
+</html>
