@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dot PDF - 3D Flipbook</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Orbitron', sans-serif;
+            color: #00ff00;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            position: relative;
+        }
+        h1 {
+            position: absolute;
+            top: 20px;
+            font-size: 2.5em;
+            text-transform: uppercase;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; }
+            to { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00, 0 0 40px #00ff00; }
+        }
+        #canvas {
+            width: 100%;
+            max-width: 1000px;
+            height: 70vh;
+            display: block;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+        .controls {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            z-index: 10;
+        }
+        button, input[type="file"] {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        button:hover, input[type="file"]:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px #00ff00;
+        }
+        button:disabled {
+            background: #333;
+            color: #666;
+            border: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        #status {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff00;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: none;
+            z-index: 10;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        .logo {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00ff00;
+            font-size: 14px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        @media (max-width: 600px) {
+            #canvas {
+                width: 95%;
+                height: 60vh;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            button, input[type="file"] {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Dot PDF</h1>
+    <div id="status"></div>
+    <canvas id="canvas"></canvas>
+    <div class="controls">
+        <input type="file" id="pdfInput" accept=".pdf">
+        <button id="prevBtn" disabled>Previous</button>
+        <button id="nextBtn" disabled>Next</button>
+        <button id="zoomInBtn">Zoom In</button>
+        <button id="zoomOutBtn">Zoom Out</button>
+    </div>
+    <div class="logo">WebXOS 2025</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script>
+        // Setup pdf.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+        // Three.js setup
+        const canvas = document.getElementById('canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.shadowMap.enabled = true;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(0, 5, 5);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+
+        // Camera position
+        camera.position.set(0, 0, 7);
+        camera.lookAt(0, 0, 0);
+
+        // Page data
+        let pageTextures = [];
+        let bookGroup = new THREE.Group();
+        let currentSpread = 0;
+        let isAnimating = false;
+        const status = document.getElementById('status');
+        scene.add(bookGroup);
+
+        // Navigation and zoom buttons
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const pdfInput = document.getElementById('pdfInput');
+
+        function showStatus(message) {
+            status.textContent = message;
+            status.style.display = 'block';
+            setTimeout(() => status.style.display = 'none', 3000);
+        }
+
+        function updateButtons() {
+            prevBtn.disabled = currentSpread === 0 || pageTextures.length === 0 || isAnimating;
+            nextBtn.disabled = currentSpread >= Math.floor((pageTextures.length - 1) / 2) || pageTextures.length === 0 || isAnimating;
+        }
+
+        // Convert PDF to images
+        async function processPDF(file) {
+            showStatus('Processing PDF...');
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                const numPages = pdf.numPages;
+                pageTextures = [];
+                bookGroup.children = [];
+                currentSpread = 0;
+
+                for (let i = 1; i <= numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    const pageCanvas = document.createElement('canvas');
+                    pageCanvas.width = viewport.width;
+                    pageCanvas.height = viewport.height;
+                    const ctx = pageCanvas.getContext('2d');
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+                    pageTextures.push(new THREE.CanvasTexture(pageCanvas));
+                }
+
+                updateBook();
+                showStatus('PDF loaded successfully!');
+                updateButtons();
+            } catch (error) {
+                showStatus('Error processing PDF: ' + error.message);
+            }
+        }
+
+        // Create page bending effect
+        function bendPage(pageMesh, progress, isLeftPage) {
+            const vertices = pageMesh.geometry.attributes.position.array;
+            const width = 3; // Page width
+            const segments = 20; // Number of segments in geometry
+            for (let i = 0; i < vertices.length; i += 3) {
+                const x = vertices[i];
+                const z = vertices[i + 2];
+                const bendFactor = isLeftPage ? (x + width / 2) / width : (-x + width / 2) / width;
+                const bendAngle = progress * Math.PI * bendFactor;
+                vertices[i + 2] = z + Math.sin(bendAngle) * 0.5;
+            }
+            pageMesh.geometry.attributes.position.needsUpdate = true;
+        }
+
+        // Create 3D book with two pages
+        function updateBook() {
+            bookGroup.children = [];
+            const pageGeometry = new THREE.PlaneGeometry(3, 4, 20, 20);
+            const leftPageIdx = currentSpread * 2;
+            const rightPageIdx = leftPageIdx + 1;
+
+            // Left page
+            if (leftPageIdx < pageTextures.length) {
+                const material = new THREE.MeshStandardMaterial({
+                    map: pageTextures[leftPageIdx],
+                    side: THREE.DoubleSide
+                });
+                const mesh = new THREE.Mesh(pageGeometry, material);
+                mesh.position.x = -1.55;
+                mesh.rotation.y = Math.PI / 6;
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                bookGroup.add(mesh);
+            }
+
+            // Right page
+            if (rightPageIdx < pageTextures.length) {
+                const material = new THREE.MeshStandardMaterial({
+                    map: pageTextures[rightPageIdx],
+                    side: THREE.DoubleSide
+                });
+                const mesh = new THREE.Mesh(pageGeometry, material);
+                mesh.position.x = 1.55;
+                mesh.rotation.y = -Math.PI / 6;
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                bookGroup.add(mesh);
+            }
+
+            // Book spine
+            const spineGeometry = new THREE.BoxGeometry(0.2, 4, 0.1);
+            const spineMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+            const spine = new THREE.Mesh(spineGeometry, spineMaterial);
+            spine.position.z = -0.05;
+            bookGroup.add(spine);
+        }
+
+        // Handle file upload
+        pdfInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                processPDF(file);
+            } else {
+                showStatus('Please upload a valid PDF file.');
+            }
+        });
+
+        // Flip page animation
+        function flipPage(direction) {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            const pageGeometry = new THREE.PlaneGeometry(3, 4, 20, 20);
+            let pageMesh, nextPageMesh;
+            let targetSpread = currentSpread;
+            let isLeftPage = direction === 'next';
+
+            if (direction === 'next' && currentSpread < Math.floor((pageTextures.length - 1) / 2)) {
+                targetSpread++;
+                const pageIdx = currentSpread * 2 + 1; // Right page of current spread
+                const nextPageIdx = pageIdx + 1; // Next page to show
+                if (pageIdx < pageTextures.length) {
+                    pageMesh = new THREE.Mesh(pageGeometry, new THREE.MeshStandardMaterial({
+                        map: pageTextures[pageIdx],
+                        side: THREE.DoubleSide
+                    }));
+                    pageMesh.position.x = 1.55;
+                    pageMesh.rotation.y = -Math.PI / 6;
+                    pageMesh.castShadow = true;
+                    pageMesh.receiveShadow = true;
+                    bookGroup.add(pageMesh);
+                }
+                if (nextPageIdx < pageTextures.length) {
+                    nextPageMesh = new THREE.Mesh(pageGeometry, new THREE.MeshStandardMaterial({
+                        map: pageTextures[nextPageIdx],
+                        side: THREE.DoubleSide
+                    }));
+                    nextPageMesh.position.x = 1.55;
+                    nextPageMesh.rotation.y = -Math.PI / 6;
+                    nextPageMesh.castShadow = true;
+                    nextPageMesh.receiveShadow = true;
+                    bookGroup.add(nextPageMesh);
+                }
+            } else if (direction === 'prev' && currentSpread > 0) {
+                targetSpread--;
+                const pageIdx = currentSpread * 2; // Left page of current spread
+                const nextPageIdx = pageIdx - 1; // Previous page to show
+                if (pageIdx < pageTextures.length) {
+                    pageMesh = new THREE.Mesh(pageGeometry, new THREE.MeshStandardMaterial({
+                        map: pageTextures[pageIdx],
+                        side: THREE.DoubleSide
+                    }));
+                    pageMesh.position.x = -1.55;
+                    pageMesh.rotation.y = Math.PI / 6;
+                    pageMesh.castShadow = true;
+                    pageMesh.receiveShadow = true;
+                    bookGroup.add(pageMesh);
+                }
+                if (nextPageIdx >= 0) {
+                    nextPageMesh = new THREE.Mesh(pageGeometry, new THREE.MeshStandardMaterial({
+                        map: pageTextures[nextPageIdx],
+                        side: THREE.DoubleSide
+                    }));
+                    nextPageMesh.position.x = -1.55;
+                    nextPageMesh.rotation.y = Math.PI / 6;
+                    nextPageMesh.castShadow = true;
+                    nextPageMesh.receiveShadow = true;
+                    bookGroup.add(nextPageMesh);
+                }
+            } else {
+                isAnimating = false;
+                return;
+            }
+
+            // Animation
+            const timeline = gsap.timeline({
+                onComplete: () => {
+                    currentSpread = targetSpread;
+                    updateBook();
+                    isAnimating = false;
+                    updateButtons();
+                }
+            });
+
+            if (pageMesh) {
+                timeline.to(pageMesh.rotation, {
+                    y: isLeftPage ? Math.PI / 2 : -Math.PI / 2,
+                    duration: 1,
+                    ease: 'power2.inOut',
+                    onUpdate: () => bendPage(pageMesh, timeline.progress(), isLeftPage)
+                }, 0);
+                timeline.to(pageMesh.position, {
+                    x: isLeftPage ? -1.55 : 1.55,
+                    duration: 1,
+                    ease: 'power2.inOut'
+                }, 0);
+            }
+
+            if (nextPageMesh) {
+                nextPageMesh.rotation.y = isLeftPage ? Math.PI / 2 : -Math.PI / 2;
+                nextPageMesh.position.x = isLeftPage ? -1.55 : 1.55;
+                timeline.to(nextPageMesh.rotation, {
+                    y: isLeftPage ? Math.PI / 6 : -Math.PI / 6,
+                    duration: 1,
+                    ease: 'power2.inOut',
+                    onUpdate: () => bendPage(nextPageMesh, 1 - timeline.progress(), isLeftPage)
+                }, 0);
+                timeline.to(nextPageMesh.position, {
+                    x: isLeftPage ? 1.55 : -1.55,
+                    duration: 1,
+                    ease: 'power2.inOut'
+                }, 0);
+            }
+        }
+
+        // Zoom controls
+        zoomInBtn.addEventListener('click', () => {
+            gsap.to(camera.position, {
+                z: camera.position.z - 1,
+                duration: 0.5,
+                ease: 'power2.inOut',
+                onUpdate: () => camera.position.z = Math.max(camera.position.z, 3)
+            });
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            gsap.to(camera.position, {
+                z: camera.position.z + 1,
+                duration: 0.5,
+                ease: 'power2.inOut',
+                onUpdate: () => camera.position.z = Math.min(camera.position.z, 10)
+            });
+        });
+
+        prevBtn.addEventListener('click', () => flipPage('prev'));
+        nextBtn.addEventListener('click', () => flipPage('next'));
+
+        // Touch and mouse drag support
+        let isDragging = false;
+        let startX = 0;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                // Optional: Add visual feedback during drag
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - startX;
+                if (deltaX > 50) flipPage('prev');
+                else if (deltaX < -50) flipPage('next');
+                isDragging = false;
+            }
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (isDragging) {
+                const deltaX = e.changedTouches[0].clientX - startX;
+                if (deltaX > 50) flipPage('prev');
+                else if (deltaX < -50) flipPage('next');
+                isDragging = false;
+            }
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        updateButtons();
+    </script>
+</body>
+</html>
