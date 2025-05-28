@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+    <title>Dot PDF - 3D Flipbook</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(180deg, #0a0a0a, #1a3c34);
+            font-family: 'Orbitron', sans-serif;
+            color: #00ff00;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.3;
+            z-index: -1;
+        }
+        h1 {
+            font-size: 2.2em;
+            text-transform: uppercase;
+            color: #00ff00;
+            text-shadow: 0 0 12px #00ff00, 0 0 20px #00ff00;
+            animation: glow 1.5s ease-in-out infinite alternate;
+            margin: 10px 0;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 12px #00ff00, 0 0 20px #00ff00; }
+            to { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; }
+        }
+        .book-container {
+            width: 95%;
+            max-width: 1000px;
+            height: 70vh;
+            max-height: 600px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: #111;
+            border-radius: 6px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 8px;
+            border-radius: 6px;
+            box-shadow: 0 0 12px #00ff00;
+            width: 95%;
+            max-width: 1000px;
+            box-sizing: border-box;
+        }
+        .controls:hover {
+            box-shadow: 0 0 20px #00ff00;
+        }
+        button, input[type="file"]::file-selector-button {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0 8px #00ff00;
+            text-transform: uppercase;
+            white-space: nowrap;
+            flex: 0 1 auto;
+        }
+        button:hover, input[type="file"]::file-selector-button:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px #00ff00;
+        }
+        button:disabled {
+            background: #333;
+            color: #666;
+            border: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        input[type="file"] {
+            background: none;
+            border: none;
+            color: #00ff00;
+            flex: 0 1 auto;
+        }
+        #pageSlider {
+            width: 100px;
+            accent-color: #00ff00;
+            flex: 0 1 100px;
+        }
+        #pageInfo {
+            color: #00ff00;
+            font-size: 12px;
+            text-shadow: 0 0 6px #00ff00;
+            margin: 0 6px;
+            white-space: nowrap;
+            flex: 0 1 auto;
+        }
+        #status {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff00;
+            padding: 8px 16px;
+            border-radius: 6px;
+            display: none;
+            z-index: 10;
+            box-shadow: 0 0 12px #00ff00;
+            animation: fadeInOut 2.5s;
+        }
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            10%, 90% { opacity: 1; }
+        }
+        .loader {
+            display: none;
+            width: 25px;
+            height: 25px;
+            border: 3px solid #00ff00;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+        }
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        .logo {
+            color: #00ff00;
+            font-size: 12px;
+            text-shadow: 0 0 8px #00ff00;
+            letter-spacing: 1px;
+            margin: 10px 0;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.6em;
+            }
+            .book-container {
+                width: 98%;
+                height: 65vh;
+                max-height: 500px;
+                padding: 8px;
+            }
+            .controls {
+                width: 98%;
+                gap: 6px;
+                padding: 6px;
+                flex-wrap: wrap;
+            }
+            button, input[type="file"]::file-selector-button {
+                padding: 5px 8px;
+                font-size: 10px;
+                flex: 0 1 calc(33.33% - 4px);
+            }
+            #pageSlider {
+                width: 80px;
+                flex: 0 1 80px;
+            }
+            #pageInfo {
+                font-size: 10px;
+                flex: 0 1 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Dot PDF</h1>
+    <div id="status"></div>
+    <div class="loader" id="loader"></div>
+    <div class="book-container">
+        <canvas id="canvas"></canvas>
+    </div>
+    <div class="controls">
+        <input type="file" id="pdfInput" accept=".pdf">
+        <button id="prevBtn" disabled>Previous</button>
+        <span id="pageInfo"></span>
+        <input type="range" id="pageSlider" min="0" max="0" value="0">
+        <button id="nextBtn" disabled>Next</button>
+        <button id="zoomInBtn">Zoom In</button>
+        <button id="zoomOutBtn">Zoom Out</button>
+        <button id="zoomResetBtn">Reset Zoom</button>
+        <button id="fullScreenBtn">Full Screen</button>
+    </div>
+    <div class="logo">WebXOS 2025</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        // Setup pdf.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        // Three.js setup
+        const canvas = document.getElementById('canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // Enhanced lighting for better clarity
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        directionalLight.position.set(0, 10, 10);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = window.innerWidth < 600 ? 512 : 2048;
+        directionalLight.shadow.mapSize.height = window.innerWidth < 600 ? 512 : 2048;
+        directionalLight.shadow.bias = -0.0001;
+        scene.add(directionalLight);
+
+        // Camera position (closer for readability)
+        camera.position.set(0, 0, 3.5);
+        camera.lookAt(0, 0, 0);
+
+        // Page data
+        let pageTextures = [];
+        let bookGroup = new THREE.Group();
+        let currentSpread = 0;
+        let isAnimating = false;
+        const status = document.getElementById('status');
+        const loader = document.getElementById('loader');
+        const pageInfo = document.getElementById('pageInfo');
+        const pageSlider = document.getElementById('pageSlider');
+        scene.add(bookGroup);
+
+        // Navigation and zoom buttons
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const zoomResetBtn = document.getElementById('zoomResetBtn');
+        const fullScreenBtn = document.getElementById('fullScreenBtn');
+        const pdfInput = document.getElementById('pdfInput');
+
+        // PBR texture loader (using a simpler leather texture for clarity)
+        const textureLoader = new THREE.TextureLoader();
+        const pbrTextures = {
+            cover: {
+                map: textureLoader.load('https://i.imgur.com/8q3z8Z7.jpg'),
+                normalMap: textureLoader.load('https://i.imgur.com/8q3z8Z7.jpg'),
+                roughnessMap: textureLoader.load('https://i.imgur.com/8q3z8Z7.jpg'),
+                metalnessMap: textureLoader.load('https://i.imgur.com/8q3z8Z7.jpg')
+            },
+            spine: {
+                map: textureLoader.load('https://i.imgur.com/8q3z8Z7.jpg'),
+                normalMap: textureLoader.load('https://i.imgur.com/8q3z8Z7.jpg'),
+                roughnessMap: textureLoader.load('https://i.imgur.com/8q3z8Z7.jpg'),
+                metalnessMap: textureLoader.load('https://i.imgur.com/8q3z8Z7.jpg')
+            }
+        };
+        Object.values(pbrTextures).forEach(group => {
+            Object.values(group).forEach(texture => {
+                texture.encoding = THREE.sRGBEncoding;
+                texture.minFilter = THREE.LinearMipmapLinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                texture.generateMipmaps = true;
+            });
+        });
+
+        function showStatus(message) {
+            status.textContent = message;
+            status.style.display = 'block';
+            setTimeout(() => status.style.display = 'none', 2500);
+        }
+
+        function showLoader(show) {
+            loader.style.display = show ? 'block' : 'none';
+        }
+
+        function updateButtons() {
+            prevBtn.disabled = currentSpread === 0 || pageTextures.length === 0 || isAnimating;
+            nextBtn.disabled = currentSpread >= Math.floor((pageTextures.length - 1) / 2) || pageTextures.length === 0 || isAnimating;
+            pageInfo.textContent = pageTextures.length > 0 ? `Page ${currentSpread * 2 + 1}-${Math.min((currentSpread + 1) * 2, pageTextures.length)} of ${pageTextures.length}` : '';
+            pageSlider.max = Math.floor((pageTextures.length - 1) / 2);
+            pageSlider.value = currentSpread;
+        }
+
+        // Convert PDF to images (increased resolution for clarity)
+        async function processPDF(file) {
+            showLoader(true);
+            showStatus('Processing PDF...');
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                const numPages = pdf.numPages;
+                pageTextures.forEach(texture => texture.dispose());
+                pageTextures = [];
+                bookGroup.children = [];
+                currentSpread = 0;
+
+                for (let i = 1; i <= numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: window.innerWidth < 600 ? 3.0 : 4.0 });
+                    const pageCanvas = document.createElement('canvas');
+                    pageCanvas.width = viewport.width;
+                    pageCanvas.height = viewport.height;
+                    const ctx = pageCanvas.getContext('2d', { alpha: false });
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+                    const texture = new THREE.CanvasTexture(pageCanvas);
+                    texture.minFilter = THREE.LinearMipmapLinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.generateMipmaps = true;
+                    pageTextures.push(texture);
+                }
+
+                updateBook();
+                showStatus('PDF loaded successfully!');
+                updateButtons();
+            } catch (error) {
+                showStatus('Error processing PDF: ' + error.message);
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // Page bending effect (reduced for flatter pages)
+        function bendPage(pageMesh, progress, isLeftPage) {
+            const vertices = pageMesh.geometry.attributes.position.array;
+            const width = 3.5;
+            const segments = 32;
+            for (let i = 0; i < vertices.length; i += 3) {
+                const x = vertices[i];
+                const y = vertices[i + 1];
+                const bendFactor = isLeftPage ? (x + width / 2) / width : (-x + width / 2) / width;
+                const bendAngle = progress * Math.PI * 0.5 * bendFactor;
+                const curl = Math.sin(bendAngle) * 0.2 + Math.cos(y * Math.PI / 6) * 0.03;
+                vertices[i + 2] = curl;
+            }
+            pageMesh.geometry.attributes.position.needsUpdate = true;
+            pageMesh.material.opacity = 1 - progress * 0.1;
+        }
+
+        // Create 3D book (redesigned for clarity and alignment)
+        function updateBook() {
+            bookGroup.children = [];
+            const pageGeometry = new THREE.PlaneGeometry(3.5, 5.0, 32, 32);
+            const coverGeometry = new THREE.PlaneGeometry(3.6, 5.1);
+            const leftPageIdx = currentSpread * 2;
+            const rightPageIdx = leftPageIdx + 1;
+
+            // Book cover (front)
+            if (currentSpread === 0) {
+                const coverMaterial = new THREE.MeshStandardMaterial({
+                    map: pbrTextures.cover.map,
+                    normalMap: pbrTextures.cover.normalMap,
+                    roughnessMap: pbrTextures.cover.roughnessMap,
+                    metalnessMap: pbrTextures.cover.metalnessMap,
+                    roughness: 0.3,
+                    metalness: 0.2,
+                    side: THREE.DoubleSide
+                });
+                const frontCover = new THREE.Mesh(coverGeometry, coverMaterial);
+                frontCover.position.set(-1.75, 0, 0.02);
+                frontCover.rotation.y = Math.PI / 12;
+                frontCover.castShadow = true;
+                frontCover.receiveShadow = true;
+                bookGroup.add(frontCover);
+            }
+
+            // Left page
+            if (leftPageIdx < pageTextures.length) {
+                const material = new THREE.MeshStandardMaterial({
+                    map: pageTextures[leftPageIdx],
+                    side: THREE.DoubleSide,
+                    roughness: 0.6,
+                    metalness: 0.05
+                });
+                const mesh = new THREE.Mesh(pageGeometry, material);
+                mesh.position.set(-1.75, 0, 0.01);
+                mesh.rotation.y = Math.PI / 12;
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                bookGroup.add(mesh);
+            }
+
+            // Right page
+            if (rightPageIdx < pageTextures.length) {
+                const material = new THREE.MeshStandardMaterial({
+                    map: pageTextures[rightPageIdx],
+                    side: THREE.DoubleSide,
+                    roughness: 0.6,
+                    metalness: 0.05
+                });
+                const mesh = new THREE.Mesh(pageGeometry, material);
+                mesh.position.set(1.75, 0, 0.01);
+                mesh.rotation.y = -Math.PI / 12;
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                bookGroup.add(mesh);
+            }
+
+            // Book cover (back)
+            if (rightPageIdx >= pageTextures.length - 1 && pageTextures.length > 0) {
+                const coverMaterial = new THREE.MeshStandardMaterial({
+                    map: pbrTextures.cover.map,
+                    normalMap: pbrTextures.cover.normalMap,
+                    roughnessMap: pbrTextures.cover.roughnessMap,
+                    metalnessMap: pbrTextures.cover.metalnessMap,
+                    roughness: 0.3,
+                    metalness: 0.2,
+                    side: THREE.DoubleSide
+                });
+                const backCover = new THREE.Mesh(coverGeometry, coverMaterial);
+                backCover.position.set(1.75, 0, 0.02);
+                backCover.rotation.y = -Math.PI / 12;
+                backCover.castShadow = true;
+                backCover.receiveShadow = true;
+                bookGroup.add(backCover);
+            }
+
+            // Book spine (slimmer and centered)
+            const spineGeometry = new THREE.CylinderGeometry(0.1, 0.1, 5.1, 16);
+            const spineMaterial = new THREE.MeshStandardMaterial({
+                map: pbrTextures.spine.map,
+                normalMap: pbrTextures.spine.normalMap,
+                roughnessMap: pbrTextures.spine.roughnessMap,
+                metalnessMap: pbrTextures.spine.metalnessMap,
+                roughness: 0.4,
+                metalness: 0.3
+            });
+            const spine = new THREE.Mesh(spineGeometry, spineMaterial);
+            spine.rotation.z = Math.PI / 2;
+            spine.position.set(0, 0, -0.01);
+            spine.castShadow = true;
+            spine.receiveShadow = true;
+            bookGroup.add(spine);
+        }
+
+        // Handle file upload
+        pdfInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                processPDF(file);
+            } else {
+                showStatus('Please upload a valid PDF file.');
+            }
+        });
+
+        // Flip page animation (smoother and flatter)
+        function flipPage(direction) {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            const pageGeometry = new THREE.PlaneGeometry(3.5, 5.0, 32, 32);
+            let pageMesh, nextPageMesh;
+            let targetSpread = currentSpread;
+            let isLeftPage = direction === 'next';
+
+            if (direction === 'next' && currentSpread < Math.floor((pageTextures.length - 1) / 2)) {
+                targetSpread++;
+                const pageIdx = currentSpread * 2 + 1;
+                const nextPageIdx = pageIdx + 1;
+                if (pageIdx < pageTextures.length) {
+                    pageMesh = new THREE.Mesh(pageGeometry, new THREE.MeshStandardMaterial({
+                        map: pageTextures[pageIdx],
+                        side: THREE.DoubleSide,
+                        roughness: 0.6,
+                        metalness: 0.05
+                    }));
+                    pageMesh.position.set(1.75, 0, 0.01);
+                    pageMesh.rotation.y = -Math.PI / 12;
+                    pageMesh.castShadow = true;
+                    pageMesh.receiveShadow = true;
+                    bookGroup.add(pageMesh);
+                }
+                if (nextPageIdx < pageTextures.length) {
+                    nextPageMesh = new THREE.Mesh(pageGeometry, new THREE.MeshStandardMaterial({
+                        map: pageTextures[nextPageIdx],
+                        side: THREE.DoubleSide,
+                        roughness: 0.6,
+                        metalness: 0.05
+                    }));
+                    nextPageMesh.position.set(1.75, 0, 0.01);
+                    nextPageMesh.rotation.y = -Math.PI / 12;
+                    nextPageMesh.castShadow = true;
+                    nextPageMesh.receiveShadow = true;
+                    bookGroup.add(nextPageMesh);
+                }
+            } else if (direction === 'prev' && currentSpread > 0) {
+                targetSpread--;
+                const pageIdx = currentSpread * 2;
+                const nextPageIdx = pageIdx - 1;
+                if (pageIdx < pageTextures.length) {
+                    pageMesh = new THREE.Mesh(pageGeometry, new THREE.MeshStandardMaterial({
+                        map: pageTextures[pageIdx],
+                        side: THREE.DoubleSide,
+                        roughness: 0.6,
+                        metalness: 0.05
+                    }));
+                    pageMesh.position.set(-1.75, 0, 0.01);
+                    pageMesh.rotation.y = Math.PI / 12;
+                    pageMesh.castShadow = true;
+                    pageMesh.receiveShadow = true;
+                    bookGroup.add(pageMesh);
+                }
+                if (nextPageIdx >= 0) {
+                    nextPageMesh = new THREE.Mesh(pageGeometry, new THREE.MeshStandardMaterial({
+                        map: pageTextures[nextPageIdx],
+                        side: THREE.DoubleSide,
+                        roughness: 0.6,
+                        metalness: 0.05
+                    }));
+                    nextPageMesh.position.set(-1.75, 0, 0.01);
+                    nextPageMesh.rotation.y = Math.PI / 12;
+                    nextPageMesh.castShadow = true;
+                    nextPageMesh.receiveShadow = true;
+                    bookGroup.add(nextPageMesh);
+                }
+            } else {
+                isAnimating = false;
+                return;
+            }
+
+            const timeline = gsap.timeline({
+                onComplete: () => {
+                    currentSpread = targetSpread;
+                    updateBook();
+                    isAnimating = false;
+                    updateButtons();
+                }
+            });
+
+            if (pageMesh) {
+                timeline.to(pageMesh.rotation, {
+                    y: isLeftPage ? Math.PI / 2 : -Math.PI / 2,
+                    duration: 0.8,
+                    ease: 'power3.inOut'
+                }, 0);
+                timeline.to(pageMesh.position, {
+                    x: isLeftPage ? -1.75 : 1.75,
+                    duration: 0.8,
+                    ease: 'power3.inOut',
+                    onUpdate: () => bendPage(pageMesh, timeline.progress(), isLeftPage)
+                }, 0);
+                timeline.to(pageMesh.rotation, {
+                    y: isLeftPage ? Math.PI / 12 : -Math.PI / 12,
+                    duration: 0.2,
+                    ease: 'back.out(1.2)'
+                }, 0.8);
+            }
+
+            if (nextPageMesh) {
+                nextPageMesh.rotation.y = isLeftPage ? Math.PI / 2 : -Math.PI / 2;
+                nextPageMesh.position.x = isLeftPage ? -1.75 : 1.75;
+                timeline.to(nextPageMesh.rotation, {
+                    y: isLeftPage ? Math.PI / 12 : -Math.PI / 12,
+                    duration: 0.8,
+                    ease: 'power3.inOut',
+                    onUpdate: () => bendPage(nextPageMesh, 1 - timeline.progress(), isLeftPage)
+                }, 0);
+                timeline.to(nextPageMesh.position, {
+                    x: isLeftPage ? 1.75 : -1.75,
+                    duration: 0.8,
+                    ease: 'power3.inOut'
+                }, 0);
+                timeline.to(nextPageMesh.rotation, {
+                    y: isLeftPage ? Math.PI / 12 : -Math.PI / 12,
+                    duration: 0.2,
+                    ease: 'back.out(1.2)'
+                }, 0.8);
+            }
+        }
+
+        // Page slider navigation
+        pageSlider.addEventListener('input', () => {
+            if (!isAnimating) {
+                currentSpread = parseInt(pageSlider.value);
+                updateBook();
+                updateButtons();
+            }
+        });
+
+        // Zoom controls
+        zoomInBtn.addEventListener('click', () => {
+            gsap.to(camera.position, {
+                z: camera.position.z - 0.3,
+                duration: 0.4,
+                ease: 'power2.inOut',
+                onUpdate: () => camera.position.z = Math.max(camera.position.z, 1.5)
+            });
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            gsap.to(camera.position, {
+                z: camera.position.z + 0.3,
+                duration: 0.4,
+                ease: 'power2.inOut',
+                onUpdate: () => camera.position.z = Math.min(camera.position.z, 6)
+            });
+        });
+
+        zoomResetBtn.addEventListener('click', () => {
+            gsap.to(camera.position, {
+                z: 3.5,
+                duration: 0.4,
+                ease: 'power2.inOut'
+            });
+        });
+
+        // Full-screen toggle
+        fullScreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                canvas.requestFullscreen();
+                fullScreenBtn.textContent = 'Exit Full Screen';
+            } else {
+                document.exitFullscreen();
+                fullScreenBtn.textContent = 'Full Screen';
+            }
+        });
+
+        // Pinch-to-zoom
+        let initialDistance = null;
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                initialDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                if (initialDistance) {
+                    const scale = currentDistance / initialDistance;
+                    const newZ = camera.position.z / scale;
+                    camera.position.z = Math.max(1.5, Math.min(6, newZ));
+                }
+                initialDistance = currentDistance;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            initialDistance = null;
+        });
+
+        // Touch and mouse drag
+        let isDragging = false;
+        let startX = 0;
+        let dragFeedback = null;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            dragFeedback = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.4, 0.4),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.2, transparent: true })
+            );
+            dragFeedback.position.z = 1;
+            scene.add(dragFeedback);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging && dragFeedback) {
+                const deltaX = (e.clientX - startX) / canvas.clientWidth * 8;
+                dragFeedback.position.x = deltaX;
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - startX;
+                if (deltaX > 20) flipPage('prev');
+                else if (deltaX < -20) flipPage('next');
+                isDragging = false;
+                scene.remove(dragFeedback);
+                dragFeedback = null;
+            }
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            dragFeedback = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.4, 0.4),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.2, transparent: true })
+            );
+            dragFeedback.position.z = 1;
+            scene.add(dragFeedback);
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (isDragging && dragFeedback) {
+                const deltaX = (e.touches[0].clientX - startX) / canvas.clientWidth * 8;
+                dragFeedback.position.x = deltaX;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (isDragging) {
+                const deltaX = e.changedTouches[0].clientX - startX;
+                if (deltaX > 20) flipPage('prev');
+                else if (deltaX < -20) flipPage('next');
+                isDragging = false;
+                scene.remove(dragFeedback);
+                dragFeedback = null;
+            }
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        });
+
+        updateButtons();
+    </script>
+</body>
+</html>
